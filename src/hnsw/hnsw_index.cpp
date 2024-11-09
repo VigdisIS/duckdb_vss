@@ -186,30 +186,47 @@ HNSWIndex::HNSWIndex(const string &name, IndexConstraintType index_constraint_ty
 		config.connectivity_base = m0_opt->second.GetValue<int32_t>();
 	}
 
-	index = unum::usearch::index_dense_gt<row_t>::make(metric, config);
+    // Create the index
+   	index = unum::usearch::index_dense_gt<row_t>::make(metric, config);
+    index.reserve(MinValue(static_cast<idx_t>(estimated_cardinality), estimated_cardinality));
 
-	auto lock = rwlock.GetExclusiveLock();
-	// Is this a new index or an existing index?
-	if (info.IsValid()) {
-		// This is an old index that needs to be loaded
+	// auto lock = rwlock.GetExclusiveLock();
+	// // Is this a new index or an existing index?
+	// if (info.IsValid()) {
+	// 	// This is an old index that needs to be loaded
 
-		// Set the root node
-		root_block_ptr.Set(info.root);
-		D_ASSERT(info.allocator_infos.size() == 1);
-		linked_block_allocator->Init(info.allocator_infos[0]);
+	// 	// Set the root node
+	// 	root_block_ptr.Set(info.root);
+	// 	D_ASSERT(info.allocator_infos.size() == 1);
+	// 	linked_block_allocator->Init(info.allocator_infos[0]);
 
-		// Is there anything to deserialize? We could have an empty index
-		if (!info.allocator_infos[0].buffer_ids.empty()) {
-			LinkedBlockReader reader(*linked_block_allocator, root_block_ptr);
-			index.load_from_stream(
-			    [&](void *data, size_t size) { return size == reader.ReadData(static_cast<data_ptr_t>(data), size); });
-		}
-	} else {
-		index.reserve(MinValue(static_cast<idx_t>(32), estimated_cardinality));
-	}
+	// 	// Is there anything to deserialize? We could have an empty index
+	// 	if (!info.allocator_infos[0].buffer_ids.empty()) {
+	// 		LinkedBlockReader reader(*linked_block_allocator, root_block_ptr);
+	// 		index.load_from_stream(
+	// 		    [&](void *data, size_t size) { return size == reader.ReadData(static_cast<data_ptr_t>(data), size); });
+	// 	}
+	// } else {
+	// 	index.reserve(MinValue(static_cast<idx_t>(32), estimated_cardinality));
+	// }
 	index_size = index.size();
 
 	function_matcher = MakeFunctionMatcher();
+}
+
+// Method to get a reference to the index
+HNSWIndex::USearchIndexType const& HNSWIndex::GetIndex() const {
+    return index;
+}
+
+// // Get usearch type index
+// unum::usearch::index_dense_t HNSWIndex::GetUsearchIndex() const {
+// 	return index;
+// }
+
+// New method to add data to the index
+void HNSWIndex::AddToIndex(unum::usearch::default_key_t key, const unum::usearch::f32_t *vector) {
+    index.add(key, vector);
 }
 
 idx_t HNSWIndex::GetVectorSize() const {
@@ -386,6 +403,7 @@ void HNSWIndex::CommitDrop(IndexLock &index_lock) {
 }
 
 void HNSWIndex::Construct(DataChunk &input, Vector &row_ids, idx_t thread_idx) {
+	std::cout << "Constructing index\n";
 	D_ASSERT(row_ids.GetType().InternalType() == ROW_TYPE);
 	D_ASSERT(logical_types[0] == input.data[0].GetType());
 
@@ -479,7 +497,8 @@ void HNSWIndex::Delete(IndexLock &lock, DataChunk &input, Vector &rowid_vec) {
 }
 
 ErrorData HNSWIndex::Insert(IndexLock &lock, DataChunk &input, Vector &rowid_vec) {
-	Construct(input, rowid_vec, unum::usearch::index_dense_t::any_thread());
+	std::cout << "Inserting into cluster\n";
+	// Construct(input, rowid_vec, unum::usearch::index_dense_t::any_thread());
 	return ErrorData {};
 }
 
