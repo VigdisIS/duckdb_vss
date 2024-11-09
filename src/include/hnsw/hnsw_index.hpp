@@ -50,6 +50,9 @@ public:
 	unique_ptr<IndexScanState> InitializeScan(float *query_vector, idx_t limit, ClientContext &context);
 	idx_t Scan(IndexScanState &state, Vector &result, idx_t result_offset = 0);
 	idx_t GetVectorSize() const;
+	USearchIndexType const& GetIndex() const;
+	// unum::usearch::index_dense_t HNSWIndex::GetUsearchIndex() const;
+	void AddToIndex(unum::usearch::default_key_t key, const unum::usearch::f32_t *vector);
 	string GetMetric() const;
 
 	void Construct(DataChunk &input, Vector &row_ids, idx_t thread_idx);
