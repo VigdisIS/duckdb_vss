@@ -5,15 +5,16 @@
 #include "duckdb/optimizer/remove_unused_columns.hpp"
 #include "duckdb/planner/expression/bound_constant_expression.hpp"
 #include "duckdb/planner/expression_iterator.hpp"
+#include "duckdb/planner/operator/logical_filter.hpp"
 #include "duckdb/planner/operator/logical_get.hpp"
 #include "duckdb/planner/operator/logical_projection.hpp"
 #include "duckdb/planner/operator/logical_top_n.hpp"
-#include "duckdb/planner/operator/logical_filter.hpp"
 #include "duckdb/storage/data_table.hpp"
-
 #include "hnsw/hnsw.hpp"
 #include "hnsw/hnsw_index.hpp"
 #include "hnsw/hnsw_index_scan.hpp"
+
+#include <iostream>
 
 namespace duckdb {
 
@@ -96,11 +97,26 @@ public:
 		auto &duck_table = table.Cast<DuckTableEntry>();
 		auto &table_info = *table.GetStorage().GetDataTableInfo();
 
+		auto &table_indexes = table_info.GetIndexes();
+
 		// Find the index
 		unique_ptr<HNSWIndexScanBindData> bind_data = nullptr;
 		vector<reference<Expression>> bindings;
 
+		// first do lambda func to return key from centroid index
+		// Then do another lambda func to find the matching index
+		// Then set the bind_data to the matching index
+
+		unum::usearch::misaligned_ref_gt<const duckdb::row_t> key = nullptr;
+
 		table_info.GetIndexes().BindAndScan<HNSWIndex>(context, table_info, [&](HNSWIndex &hnsw_index) {
+			// From this, first search 'centroid_index' where k = 1
+			// then output which cluster to perform search in
+			// This becomes the new hnsw_index variable
+
+			// Seems to by default pick first HNSW index available, make sure this is the centroid index
+			std::cout << "Index name: " << hnsw_index.GetIndexName() << std::endl;
+
 			// Reset the bindings
 			bindings.clear();
 
@@ -136,9 +152,72 @@ public:
 				query_vector[i] = vector_elements[i].GetValue<float>();
 			}
 
-			bind_data = make_uniq<HNSWIndexScanBindData>(duck_table, hnsw_index, top_n.limit, std::move(query_vector));
+			auto ef_search = hnsw_index.index.expansion_search();
+			auto search_result = hnsw_index.index.ef_search(query_vector.get(), top_n.limit, ef_search);
+
+			auto centroid = search_result[0];
+
+			key = centroid.member.key;
+
+			std::cout << "Result: " << key << std::endl;
+
 			return true;
 		});
+
+		for (const auto &outer_index : table_indexes.Indexes()) {
+			if (outer_index->GetIndexName() == std::to_string(key)) {
+				std::cout << "Entered index: " << outer_index->GetIndexName() << std::endl;
+
+				// Capture the name of the current outer_index for comparison inside the lambda.
+				auto outer_index_name = outer_index->GetIndexName();
+
+				table_info.GetIndexes().BindAndScan<HNSWIndex>(context, table_info, [&](HNSWIndex &inner_index) {
+					if (inner_index.GetIndexName() == outer_index_name) {
+						// Confirm the inner_index matches the outer_index by their names.
+						std::cout << "Matching HNSWIndex found: " << inner_index.GetIndexName() << std::endl;
+						// Reset the bindings
+						bindings.clear();
+
+						// Check that the projection expression is a distance function that matches the index
+						if (!inner_index.TryMatchDistanceFunction(projection_expr, bindings)) {
+							return false;
+						}
+						// Check that the HNSW index actually indexes the expression
+						unique_ptr<Expression> index_expr;
+						if (!inner_index.TryBindIndexExpression(get, index_expr)) {
+							return false;
+						}
+
+						auto &const_expr_ref = bindings[1];
+						auto &index_expr_ref = bindings[2];
+
+						if (const_expr_ref.get().type != ExpressionType::VALUE_CONSTANT ||
+						    !index_expr->Equals(index_expr_ref)) {
+							// Swap the bindings and try again
+							std::swap(const_expr_ref, index_expr_ref);
+							if (const_expr_ref.get().type != ExpressionType::VALUE_CONSTANT ||
+							    !index_expr->Equals(index_expr_ref)) {
+								// Nope, not a match, we can't optimize.
+								return false;
+							}
+						}
+
+						const auto vector_size = inner_index.GetVectorSize();
+						const auto &matched_vector = const_expr_ref.get().Cast<BoundConstantExpression>().value;
+						auto query_vector = make_unsafe_uniq_array<float>(vector_size);
+						auto vector_elements = ArrayValue::GetChildren(matched_vector);
+						for (idx_t i = 0; i < vector_size; i++) {
+							query_vector[i] = vector_elements[i].GetValue<float>();
+						}
+
+						bind_data = make_uniq<HNSWIndexScanBindData>(duck_table, inner_index, top_n.limit,
+						                                             std::move(query_vector));
+						return true;
+					}
+					return false;
+				});
+			}
+		}
 
 		if (!bind_data) {
 			// No index found
