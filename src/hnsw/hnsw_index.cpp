@@ -219,10 +219,6 @@ HNSWIndex::USearchIndexType const& HNSWIndex::GetIndex() const {
     return index;
 }
 
-// // Get usearch type index
-// unum::usearch::index_dense_t HNSWIndex::GetUsearchIndex() const {
-// 	return index;
-// }
 
 // New method to add data to the index
 void HNSWIndex::AddToIndex(unum::usearch::default_key_t key, const unum::usearch::f32_t *vector) {
