@@ -8,11 +8,11 @@ clean:
 	rm -rf build
 
 duckdb-vss:
-	cd ../ && make debug
+	cd ../ && make
 
 main:
 	mkdir -p build
-	cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make
+	cd build && cmake .. && make
 	build/example
 
 
