@@ -1,31 +1,15 @@
 #include "duckdb.hpp"
 #include <iostream>
+#include <benchmark/benchmark.h>
+
 using namespace duckdb;
 
-int main() {
-
-	DuckDB db(nullptr);
-
+// Benchmark for search before clustering
+static void BM_SearchAfterClustering(benchmark::State& state) {
+    DuckDB db(nullptr);
 	Connection con(db);
- 
- 	// con.Query("SET threads TO 1");
- 
- 	// con.Query("CREATE TABLE my_vector_table (vec FLOAT[3])");
- 	// con.Query("INSERT INTO my_vector_table SELECT array_value(a,b,c) FROM range(1,10) ra(a), range(1,10) rb(b), range(1,10) rc(c)");
- 	// // Create centroid HNSW index + cluster HNSW indexes
- 	// con.Query("CREATE INDEX my_hnsw_index ON my_vector_table USING HNSW (vec)");
- 	// // Get the index names
- 	// auto result_duckdb_indexes =  con.Query("SELECT index_name FROM duckdb_indexes()");
- 	// result_duckdb_indexes->Print();
- 	// // Perform two-tiered vector similarity search
- 	// auto result = con.Query("SELECT * FROM my_vector_table ORDER BY array_distance(vec, [9,9,9]::FLOAT[3]) LIMIT 3");
- 	// result->Print();
-
-	// DuckDB db(nullptr);
-	// Connection con(db);
 
 	con.Query("SET enable_progress_bar = true;");
-	// // con.Query("SET hnsw_enable_experimental_persistence = true;");
 
 	con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
 	std::cout << "Attached raw.db" << std::endl;
@@ -36,8 +20,6 @@ int main() {
 
 	con.Query("DETACH raw;");
 	std::cout << "Detached raw.db" << std::endl;
-
-    // con.Query("SET threads TO 1;");
 
 	con.Query("CREATE INDEX clustered_hnsw_index ON memory.fashion_mnist_train USING HNSW (vec);");
 
@@ -58,9 +40,14 @@ int main() {
     }
 
     // Finish the query string
-    query_stream << "]::FLOAT[" << query_vector.size() << "]) LIMIT 1";
+    query_stream << "]::FLOAT[" << query_vector.size() << "]) LIMIT 100";
 
-    // Convert the stream into a string and execute the query
-    auto result = con.Query(query_stream.str());
-    result->Print();
+    for (auto _ : state) {
+		// Convert the stream into a string and execute the query
+        con.Query(query_stream.str());
+    }
 }
+
+BENCHMARK(BM_SearchAfterClustering);
+
+BENCHMARK_MAIN();
