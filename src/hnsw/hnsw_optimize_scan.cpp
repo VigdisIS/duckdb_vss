@@ -115,6 +115,9 @@ public:
 			// This becomes the new hnsw_index variable
 
 			// Seems to by default pick first HNSW index available, make sure this is the centroid index
+			if (hnsw_index.GetIndexName() != "centroid_index") {
+				return false;
+			}
 			std::cout << "Index name: " << hnsw_index.GetIndexName() << std::endl;
 
 			// Reset the bindings
