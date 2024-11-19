@@ -12,4 +12,5 @@ duckdb-vss:
 main:
 	mkdir -p build
 	cd build && cmake .. && make
-	build/example --benchmark_dry_run --benchmark_out=fashion_mnist_vss.txt --benchmark_out_format=console
+	build/example --benchmark_out=vss_benchmarks.json --benchmark_out_format=json
+	build/example --benchmark_out=vss_benchmarks.txt --benchmark_out_format=console
