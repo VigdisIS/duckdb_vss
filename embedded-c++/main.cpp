@@ -45,7 +45,19 @@ int GetVectorDimensionality(int tableIndex) {
 // }
 
 // Get random vector from train set to use as query vector
+// Incurs extra overhead as the select query is run every iteration
 std::string GetRandomRow(Connection& con, const std::string& table_name) {
+		auto result = con.Query("SELECT * FROM memory." + table_name + "_test" + " USING SAMPLE 1;");
+		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
+			std::cerr << "No data found in " << table_name << "_test" << std::endl;
+			return "";
+		}
+		auto query_vector = result->ToString();
+		return query_vector;
+}
+
+// Get first vector from test set
+std::string GetFirstRow(Connection& con, const std::string& table_name) {
 		auto result = con.Query("SELECT * FROM memory." + table_name + "_test" + " LIMIT 1;");
 		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
 			std::cerr << "No data found in " << table_name << "_test" << std::endl;
@@ -89,16 +101,11 @@ static void BM_VSSOriginalSearch(benchmark::State& state) {
 	SetupTable(con, table_name, vector_dimensionality);
 		con.Query("CREATE INDEX hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec);");
 
-		// Fetch a sample vector from the corresponding test table
-		auto result = con.Query("SELECT * FROM memory." + table_name + "_test LIMIT 1;");
-		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
-			std::cerr << "No data found in " << table_name << "_test" << std::endl;
-			return;
-		}
-		auto query_vector = result->ToString();
+		auto first_row_query = GetFirstRow(con, table_name);
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec," + GetRandomRow(con, table_name) + ") LIMIT 5;"));
+        // benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec," + GetRandomRow(con, table_name) + ") LIMIT 5;"));
+        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec," + first_row_query + ") LIMIT 5;"));
     }
 }
 
