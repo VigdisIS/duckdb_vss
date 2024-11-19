@@ -40,8 +40,19 @@ int GetVectorDimensionality(int tableIndex) {
     }
 }
 
-int GetTopKs(int top_k) {
-    return top_k;
+// int GetTopKs(int top_k) {
+//     return top_k;
+// }
+
+// Get random vector from train set to use as query vector
+std::string GetRandomRow(Connection& con, const std::string& table_name) {
+		auto result = con.Query("SELECT * FROM memory." + table_name + "_test" + " LIMIT 1;");
+		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
+			std::cerr << "No data found in " << table_name << "_test" << std::endl;
+			return "";
+		}
+		auto query_vector = result->ToString();
+		return query_vector;
 }
 
 // Benchmark index creation
@@ -87,7 +98,7 @@ static void BM_VSSOriginalSearch(benchmark::State& state) {
 		auto query_vector = result->ToString();
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec," + query_vector + ") LIMIT " + std::to_string(GetTopKs(state.range(1))) + ";"));
+        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec," + GetRandomRow(con, table_name) + ") LIMIT 5;"));
     }
 }
 
@@ -96,10 +107,8 @@ void RegisterBenchmarks() {
 	for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
 		benchmark::RegisterBenchmark("BM_VSSOriginalIndexCreation", BM_VSSOriginalIndexCreation)
             ->Args({tableIndex});
-		for (int top_k : top_ks) {
-            benchmark::RegisterBenchmark("BM_VSSOriginalSearch", BM_VSSOriginalSearch)
-                ->Args({tableIndex, top_k});
-    	}
+		benchmark::RegisterBenchmark("BM_VSSOriginalSearch", BM_VSSOriginalSearch)
+            ->Args({tableIndex});
 	}
 }
 
