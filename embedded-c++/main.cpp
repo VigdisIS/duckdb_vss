@@ -44,6 +44,21 @@ int GetClusterAmount(int clusterAmount) {
     return clusterAmount;
 }
 
+// int GetTopKs(int top_k) {
+//     return top_k;
+// }
+
+// Get random vector from train set to use as query vector
+std::string GetRandomRow(Connection& con, const std::string& table_name) {
+		auto result = con.Query("SELECT * FROM memory." + table_name + "_test" + " LIMIT 1;");
+		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
+			std::cerr << "No data found in " << table_name << "_test" << std::endl;
+			return "";
+		}
+		auto query_vector = result->ToString();
+		return query_vector;
+}
+
 // Benchmark index creation
 static void BM_ClusteringIndexCreation(benchmark::State& state) {
     DuckDB db(nullptr);
@@ -53,7 +68,6 @@ static void BM_ClusteringIndexCreation(benchmark::State& state) {
     auto vector_dimensionality = GetVectorDimensionality(state.range(0));
 
 	SetupTable(con, table_name, vector_dimensionality);
-	con.Query("SET cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ";");
 
     for (auto _ : state) {
 		// Need to find some way to clean up after each cycle...
@@ -76,32 +90,29 @@ static void BM_ClusteringSearch(benchmark::State& state) {
     auto vector_dimensionality = GetVectorDimensionality(state.range(0));
 
 	SetupTable(con, table_name, vector_dimensionality);
-		con.Query("SET cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ";");
-
-		con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec) WITH (cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ");");
-
-		// Fetch a sample vector from the corresponding test table
-		auto result = con.Query("SELECT * FROM memory." + table_name + "_test" + " LIMIT 1;");
-		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
-			std::cerr << "No data found in " << table_name << "_test" << std::endl;
-			return;
-		}
-		auto query_vector = result->ToString();
+	con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec) WITH (cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ");");
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec," + query_vector + ") LIMIT 20"));
+        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec," + GetRandomRow(con, table_name) + ") LIMIT 5;"));
     }
 }
 
 void RegisterBenchmarks() {
     std::vector<int> cluster_amounts = {5, 10, 15, 20};
-    for (int cluster_amount : cluster_amounts) {
-        for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
-			benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)
-               ->Args({tableIndex, cluster_amount});
-            benchmark::RegisterBenchmark("BM_ClusteringSearch", BM_ClusteringSearch)
+    // std::vector<int> top_ks = {5, 10, 15, 20};
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
+        for (int cluster_amount : cluster_amounts) {
+            benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)
                 ->Args({tableIndex, cluster_amount});
-			   // Could also do another loop for top k variations
+			benchmark::RegisterBenchmark("BM_ClusteringSearch", BM_ClusteringSearch)
+                    ->Args({tableIndex, cluster_amount});
+            // for (int top_k : top_ks) {
+            //     // Only register the benchmark if top_k is less than or equal to cluster_amount
+            //     if (top_k <= cluster_amount) {
+            //         benchmark::RegisterBenchmark("BM_ClusteringSearch", BM_ClusteringSearch)
+            //             ->Args({tableIndex, cluster_amount, top_k});
+            //     }
+            // }
         }
     }
 }
