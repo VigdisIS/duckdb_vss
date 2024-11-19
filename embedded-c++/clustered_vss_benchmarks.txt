@@ -1,0 +1,43 @@
+2024-11-19T18:45:45+01:00
+Running build/example
+Run on (10 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x10)
+Load Average: 62.29, 55.20, 30.97
+--------------------------------------------------------------------------
+Benchmark                                Time             CPU   Iterations
+--------------------------------------------------------------------------
+BM_ClusteringIndexCreation/0/5   843323583 ns    842296000 ns            1
+BM_ClusteringSearch/0/5              24269 ns        23660 ns        30092
+BM_ClusteringIndexCreation/1/5   643924417 ns    642722000 ns            1
+BM_ClusteringSearch/1/5              23160 ns        23157 ns        30198
+BM_ClusteringIndexCreation/2/5   363676978 ns    363060000 ns            2
+BM_ClusteringSearch/2/5              17625 ns        17619 ns        39974
+BM_ClusteringIndexCreation/3/5   123697042 ns    123412333 ns            6
+BM_ClusteringSearch/3/5              31302 ns        31264 ns        22658
+BM_ClusteringIndexCreation/0/10  811167961 ns    808740000 ns            1
+BM_ClusteringSearch/0/10             23685 ns        23645 ns        29589
+BM_ClusteringIndexCreation/1/10  727245251 ns    723559000 ns            1
+BM_ClusteringSearch/1/10             23085 ns        23056 ns        30418
+BM_ClusteringIndexCreation/2/10  322936666 ns    321277000 ns            2
+BM_ClusteringSearch/2/10             21678 ns        18430 ns        39740
+BM_ClusteringIndexCreation/3/10  109279736 ns    107996667 ns            6
+BM_ClusteringSearch/3/10             32087 ns        31705 ns        22122
+BM_ClusteringIndexCreation/0/15  561428543 ns    558956000 ns            1
+BM_ClusteringSearch/0/15             23603 ns        23560 ns        29690
+BM_ClusteringIndexCreation/1/15  594838500 ns    592666000 ns            1
+BM_ClusteringSearch/1/15             22890 ns        22885 ns        30161
+BM_ClusteringIndexCreation/2/15  321852979 ns    320944000 ns            2
+BM_ClusteringSearch/2/15             17446 ns        17441 ns        39778
+BM_ClusteringIndexCreation/3/15  101837547 ns    101381857 ns            7
+BM_ClusteringSearch/3/15             30937 ns        30928 ns        22712
+BM_ClusteringIndexCreation/0/20  506747168 ns    505817000 ns            1
+BM_ClusteringSearch/0/20             22912 ns        22907 ns        30363
+BM_ClusteringIndexCreation/1/20  574955584 ns    573423000 ns            1
+BM_ClusteringSearch/1/20             22870 ns        22865 ns        30364
+BM_ClusteringIndexCreation/2/20  311916605 ns    310548000 ns            2
+BM_ClusteringSearch/2/20             18267 ns        18193 ns        39350
+BM_ClusteringIndexCreation/3/20  104781286 ns    103887286 ns            7
+BM_ClusteringSearch/3/20             31652 ns        31576 ns        22046

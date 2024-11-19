@@ -118,7 +118,7 @@ public:
 			if (hnsw_index.GetIndexName() != "centroid_index") {
 				return false;
 			}
-			std::cout << "Index name: " << hnsw_index.GetIndexName() << std::endl;
+			std::cout << "Entered index: " << hnsw_index.GetIndexName() << std::endl;
 
 			// Reset the bindings
 			bindings.clear();
@@ -162,7 +162,7 @@ public:
 
 			key = centroid.member.key;
 
-			std::cout << "Result: " << key << std::endl;
+			std::cout << "Initial vss result: " << key << std::endl;
 
 			return true;
 		});
