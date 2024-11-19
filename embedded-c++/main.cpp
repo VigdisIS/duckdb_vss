@@ -1,53 +1,114 @@
 #include "duckdb.hpp"
 #include <iostream>
 #include <benchmark/benchmark.h>
+#include <vector>
+#include <sstream>
 
 using namespace duckdb;
 
-// Benchmark for search before clustering
-static void BM_SearchAfterClustering(benchmark::State& state) {
-    DuckDB db(nullptr);
-	Connection con(db);
+// Load the data from the raw.db file and copy it to the memory database
+void SetupTable(Connection& con, const std::string& table_name, int& vector_dimensionality) {
+	con.Query("SET threads = 10;"); // My puter has 10 cores
+    con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
 
-	con.Query("SET enable_progress_bar = true;");
+    con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_train" + " (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
+    con.Query("INSERT INTO memory." + table_name + "_train" + " SELECT * FROM raw." + table_name + "_test" + ";");
 
-	con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
-	std::cout << "Attached raw.db" << std::endl;
+	con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_test" + " (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
+    con.Query("INSERT INTO memory." + table_name + "_test" + " SELECT * FROM raw." + table_name + "_test" + ";");
 
-	con.Query("CREATE OR REPLACE TABLE memory.fashion_mnist_train (vec FLOAT[784])");
-    con.Query("INSERT INTO memory.fashion_mnist_train SELECT * FROM raw.fashion_mnist_train;");
-	std::cout << "Copied from raw to memory" << std::endl;
+    con.Query("DETACH raw;");
+}
 
-	con.Query("DETACH raw;");
-	std::cout << "Detached raw.db" << std::endl;
-
-	con.Query("CREATE INDEX clustered_hnsw_index ON memory.fashion_mnist_train USING HNSW (vec);");
-
-	// Example query vector
-    std::vector<float> query_vector(784, 0.1f); 
-
-    // Start building the query string
-    std::ostringstream query_stream;
-    query_stream << "SELECT * FROM memory.fashion_mnist_train ORDER BY array_distance(vec, [";
-
-    // Append each element of query_vector to the query string
-    for (size_t i = 0; i < query_vector.size(); ++i) {
-        query_stream << query_vector[i];
-        if (i < query_vector.size() - 1) {
-            // If not the last element, add a comma
-            query_stream << ",";
-        }
-    }
-
-    // Finish the query string
-    query_stream << "]::FLOAT[" << query_vector.size() << "]) LIMIT 100";
-
-    for (auto _ : state) {
-		// Convert the stream into a string and execute the query
-        con.Query(query_stream.str());
+std::string GetTableName(int tableIndex) {
+    switch (tableIndex) {
+        case 0: return "fashion_mnist";
+        case 1: return "mnist";
+        case 2: return "sift";
+        case 3: return "gist";
+        default: return "unknown";
     }
 }
 
-BENCHMARK(BM_SearchAfterClustering);
+int GetVectorDimensionality(int tableIndex) {
+    switch (tableIndex) {
+        case 0: return 784;
+        case 1: return 784;
+        case 2: return 128;
+        case 3: return 960;
+        default: return 0;
+    }
+}
 
-BENCHMARK_MAIN();
+int GetClusterAmount(int clusterAmount) {
+    return clusterAmount;
+}
+
+// Benchmark index creation
+static void BM_ClusteringIndexCreation(benchmark::State& state) {
+    DuckDB db(nullptr);
+    Connection con(db);
+
+    auto table_name = GetTableName(state.range(0));
+    auto vector_dimensionality = GetVectorDimensionality(state.range(0));
+
+	SetupTable(con, table_name, vector_dimensionality);
+	con.Query("SET cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ";");
+
+    for (auto _ : state) {
+		// Need to find some way to clean up after each cycle...
+		// Or benchmark the time it takes to query and remove indexes and
+		// remove this from the benchmark time
+		auto indexes = con.Query("select distinct index_name from duckdb_indexes where table_name = '" + table_name + "_train';");
+		for (idx_t i = 0; i < indexes->RowCount(); i++) {
+			con.Query("DROP INDEX IF EXISTS \"" + indexes->GetValue(0, i).ToString() + "\";");
+    	}
+        con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec) WITH (cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ");");
+    }
+}
+
+// Benchmark for search after clustering
+static void BM_ClusteringSearch(benchmark::State& state) {
+    DuckDB db(nullptr);
+    Connection con(db);
+
+    auto table_name = GetTableName(state.range(0));
+    auto vector_dimensionality = GetVectorDimensionality(state.range(0));
+
+	SetupTable(con, table_name, vector_dimensionality);
+		con.Query("SET cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ";");
+
+		con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec) WITH (cluster_amount = " + std::to_string(GetClusterAmount(state.range(1))) + ");");
+
+		// Fetch a sample vector from the corresponding test table
+		auto result = con.Query("SELECT * FROM memory." + table_name + "_test" + " LIMIT 1;");
+		if(result->ColumnCount() == 0 || result->RowCount() == 0) {
+			std::cerr << "No data found in " << table_name << "_test" << std::endl;
+			return;
+		}
+		auto query_vector = result->ToString();
+
+	for (auto _ : state) {
+        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec," + query_vector + ") LIMIT 20"));
+    }
+}
+
+void RegisterBenchmarks() {
+    std::vector<int> cluster_amounts = {5, 10, 15, 20};
+    for (int cluster_amount : cluster_amounts) {
+        for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
+			benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)
+               ->Args({tableIndex, cluster_amount});
+            benchmark::RegisterBenchmark("BM_ClusteringSearch", BM_ClusteringSearch)
+                ->Args({tableIndex, cluster_amount});
+			   // Could also do another loop for top k variations
+        }
+    }
+}
+
+int main(int argc, char** argv) {
+    RegisterBenchmarks();
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
+    return 0;
+}

@@ -338,8 +338,6 @@ public:
 
 	TaskExecutionResult ExecuteTask(TaskExecutionMode mode) override {
 	
-	std::cout << "Executing HNSWIndexClusteringTask...\n";
-
 	auto &index = gstate.base_index;
 	auto &scan_state = gstate.scan_state;
     auto &collection = gstate.collection;
@@ -438,8 +436,6 @@ public:
 	}
 
 	TaskExecutionResult ExecuteTask(TaskExecutionMode mode) override {
-	
-	std::cout << "Executing HNSWIndexConstructTask...\n";
 
 	auto &scan_state = gstate.scan_state;
     auto &collection = gstate.collection;
@@ -582,17 +578,20 @@ public:
 	gstate.all_indexes.erase("dummy_index");
 
     // Define clustering configuration
-	// TODO: Make this an input to the CREATE INDEX statement
-    unum::usearch::index_dense_clustering_config_t config;
-    config.min_clusters = 5;   // Minimum number of clusters
-    config.max_clusters = 100;   // Maximum number of clusters
+	unum::usearch::index_dense_clustering_config_t config;
+	config.min_clusters = 20;   // Minimum number of clusters
+    config.max_clusters = 20;   // Maximum number of clusters
+	auto cluster_amount = gstate.info->options.find("cluster_amount");
+	if (cluster_amount != gstate.info->options.end()) {
+		config.min_clusters = cluster_amount->second.GetValue<int32_t>();
+    	config.max_clusters = cluster_amount->second.GetValue<int32_t>();
+	}
+
     config.mode = unum::usearch::index_dense_clustering_config_t::merge_closest_k;
 
     std::size_t depth_level = 10;    // Cluster deepening level
 
     SmartIterable<some_scalar_t> iterable(gstate.train_data, depth_level);
-
-    std::cout << "Performing clustering...\n";
 
     // Perform clustering
     unum::usearch::index_dense_t::clustering_result_t result = gstate.base_index.cluster(
@@ -601,8 +600,6 @@ public:
         gstate.cluster_centroids_keys,  gstate.distances_to_cluster_centroids
     );
 
-	std::cout << "Finished clustering.\n";
-
 	gstate.cluster_centroid_size = 0;
 
     for (int i = 0; i < gstate.estimated_cardinality; ++i) {
@@ -610,8 +607,6 @@ public:
             gstate.cluster_centroid_size++;
         }
     }
-
-    std::cout << "Cluster centroid size: " << gstate.cluster_centroid_size << std::endl;
 
 	}
 
@@ -699,7 +694,7 @@ public:
 
 				if (schema.GetEntry(schema.GetCatalogTransaction(*gstate.context), CatalogType::INDEX_ENTRY, info.index_name)) {
 					if (info.on_conflict != OnCreateConflict::IGNORE_ON_CONFLICT) {
-						std::cout << "Index w name alr exists" << std::endl;
+						std::cout << "Index with name " << info.index_name.c_str() << " already exists" << std::endl;
 						throw CatalogException("Index with name \"%s\" already exists", info.index_name.c_str());
 					}
 				}

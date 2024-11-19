@@ -88,6 +88,13 @@ public:
 				if (v.GetValue<int32_t>() < 2) {
 					throw BinderException("HNSW index 'M0' must be at least 2");
 				}
+			} else if (StringUtil::CIEquals(k, "cluster_amount")) {
+				if (v.type() != LogicalType::INTEGER) {
+					throw BinderException("HNSW index 'cluster_amount' must be an integer");
+				}
+				if (v.GetValue<int32_t>() < 1) {
+					throw BinderException("HNSW index 'cluster_amount' must be at least 1");
+				}
 			} else {
 				throw BinderException("Unknown option for HNSW index: '%s'", k);
 			}
