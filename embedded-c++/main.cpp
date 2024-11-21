@@ -11,10 +11,10 @@ void SetupTable(Connection& con, const std::string& table_name, int& vector_dime
 	con.Query("SET threads = 10;"); // My puter has 10 cores
     con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
 
-    con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_train" + " (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
-    con.Query("INSERT INTO memory." + table_name + "_train" + " SELECT * FROM raw." + table_name + "_test" + ";");
+    con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_train (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
+    con.Query("INSERT INTO memory." + table_name + "_train" + " SELECT * FROM raw." + table_name + "_train" + ";");
 
-	con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_test" + " (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
+	con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_test (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
     con.Query("INSERT INTO memory." + table_name + "_test" + " SELECT * FROM raw." + table_name + "_test" + ";");
 
     con.Query("DETACH raw;");
@@ -25,7 +25,7 @@ std::string GetTableName(int tableIndex) {
         case 0: return "fashion_mnist";
         case 1: return "mnist";
         case 2: return "sift";
-        case 3: return "gist";
+        case 3: return "gist"; // Too large for now..(?)
         default: return "unknown";
     }
 }
@@ -40,10 +40,6 @@ int GetVectorDimensionality(int tableIndex) {
     }
 }
 
-// int GetTopKs(int top_k) {
-//     return top_k;
-// }
-
 // Get random vector from train set to use as query vector
 // Incurs extra overhead as the select query is run every iteration
 std::string GetRandomRow(Connection& con, const std::string& table_name) {
@@ -52,7 +48,7 @@ std::string GetRandomRow(Connection& con, const std::string& table_name) {
 			std::cerr << "No data found in " << table_name << "_test" << std::endl;
 			return "";
 		}
-		auto query_vector = result->ToString();
+		auto query_vector = result->GetValue(0, 0).ToString();
 		return query_vector;
 }
 
@@ -63,7 +59,7 @@ std::string GetFirstRow(Connection& con, const std::string& table_name) {
 			std::cerr << "No data found in " << table_name << "_test" << std::endl;
 			return "";
 		}
-		auto query_vector = result->ToString();
+		auto query_vector = result->GetValue(0, 0).ToString();
 		return query_vector;
 }
 
@@ -90,38 +86,74 @@ static void BM_VSSOriginalIndexCreation(benchmark::State& state) {
     }
 }
 
-// Benchmark for search after clustering
-static void BM_VSSOriginalSearch(benchmark::State& state) {
+// Benchmark search with same query for each table - 1st row from test set
+static void BM_VSSOriginalSearchControlledQuery(benchmark::State& state) {
     DuckDB db(nullptr);
     Connection con(db);
 
     auto table_name = GetTableName(state.range(0));
     auto vector_dimensionality = GetVectorDimensionality(state.range(0));
+    auto vec_dim_string = std::to_string(vector_dimensionality);
 
 	SetupTable(con, table_name, vector_dimensionality);
-		con.Query("CREATE INDEX hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec);");
+	con.Query("CREATE INDEX hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec);");
 
-		auto first_row_query = GetFirstRow(con, table_name);
+    auto query_vector = GetFirstRow(con, table_name);
 
 	for (auto _ : state) {
-        // benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec," + GetRandomRow(con, table_name) + ") LIMIT 5;"));
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec," + first_row_query + ") LIMIT 5;"));
+        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;"));
+    }
+}
+
+// Benchmark search with random queries each iteration
+static void BM_VSSOriginalSearchRandomQuery(benchmark::State& state) {
+    DuckDB db(nullptr);
+    Connection con(db);
+
+    auto table_name = GetTableName(state.range(0));
+    auto vector_dimensionality = GetVectorDimensionality(state.range(0));
+    auto vec_dim_string = std::to_string(vector_dimensionality);
+
+	SetupTable(con, table_name, vector_dimensionality);
+	con.Query("CREATE INDEX hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec);");
+
+    auto query_vector = GetRandomRow(con, table_name);
+    
+	for (auto _ : state) {
+        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;"));
     }
 }
 
 void RegisterBenchmarks() {
-	std::vector<int> top_ks = {1, 3, 5, 10, 15, 20};
-	for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
-		benchmark::RegisterBenchmark("BM_VSSOriginalIndexCreation", BM_VSSOriginalIndexCreation)
+    for (int tableIndex = 0; tableIndex <= 2; ++tableIndex) {
+        benchmark::RegisterBenchmark("BM_VSSOriginalIndexCreation", BM_VSSOriginalIndexCreation)
             ->Args({tableIndex});
-		benchmark::RegisterBenchmark("BM_VSSOriginalSearch", BM_VSSOriginalSearch)
+		benchmark::RegisterBenchmark("BM_VSSOriginalSearchControlledQuery", BM_VSSOriginalSearchControlledQuery)
             ->Args({tableIndex});
-	}
+        benchmark::RegisterBenchmark("BM_VSSOriginalSearchRandomQuery", BM_VSSOriginalSearchRandomQuery)
+            ->Args({tableIndex});
+    }
 }
 
 int main(int argc, char** argv) {
     RegisterBenchmarks();
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
+
+    // DuckDB db(nullptr);
+    // Connection con(db);
+
+    // auto table_name = GetTableName(0);
+    // auto vector_dimensionality = GetVectorDimensionality(0);
+    // auto vec_dim_string = std::to_string(vector_dimensionality);
+
+	// SetupTable(con, table_name, vector_dimensionality);
+
+    // auto query_vector = GetFirstRow(con, table_name);
+
+    // con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec);");
+    // auto result = con.Query("SELECT * FROM memory." + table_name + "_train" + " ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+    // std::cout << result->RowCount() << std::endl;
+
     return 0;
 }

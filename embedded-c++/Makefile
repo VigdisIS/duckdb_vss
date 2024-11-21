@@ -12,5 +12,5 @@ duckdb-vss:
 main:
 	mkdir -p build
 	cd build && cmake .. && make
-	build/example --benchmark_out=vss_benchmarks.json --benchmark_out_format=json
-	build/example --benchmark_out=vss_benchmarks.txt --benchmark_out_format=console
+	build/example --benchmark_out=bm_vss_all.json --benchmark_out_format=json
+
