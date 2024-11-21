@@ -15,4 +15,6 @@ else()
 endif()
 
 add_executable(example main.cpp)
+add_executable(results get_results.cpp)
 target_link_libraries(example duckdb ${BENCHMARK_LIB})
+target_link_libraries(results duckdb ${BENCHMARK_LIB})
