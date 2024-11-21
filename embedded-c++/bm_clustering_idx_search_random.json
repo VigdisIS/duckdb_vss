@@ -1,0 +1,148 @@
+{
+  "context": {
+    "date": "2024-11-21T01:34:23+01:00",
+    "host_name": "Vigdiss-MBP",
+    "executable": "build/example",
+    "num_cpus": 10,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [4.61475,3.79395,3.56543],
+    "library_version": "v1.9.0-12-g761305ec",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_ClusteringSearch/0/5",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/0/5",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.1147590974966685e+08,
+      "cpu_time": 1.1143066666666712e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/0/10",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/0/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.0891055595129728e+08,
+      "cpu_time": 1.0888199999999888e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/0/15",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/0/15",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.1090006244679292e+08,
+      "cpu_time": 1.1078366666666521e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/0/20",
+      "family_index": 3,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/0/20",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.0661937513699134e+08,
+      "cpu_time": 1.0659483333333242e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/1/5",
+      "family_index": 4,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/1/5",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.1185285449028015e+08,
+      "cpu_time": 1.1180933333333580e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/1/10",
+      "family_index": 5,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/1/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.0830963899691899e+08,
+      "cpu_time": 1.0826449999999946e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/1/15",
+      "family_index": 6,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/1/15",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 6,
+      "real_time": 1.0617802074799936e+08,
+      "cpu_time": 1.0614933333333455e+08,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearch/1/20",
+      "family_index": 7,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearch/1/20",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 7,
+      "real_time": 1.1784901177244528e+08,
+      "cpu_time": 1.1766857142856680e+08,
+      "time_unit": "ns"
+    }
+  ]
+}
