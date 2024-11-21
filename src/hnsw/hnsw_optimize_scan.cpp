@@ -15,6 +15,8 @@
 #include "hnsw/hnsw_index_scan.hpp"
 
 #include <iostream>
+// #include <fstream>
+// #include <string>
 
 namespace duckdb {
 
@@ -116,7 +118,7 @@ public:
 			if (hnsw_index.GetIndexName() != "centroid_index") {
 				return false;
 			}
-			std::cout << "Entered index: " << hnsw_index.GetIndexName() << std::endl;
+			// std::cout << "Entered index: " << hnsw_index.GetIndexName() << std::endl;
 
 			// Reset the bindings
 			bindings.clear();
@@ -160,7 +162,30 @@ public:
 
 			key = centroid.member.key;
 
-			std::cout << "Initial vss result: " << key << std::endl;
+			// // Convert the key to a string representation
+			// auto string_val = std::to_string(key);
+
+			// // // Use setenv to set the environment variable
+			// // int result = setenv("CLUSTER_INDEX", string_val.c_str(), 1);
+			// // if(result != 0) {
+			// // 	std::cerr << "Failed to set CLUSTER_INDEX" << std::endl;
+			// // }
+
+			// // // Convert the key to a string representation
+			// // auto string_val = std::to_string(key);
+
+			// // Open a file in append mode.
+    		// std::ofstream outFile("cluster_indexes.txt");
+
+			// if (outFile.is_open()) {
+			// 	// Write the string_val to the file
+			// 	outFile << string_val;
+
+			// 	// Close the file after writing
+			// 	outFile.close();
+			// } else {
+			// 	std::cerr << "Failed to open file for writing." << std::endl;
+			// }
 
 			return true;
 		});
@@ -169,7 +194,7 @@ public:
 			if (inner_index.GetIndexName() != std::to_string(key)) {
 				return false;
 			}
- 						std::cout << "Matching HNSWIndex found: " << inner_index.GetIndexName() << std::endl;
+ 						// std::cout << "Matching HNSWIndex found: " << inner_index.GetIndexName() << std::endl;
  						// Reset the bindings
  						bindings.clear();
  

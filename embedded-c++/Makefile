@@ -13,7 +13,8 @@ duckdb-vss:
 main:
 	mkdir -p build
 	cd build && cmake .. && make
-	build/example --benchmark_out=clustered_vss_benchmarks.txt --benchmark_out_format=console
-	build/example --benchmark_out=clustered_vss_benchmarks.json --benchmark_out_format=json
+	build/results
+	# build/example --benchmark_out=bm_clustering_idx_search_controlled.txt --benchmark_out_format=console
+	# build/example --benchmark_out=bm_clustering_idx_search_controlled.json --benchmark_out_format=json
 
 
