@@ -1,0 +1,19 @@
+2024-11-21T01:29:31+01:00
+Running build/example
+Run on (10 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x10)
+Load Average: 2.04, 2.46, 3.12
+-------------------------------------------------------------------
+Benchmark                         Time             CPU   Iterations
+-------------------------------------------------------------------
+BM_ClusteringSearch/0/5   106190785 ns    106142667 ns            6
+BM_ClusteringSearch/0/10  108113993 ns    108083333 ns            6
+BM_ClusteringSearch/0/15  107096435 ns    107073857 ns            7
+BM_ClusteringSearch/0/20  110789889 ns    110737000 ns            6
+BM_ClusteringSearch/1/5   108285632 ns    108252000 ns            6
+BM_ClusteringSearch/1/10  104739715 ns    104693667 ns            6
+BM_ClusteringSearch/1/15  108527389 ns    108499000 ns            6
+BM_ClusteringSearch/1/20  106092375 ns    106066500 ns            6
