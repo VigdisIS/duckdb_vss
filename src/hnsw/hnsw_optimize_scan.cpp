@@ -118,7 +118,6 @@ public:
 			if (hnsw_index.GetIndexName() != "centroid_index") {
 				return false;
 			}
-			// std::cout << "Entered index: " << hnsw_index.GetIndexName() << std::endl;
 
 			// Reset the bindings
 			bindings.clear();
@@ -155,8 +154,8 @@ public:
 				query_vector[i] = vector_elements[i].GetValue<float>();
 			}
 
-			auto ef_search = hnsw_index.index.expansion_search();
-			auto search_result = hnsw_index.index.ef_search(query_vector.get(), 1, ef_search);
+			// auto ef_search = hnsw_index.index.expansion_search();
+			auto search_result = hnsw_index.index.search(query_vector.get(), 1);
 
 			auto centroid = search_result[0];
 
@@ -194,10 +193,8 @@ public:
 			if (inner_index.GetIndexName() != std::to_string(key)) {
 				return false;
 			}
- 						// std::cout << "Matching HNSWIndex found: " << inner_index.GetIndexName() << std::endl;
  						// Reset the bindings
  						bindings.clear();
- 
  						// Check that the projection expression is a distance function that matches the index
  						if (!inner_index.TryMatchDistanceFunction(projection_expr, bindings)) {
  							return false;

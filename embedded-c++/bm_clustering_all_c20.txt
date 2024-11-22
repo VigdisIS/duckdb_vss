@@ -1,0 +1,9 @@
+----------------------------------------------------------------------------------
+Benchmark                                        Time             CPU   Iterations
+----------------------------------------------------------------------------------
+BM_ClusteringIndexCreation/0/20         1.3208e+10 ns   1.2822e+10 ns            1
+BM_ClusteringSearchControlledQuery/0/20    4979917 ns      4979530 ns          134
+BM_ClusteringSearchRandomQuery/0/20        4829069 ns      4821038 ns          133
+BM_ClusteringIndexCreation/1/20         1.4346e+10 ns   5554531000 ns            1
+BM_ClusteringSearchControlledQuery/1/20    6164922 ns      6164467 ns          137
+BM_ClusteringSearchRandomQuery/1/20        5807378 ns      5749836 ns          140
