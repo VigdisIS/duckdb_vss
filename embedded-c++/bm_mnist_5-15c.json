@@ -1,0 +1,162 @@
+{
+  "context": {
+    "date": "2024-11-22T17:44:13+01:00",
+    "host_name": "Vigdiss-MBP",
+    "executable": "build/example",
+    "num_cpus": 10,
+    "mhz_per_cpu": 24,
+    "cpu_scaling_enabled": false,
+    "caches": [
+      {
+        "type": "Data",
+        "level": 1,
+        "size": 65536,
+        "num_sharing": 0
+      },
+      {
+        "type": "Instruction",
+        "level": 1,
+        "size": 131072,
+        "num_sharing": 0
+      },
+      {
+        "type": "Unified",
+        "level": 2,
+        "size": 4194304,
+        "num_sharing": 1
+      }
+    ],
+    "load_avg": [11.3877,7.09033,8.03857],
+    "library_version": "v1.9.0-12-g761305ec",
+    "library_build_type": "release",
+    "json_schema_version": 1
+  },
+  "benchmarks": [
+    {
+      "name": "BM_ClusteringIndexCreation/1/5",
+      "family_index": 0,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringIndexCreation/1/5",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1,
+      "real_time": 1.8308016624301674e+10,
+      "cpu_time": 7.6655830000000000e+09,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearchControlledQuery/1/5",
+      "family_index": 1,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearchControlledQuery/1/5",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 134,
+      "real_time": 6.2878379987469362e+06,
+      "cpu_time": 6.2779701492537335e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearchRandomQuery/1/5",
+      "family_index": 2,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearchRandomQuery/1/5",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 139,
+      "real_time": 5.5386501786520155e+06,
+      "cpu_time": 5.5306762589928377e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringIndexCreation/1/10",
+      "family_index": 3,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringIndexCreation/1/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1,
+      "real_time": 1.6520209334790707e+10,
+      "cpu_time": 4.6394540000000076e+09,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearchControlledQuery/1/10",
+      "family_index": 4,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearchControlledQuery/1/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 125,
+      "real_time": 5.7136836796998978e+06,
+      "cpu_time": 5.7005120000000037e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearchRandomQuery/1/10",
+      "family_index": 5,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearchRandomQuery/1/10",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 132,
+      "real_time": 5.2009368682223735e+06,
+      "cpu_time": 5.1921666666666809e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringIndexCreation/1/15",
+      "family_index": 6,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringIndexCreation/1/15",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 1,
+      "real_time": 1.5369750626385212e+10,
+      "cpu_time": 4.9594560000000172e+09,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearchControlledQuery/1/15",
+      "family_index": 7,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearchControlledQuery/1/15",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 100,
+      "real_time": 5.3689491748809814e+06,
+      "cpu_time": 5.3622000000001434e+06,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_ClusteringSearchRandomQuery/1/15",
+      "family_index": 8,
+      "per_family_instance_index": 0,
+      "run_name": "BM_ClusteringSearchRandomQuery/1/15",
+      "run_type": "iteration",
+      "repetitions": 1,
+      "repetition_index": 0,
+      "threads": 1,
+      "iterations": 132,
+      "real_time": 5.2102679866507202e+06,
+      "cpu_time": 5.2019924242422851e+06,
+      "time_unit": "ns"
+    }
+  ]
+}

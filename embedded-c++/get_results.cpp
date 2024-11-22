@@ -73,7 +73,7 @@ void GetResults() {
     std::vector<int> cluster_amounts = {5, 10, 15, 20};
     std::string cluster_index;
 
-    for (int tableIndex = 1; tableIndex <= 3; ++tableIndex) {
+    for (int tableIndex = 1; tableIndex <= 1; ++tableIndex) {
         auto table_name = GetTableName(tableIndex);
         std::cout << "Table name: " << table_name << std::endl;
         auto vector_dimensionality = GetVectorDimensionality(tableIndex);
@@ -157,9 +157,10 @@ void OutputResultTables() {
 
     con.Query("ATTACH 'results.db' AS results;");
 
-    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
+    for (int tableIndex = 0; tableIndex <= 1; ++tableIndex) {
         auto table_name = GetTableName(tableIndex);
-        con.Query("COPY results." + table_name + "_results TO '" + table_name + "_results.csv' (HEADER, DELIMITER ',');");
+        con.Query("COPY results." + table_name + "_results TO '" + table_name + "_results.parquet' (FORMAT PARQUET);");
+        // con.Query("COPY results." + table_name + "_results TO '" + table_name + "_results.csv' (HEADER, DELIMITER ',');");
     }
 
     auto res = con.Query("SELECT * FROM results.fashion_mnist_results limit 1;");
@@ -169,7 +170,7 @@ void OutputResultTables() {
 }
 
 int main() {
-    // GetResults();
+    GetResults();
     OutputResultTables();
 
     return 0;
