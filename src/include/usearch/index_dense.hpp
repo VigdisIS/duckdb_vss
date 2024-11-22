@@ -1561,6 +1561,8 @@ class index_dense_gt {
         executor_at&& executor = executor_at{}, //
         progress_at&& progress = progress_at{}) {
 
+        // td::cout << "Starting clustering. On thread " << std::this_thread::get_id() << std::endl;
+
         std::size_t const queries_count = queries_end - queries_begin;
 
         // Find the first level (top -> down) that has enough nodes to exceed `config.min_clusters`.

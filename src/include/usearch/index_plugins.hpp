@@ -442,24 +442,27 @@ class executor_stl_t {
         std::vector<jthread_t> threads_pool;
         std::size_t tasks_per_thread = tasks;
         std::size_t threads_count = (std::min)(threads_count_, tasks);
-        std::atomic_bool stop{false};
+        // std::atomic_bool stop{false};
+        auto stop = std::make_shared<std::atomic_bool>(false);
         if (threads_count > 1) {
             tasks_per_thread = (tasks / threads_count) + ((tasks % threads_count) != 0);
             for (std::size_t thread_idx = 1; thread_idx < threads_count; ++thread_idx) {
-                threads_pool.emplace_back([=, &stop]() {
+                threads_pool.emplace_back([=]() {
                     for (std::size_t task_idx = thread_idx * tasks_per_thread;
                          task_idx < (std::min)(tasks, thread_idx * tasks_per_thread + tasks_per_thread) &&
-                         !stop.load(std::memory_order_relaxed);
+                         // !stop.load(std::memory_order_relaxed);
+                         !stop->load(std::memory_order_relaxed);
                          ++task_idx)
                         if (!thread_aware_function(thread_idx, task_idx))
-                            stop.store(true, std::memory_order_relaxed);
+                            // stop.store(true, std::memory_order_relaxed);
+                            stop->store(true, std::memory_order_relaxed);
                 });
             }
         }
         for (std::size_t task_idx = 0;
-             task_idx < (std::min)(tasks, tasks_per_thread) && !stop.load(std::memory_order_relaxed); ++task_idx)
+             task_idx < (std::min)(tasks, tasks_per_thread) && !stop->load(std::memory_order_relaxed); ++task_idx)
             if (!thread_aware_function(0, task_idx))
-                stop.store(true, std::memory_order_relaxed);
+                stop->store(true, std::memory_order_relaxed);
     }
 
     /**
