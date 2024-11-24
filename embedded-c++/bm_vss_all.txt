@@ -1,23 +1,26 @@
 Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
 This does not affect benchmark measurements, only the metadata output.
 ***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
-2024-11-21T03:01:34+01:00
+2024-11-24T13:53:25+01:00
 Running build/example
 Run on (10 X 24 MHz CPU s)
 CPU Caches:
   L1 Data 64 KiB
   L1 Instruction 128 KiB
   L2 Unified 4096 KiB (x10)
-Load Average: 2.84, 4.38, 6.56
+Load Average: 6.35, 22.28, 14.79
 --------------------------------------------------------------------------------
 Benchmark                                      Time             CPU   Iterations
 --------------------------------------------------------------------------------
-BM_VSSOriginalIndexCreation/0         2679299541 ns   2544381000 ns            1
-BM_VSSOriginalSearchControlledQuery/0    5081394 ns      5081384 ns          125
-BM_VSSOriginalSearchRandomQuery/0        5734339 ns      5734339 ns          127
-BM_VSSOriginalIndexCreation/1         3330249669 ns   3167619000 ns            1
-BM_VSSOriginalSearchControlledQuery/1    7452579 ns      7447023 ns          131
-BM_VSSOriginalSearchRandomQuery/1        5917722 ns      5917718 ns          103
-BM_VSSOriginalIndexCreation/2         3.8761e+10 ns   3.6473e+10 ns            1
-BM_VSSOriginalSearchControlledQuery/2    1024912 ns      1024700 ns          729
-BM_VSSOriginalSearchRandomQuery/2         968328 ns       968165 ns          693
+BM_VSSOriginalIndexCreation/0         2672364207 ns   2578924000 ns            1
+BM_VSSOriginalSearchControlledQuery/0    5468139 ns      5463402 ns          132
+BM_VSSOriginalSearchRandomQuery/0        5171424 ns      5170290 ns          100
+BM_VSSOriginalIndexCreation/1         3289896792 ns   3140617000 ns            1
+BM_VSSOriginalSearchControlledQuery/1    5559407 ns      5497693 ns          114
+BM_VSSOriginalSearchRandomQuery/1        5897559 ns      5896000 ns          136
+BM_VSSOriginalIndexCreation/2         3.8805e+10 ns   3.7008e+10 ns            1
+BM_VSSOriginalSearchControlledQuery/2     985528 ns       985126 ns          700
+BM_VSSOriginalSearchRandomQuery/2         986103 ns       985789 ns          693
+BM_VSSOriginalIndexCreation/3         1.7827e+11 ns   1.6450e+11 ns            1
+BM_VSSOriginalSearchControlledQuery/3    6517540 ns      6516284 ns          116
+BM_VSSOriginalSearchRandomQuery/3        6498298 ns      6496570 ns          107

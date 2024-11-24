@@ -79,8 +79,9 @@ static void BM_VSSOriginalIndexCreation(benchmark::State& state) {
 		// remove this from the benchmark time
 		auto indexes = con.Query("select distinct index_name from duckdb_indexes where table_name = '" + table_name + "_train';");
 		for (idx_t i = 0; i < indexes->RowCount(); i++) {
-			con.Query("DROP INDEX IF EXISTS \"" + indexes->GetValue(0, i).ToString() + "\";");
+			con.Query("DROP INDEX \"" + indexes->GetValue(0, i).ToString() + "\";");
     	}
+        // assert (con.Query("select count(index_name) from duckdb_indexes")->GetValue(0, 0).ToString() == std::to_string(0));
         con.Query("CREATE INDEX hnsw_index ON memory." + table_name + "_train" + " USING HNSW (vec);");
 
     }
@@ -125,7 +126,7 @@ static void BM_VSSOriginalSearchRandomQuery(benchmark::State& state) {
 }
 
 void RegisterBenchmarks() {
-    for (int tableIndex = 0; tableIndex <= 2; ++tableIndex) {
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
         benchmark::RegisterBenchmark("BM_VSSOriginalIndexCreation", BM_VSSOriginalIndexCreation)
             ->Args({tableIndex});
 		benchmark::RegisterBenchmark("BM_VSSOriginalSearchControlledQuery", BM_VSSOriginalSearchControlledQuery)
