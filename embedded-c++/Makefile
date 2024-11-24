@@ -13,8 +13,8 @@ duckdb-vss:
 main:
 	mkdir -p build
 	cd build && cmake .. && make
-	build/results
-	# build/example --benchmark_out=bm_fashion_mnist_5-15c.json --benchmark_out_format=json
+	# build/results
+	build/example --benchmark_out=bm_gist_5-20c.json --benchmark_out_format=json
 	# build/example
 
 

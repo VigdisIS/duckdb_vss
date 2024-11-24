@@ -3,8 +3,39 @@
 #include <benchmark/benchmark.h>
 #include <vector>
 #include <sstream>
+// #include <memory>
 
 using namespace duckdb;
+
+// class CustomMemoryManager: public benchmark::MemoryManager {
+// public:
+
+//     int64_t num_allocs;
+//     int64_t max_bytes_used;
+
+
+//     void Start() BENCHMARK_OVERRIDE {
+//         num_allocs = 0;
+//         max_bytes_used = 0;
+//     }
+
+//     void Stop(Result& result) BENCHMARK_OVERRIDE {
+//         result.num_allocs = num_allocs;
+//         result.max_bytes_used = max_bytes_used;
+//     }
+// };
+
+// std::unique_ptr<CustomMemoryManager> mm(new CustomMemoryManager());
+
+// #ifdef MEMORY_PROFILER
+// void *custom_malloc(size_t size) {
+//     void *p = malloc(size);
+//     mm.get()->num_allocs += 1;
+//     mm.get()->max_bytes_used += size;
+//     return p;
+// }
+// #define malloc(size) custom_malloc(size)
+// #endif
 
 // Load the data from the raw.db file and copy it to the memory database
 void SetupTable(Connection& con, const std::string& table_name, int& vector_dimensionality) {
@@ -85,7 +116,7 @@ static void BM_ClusteringIndexCreation(benchmark::State& state) {
 		// remove this from the benchmark time
 		auto indexes = con.Query("select distinct index_name from duckdb_indexes where table_name = '" + table_name + "_train';");
 		for (idx_t i = 0; i < indexes->RowCount(); i++) {
-			con.Query("DROP INDEX IF EXISTS \"" + indexes->GetValue(0, i).ToString() + "\";");
+			con.Query("DROP INDEX \"" + indexes->GetValue(0, i).ToString() + "\";");
     	}
         con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train USING HNSW (vec) WITH (cluster_amount = " + cluster_amount_string + ");");
     }
@@ -130,8 +161,8 @@ static void BM_ClusteringSearchControlledQuery(benchmark::State& state) {
 }
 
 void RegisterBenchmarks() {
-    std::vector<int> cluster_amounts = {5, 10, 15};
-    for (int tableIndex = 0; tableIndex <= 0; ++tableIndex) {
+    std::vector<int> cluster_amounts = {5, 10, 15, 20};
+    for (int tableIndex = 3; tableIndex <= 3; ++tableIndex) {
         for (int cluster_amount : cluster_amounts) {
             benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)
                 ->Args({tableIndex, cluster_amount});
@@ -141,58 +172,61 @@ void RegisterBenchmarks() {
                     ->Args({tableIndex, cluster_amount});
         }
     }
+    benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)
+                ->Args({2, 20});
+			benchmark::RegisterBenchmark("BM_ClusteringSearchControlledQuery", BM_ClusteringSearchControlledQuery)
+                    ->Args({2, 20});
+            benchmark::RegisterBenchmark("BM_ClusteringSearchRandomQuery", BM_ClusteringSearchRandomQuery)
+                    ->Args({2, 20});
+}
+
+void RunProgram(Connection& con, const std::string& table_name, int cluster_amount, int vector_dimensionality) {
+    SetupTable(con, table_name, vector_dimensionality);
+
+    auto query_vector = GetFirstRow(con, table_name);
+
+    auto vec_dim_string = std::to_string(vector_dimensionality);
+    auto cluster_amount_string = std::to_string(cluster_amount);
+
+    con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train USING HNSW (vec) WITH (cluster_amount = " + cluster_amount_string + ");");
+    auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+    std::cout << result->RowCount() << std::endl;
+
+    auto indexes = con.Query("select distinct index_name from duckdb_indexes;");
+    indexes->Print();
+    auto indexes_count = con.Query("select count(index_name) from duckdb_indexes");
+    assert(indexes_count->GetValue(0, 0).ToString() == std::to_string((cluster_amount + 1))); // cluster_amount + 1 (centroid_index)
+    indexes_count->Print();
 }
 
 int main(int argc, char** argv) {
+    // benchmark::RegisterMemoryManager(mm.get());
     RegisterBenchmarks();
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
-
-    
+    // benchmark::RegisterMemoryManager(nullptr);
 
     // DuckDB db(nullptr);
     // Connection con(db);
 
+    // std::vector<int> cluster_amounts = {5, 10, 15, 20};
+    // for (int tableIndex = 1; tableIndex <= 1; ++tableIndex) {
+    //     for (int cluster_amount : cluster_amounts) {
+    //         RunProgram(con, GetTableName(tableIndex), cluster_amount, GetVectorDimensionality(tableIndex));
+    //     }
+    // }
 
-    // auto table_name = GetTableName(1);
-    // auto vector_dimensionality = GetVectorDimensionality(1);
-    // auto vec_dim_string = std::to_string(vector_dimensionality);
 
-	// con.Query("SET threads = 10;"); // My puter has 10 cores
-    // con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
+    // con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train USING HNSW (vec) WITH (cluster_amount = " + cluster_amount_string + ");");
 
-    // con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_train (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
-    // con.Query("INSERT INTO memory." + table_name + "_train SELECT * FROM raw." + table_name + "_train;");
+    // auto result = con.Query("EXPLAIN ANALYZE SELECT * FROM vector_table ORDER BY array_distance(vec, [1, 2, 3]::FLOAT[3]) LIMIT 3;");
+    // result->Print();
 
-	// con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_test (vec FLOAT[" + std::to_string(vector_dimensionality) + "])");
-    // con.Query("INSERT INTO memory." + table_name + "_test SELECT * FROM raw." + table_name + "_test limit 1;");
-
-    // con.Query("DETACH raw;");
-
-    // auto query_vector = GetFirstRow(con, table_name);
-
-    // con.Query("CREATE INDEX clustered_hnsw_index ON memory." + table_name + "_train USING HNSW (vec) WITH (cluster_amount = " + std::to_string(GetClusterAmount(20)) + ");");
-    // auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
-    // std::cout << result->RowCount() << std::endl;
-
-    // auto indexes = con.Query("select distinct index_name from duckdb_indexes;");
+    // auto indexes = con.Query("select distinct index_name from duckdb_indexes where table_name = 'my_vector_table';");
     // indexes->Print();
     // auto indexes_count = con.Query("select count(index_name) from duckdb_indexes");
     // assert(indexes_count->GetValue(0, 0).ToString() == "6"); // cluster_amount + 1 (centroid_index)
     // indexes_count->Print();
-
-    // // con.Query("CREATE TABLE my_vector_table (vec FLOAT[3]);");
-    // // con.Query("INSERT INTO my_vector_table SELECT array_value(a, b, c) FROM range(1, 10) ra(a), range(1, 10) rb(b), range(1, 10) rc(c);");
-    // // con.Query("CREATE INDEX my_hnsw_index ON my_vector_table USING HNSW (vec) WITH (cluster_amount = 5);");
-
-    // // auto result = con.Query("SELECT * FROM my_vector_table ORDER BY array_distance(vec, [1, 2, 3]::FLOAT[3]) LIMIT 3;");
-    // // result->Print();
-
-    // // auto indexes = con.Query("select distinct index_name from duckdb_indexes where table_name = 'my_vector_table';");
-    // // indexes->Print();
-    // // auto indexes_count = con.Query("select count(index_name) from duckdb_indexes");
-    // // assert(indexes_count->GetValue(0, 0).ToString() == "6"); // cluster_amount + 1 (centroid_index)
-    // // indexes_count->Print();
 
     return 0;
 }
