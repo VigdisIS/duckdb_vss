@@ -14,6 +14,8 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+// #include <nlohmann/json.hpp>
+// #include <fstream>
 
 #include "duckdb/parallel/base_pipeline_event.hpp"
 
@@ -179,6 +181,11 @@ public:
 
 	// Estimated cardinality
 	idx_t estimated_cardinality;
+	int32_t cluster_amount;
+
+	// Count vectors in each cluster
+	std::unordered_map<unum::usearch::default_key_t, int> countMap;
+
 
 	// Unbound expressions
 	duckdb::vector<duckdb::unique_ptr<duckdb::Expression, std::__1::default_delete<duckdb::Expression>, true>, true> unbound_expressions;
@@ -242,10 +249,13 @@ unique_ptr<GlobalSinkState> PhysicalCreateHNSWIndex::GetGlobalSinkState(ClientCo
 
 	gstate->base_index = unum::usearch::index_dense_t::make(metric);
 
+	auto cluster_amount_opt = info->options.find("cluster_amount");
+	gstate->cluster_amount = cluster_amount_opt->second.GetValue<int32_t>();
+
 	// Initialize centroid index
 	gstate->centroid_index =
 	    make_uniq<HNSWIndex>("centroid_index", constraint_type, storage_ids, table_manager, unbound_expressions, db,
-	                         info->options, IndexStorageInfo(), estimated_cardinality);
+	                         info->options, IndexStorageInfo(), gstate->cluster_amount);
 
 	// duckdb::vector<duckdb::unique_ptr<duckdb::Expression>> destination;
     for (const auto& expr : unbound_expressions) {
@@ -483,29 +493,33 @@ public:
 				continue;
 			}
 
-			// std::unique_lock<std::mutex> lock(gstate.cluster_indexes_mutex);
-			{
-			lock_guard<mutex> l(gstate.glock);
-			auto it = gstate.cluster_indexes.find(centroid_key);
-			if (it != gstate.cluster_indexes.end()) {
-				//lock.unlock();
-				it->second->index.add(row_ptr[row_idx], data_ptr + (vec_idx * array_size), thread_id);
-			} else {
-				//lock.unlock(); 
-				std::string numberAsString = std::to_string(centroid_key);
-					auto cluster_index_for_cluster =
-					make_uniq<HNSWIndex>(numberAsString, constraint_type, gstate.storage_ids, *table_manager, unbound_expressions, db,
-										gstate.info->options, IndexStorageInfo(), gstate.estimated_cardinality);
-				cluster_index_for_cluster->index.add(row_ptr[row_idx], data_ptr + (vec_idx * array_size), thread_id);
-
+			if (centroid_key == index_position){
+				// Current vector is a centroid
 				gstate.centroid_index->index.add(centroid_key, train_data[centroid_key].data(), thread_id);
+				continue;
+			}
 
-				// Lock again before modifying the shared map
-				//lock.lock();
-				gstate.cluster_indexes.emplace(centroid_key, std::move(cluster_index_for_cluster));
+			auto it = gstate.cluster_indexes.find(centroid_key);
+
+			if (it != gstate.cluster_indexes.end()) {
+				// Current vector belongs to a cluster index already created. Add the vector to the cluster index
+				it->second->index.add(row_ptr[row_idx], data_ptr + (vec_idx * array_size), thread_id);
+				continue;
 			}
-			}
-			//lock.unlock();
+
+			// Current vector belongs to a cluster index which has not been created yet. 
+			// Create it and add it to the cluster indexes map
+			std::string numberAsString = std::to_string(centroid_key);
+			auto cluster_index_for_cluster =
+					make_uniq<HNSWIndex>(numberAsString, constraint_type, gstate.storage_ids, *table_manager, unbound_expressions, db,
+										gstate.info->options, IndexStorageInfo(), static_cast<size_t>(NextPowerOfTwo(gstate.countMap[centroid_key]*10)));
+		
+			// Add the cluster index to the cluster indexes map
+			// If another thread already did this (there is already an element with the key in the container), this will have no effect
+			gstate.cluster_indexes.emplace(centroid_key, std::move(cluster_index_for_cluster));
+
+			// Finally, add the vector to the cluster index
+			gstate.cluster_indexes.find(centroid_key)->second->index.add(row_ptr[row_idx], data_ptr + (vec_idx * array_size), thread_id);
         }
 
 		// Update the built count
@@ -564,23 +578,16 @@ public:
 
 	void FinishEvent() override {
 
-	auto &context = pipeline->GetClientContext();
+		auto &context = pipeline->GetClientContext();
 
 		auto &ts = TaskScheduler::GetScheduler(context);
-		const auto num_threads = NumericCast<size_t>(ts.NumberOfThreads());
-	
 
 		auto &index = gstate.base_index;
 
 		// Define clustering configuration
 		unum::usearch::index_dense_clustering_config_t config;
-		config.min_clusters = 20;   // Minimum number of clusters
-		config.max_clusters = 20;   // Maximum number of clusters
-		auto cluster_amount = gstate.info->options.find("cluster_amount");
-		if (cluster_amount != gstate.info->options.end()) {
-			config.min_clusters = cluster_amount->second.GetValue<int32_t>();
-			config.max_clusters = cluster_amount->second.GetValue<int32_t>();
-		}
+		config.min_clusters = gstate.cluster_amount;   // Minimum number of clusters
+		config.max_clusters = gstate.cluster_amount;   // Maximum number of clusters
 
 		config.mode = unum::usearch::index_dense_clustering_config_t::merge_closest_k;
 
@@ -588,7 +595,7 @@ public:
 
 		SmartIterable<some_scalar_t> iterable(gstate.train_data, depth_level);
 
-		unum::usearch::executor_stl_t executor(ts.NumberOfThreads() - 1);
+		unum::usearch::executor_stl_t executor(ts.NumberOfThreads());
 
 		// index.reserve({static_cast<size_t>(gstate.estimated_cardinality), static_cast<size_t>(executor.size())});
 
@@ -599,13 +606,19 @@ public:
 			executor
 		);
 
-	gstate.cluster_centroid_size = 0;
+		index.reset();
 
-    for (int i = 0; i < gstate.estimated_cardinality; ++i) {
-        if (gstate.cluster_centroids_keys[i] != -1) {
-            gstate.cluster_centroid_size++;
-        }
-    }
+		gstate.cluster_centroid_size = 0;
+
+		// For Gist this is 1 000 000😭 
+		// must be a better way to  size of cluster indexes or at least estimate...
+		for (int i = 0; i < gstate.estimated_cardinality; ++i) {
+			if (gstate.cluster_centroids_keys[i] != -1) {
+				gstate.cluster_centroid_size++;
+				auto centroid_key = gstate.cluster_centroids_keys[i];
+				gstate.countMap[centroid_key]++;
+			}
+		}
 	}
 
 	void FinalizeFinish() override {
@@ -656,6 +669,30 @@ public:
 		auto &schema = table.schema;
 		info.column_ids = storage_ids;
 
+		// // For outputting memory measures
+		// unum::usearch::index_dense_serialization_config_t s_config;
+		// s_config.exclude_vectors = false;
+		// s_config.use_64_bit_dimensions = false; // DuckDB currently only supports 32-bit, single-precision
+
+    	// nlohmann::json jsonOutput;
+
+		// std::ifstream inputFile("clustering_memory_measures.json");
+		// if (inputFile.good()) {
+		// 	inputFile >> jsonOutput;
+		// 	inputFile.close();
+		// }
+
+		// // Create a new JSON object for this run
+		// nlohmann::json newRun;
+		// newRun["dataset_size"] = gstate.train_data.size();
+		// newRun["vectory_dimensionality"] = gstate.train_data[0].size();
+		// newRun["cluster_amount"] = gstate.cluster_amount;
+		// size_t total_memory_usage = 0;
+		// size_t total_serialized_length = 0;
+
+		// // Memory measures indexes array
+    	// nlohmann::json memory_measures_indexes = nlohmann::json::array();
+
 		// Add all cluster indexes to table
 		for (auto &cluster_index : gstate.cluster_indexes) {
 			auto &index = cluster_index.second;
@@ -689,6 +726,15 @@ public:
 				D_ASSERT(index_entry);
 				auto &duck_index = index_entry->Cast<DuckIndexEntry>();
 				duck_index.initial_index_size = index->Cast<BoundIndex>().GetInMemorySize();
+
+				// total_memory_usage += index->index.memory_usage();
+				// total_serialized_length += index->index.serialized_length(s_config);
+
+				// memory_measures_indexes.push_back({
+				// 	{"index_name", info.index_name},
+				// 	{"memory_usage", index->index.memory_usage()},
+				// 	{"serialized_length", index->index.serialized_length(s_config)}
+				// });
 
 				// Finally add it to storage
 				storage.AddIndex(std::move(index));
@@ -725,9 +771,30 @@ public:
 				auto &duck_index = index_entry->Cast<DuckIndexEntry>();
 				duck_index.initial_index_size = index->Cast<BoundIndex>().GetInMemorySize();
 
+				// total_memory_usage += index->index.memory_usage();
+				// total_serialized_length += index->index.serialized_length(s_config);
+
+				// memory_measures_indexes.push_back({
+				// 	{"index_name", info.index_name},
+				// 	{"memory_usage", index->index.memory_usage()},
+				// 	{"serialized_length", index->index.serialized_length(s_config)}
+				// });
+
 				// Finally add it to storage
 				storage.AddIndex(std::move(index));
 
+				// // Update the new run object with totals and the indexes array
+				// newRun["total_memory_usage"] = total_memory_usage;
+				// newRun["total_serialized_length"] = total_serialized_length;
+				// newRun["memory_measures_indexes"] = memory_measures_indexes;
+
+				// // Append the new run to the main JSON object (which might be an array of runs)
+				// jsonOutput.push_back(newRun);
+
+				// // Write the updated JSON back to the file
+				// std::ofstream outputFile("clustering_memory_measures.json");
+				// outputFile << jsonOutput.dump(4); // Pretty-printing with 4 spaces indent
+				// outputFile.close();
 	}
 };
 
@@ -744,6 +811,7 @@ SinkFinalizeType PhysicalCreateHNSWIndex::Finalize(Pipeline &pipeline, Event &ev
 	auto &ts = TaskScheduler::GetScheduler(context);
 	auto &index = gstate.base_index;
 	index.reserve({static_cast<size_t>(collection->Count()), static_cast<size_t>(ts.NumberOfThreads())});
+	gstate.centroid_index->index.reserve({static_cast<size_t>(gstate.cluster_amount), static_cast<size_t>(ts.NumberOfThreads())});
 
 	// Initialize a parallel scan for the index construction
 	collection->InitializeScan(gstate.scan_state, ColumnDataScanProperties::ALLOW_ZERO_COPY);
