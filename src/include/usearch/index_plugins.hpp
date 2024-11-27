@@ -439,30 +439,27 @@ class executor_stl_t {
      */
     template <typename thread_aware_function_at>
     void dynamic(std::size_t tasks, thread_aware_function_at&& thread_aware_function) noexcept(false) {
-        std::vector<jthread_t> threads_pool;
+        buffer_gt<jthread_t> threads_pool(threads_count_ - 1);
         std::size_t tasks_per_thread = tasks;
         std::size_t threads_count = (std::min)(threads_count_, tasks);
-        // std::atomic_bool stop{false};
-        auto stop = std::make_shared<std::atomic_bool>(false);
+        std::atomic_bool stop{false};
         if (threads_count > 1) {
             tasks_per_thread = (tasks / threads_count) + ((tasks % threads_count) != 0);
             for (std::size_t thread_idx = 1; thread_idx < threads_count; ++thread_idx) {
-                threads_pool.emplace_back([=]() {
+                new (&threads_pool[thread_idx - 1]) jthread_t([=, &stop]() {
                     for (std::size_t task_idx = thread_idx * tasks_per_thread;
                          task_idx < (std::min)(tasks, thread_idx * tasks_per_thread + tasks_per_thread) &&
-                         // !stop.load(std::memory_order_relaxed);
-                         !stop->load(std::memory_order_relaxed);
+                         !stop.load(std::memory_order_relaxed);
                          ++task_idx)
                         if (!thread_aware_function(thread_idx, task_idx))
-                            // stop.store(true, std::memory_order_relaxed);
-                            stop->store(true, std::memory_order_relaxed);
+                            stop.store(true, std::memory_order_relaxed);
                 });
             }
         }
         for (std::size_t task_idx = 0;
-             task_idx < (std::min)(tasks, tasks_per_thread) && !stop->load(std::memory_order_relaxed); ++task_idx)
+             task_idx < (std::min)(tasks, tasks_per_thread) && !stop.load(std::memory_order_relaxed); ++task_idx)
             if (!thread_aware_function(0, task_idx))
-                stop->store(true, std::memory_order_relaxed);
+                stop.store(true, std::memory_order_relaxed);
     }
 
     /**
