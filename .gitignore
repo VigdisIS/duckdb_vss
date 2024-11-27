@@ -10,3 +10,6 @@ test/python/__pycache__/
 .vscode/
 
 *.db
+
+*.parquet
+*.wal
