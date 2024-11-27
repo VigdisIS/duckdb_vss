@@ -1,0 +1,1265 @@
+[
+    {
+        "cluster_amount": 5,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "16255",
+                "memory_usage": 72352960,
+                "serialized_length": 34898988
+            },
+            {
+                "index_name": "32384",
+                "memory_usage": 73401536,
+                "serialized_length": 55747884
+            },
+            {
+                "index_name": "51014",
+                "memory_usage": 73401536,
+                "serialized_length": 47789428
+            },
+            {
+                "index_name": "11598",
+                "memory_usage": 72352960,
+                "serialized_length": 36097956
+            },
+            {
+                "index_name": "59206",
+                "memory_usage": 38798528,
+                "serialized_length": 22544820
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972776,
+                "serialized_length": 16512
+            }
+        ],
+        "total_memory_usage": 351280296,
+        "total_serialized_length": 197095588,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 5,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "16255",
+                "memory_usage": 73401536,
+                "serialized_length": 59073092
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 73401536,
+                "serialized_length": 55627340
+            },
+            {
+                "index_name": "34432",
+                "memory_usage": 38798528,
+                "serialized_length": 24171496
+            },
+            {
+                "index_name": "32384",
+                "memory_usage": 72352960,
+                "serialized_length": 27611028
+            },
+            {
+                "index_name": "51014",
+                "memory_usage": 72352960,
+                "serialized_length": 30591088
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972776,
+                "serialized_length": 16512
+            }
+        ],
+        "total_memory_usage": 351280296,
+        "total_serialized_length": 197090556,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 10,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "22144",
+                "memory_usage": 38274240,
+                "serialized_length": 12955132
+            },
+            {
+                "index_name": "10111",
+                "memory_usage": 38274240,
+                "serialized_length": 19236624
+            },
+            {
+                "index_name": "30336",
+                "memory_usage": 38798528,
+                "serialized_length": 21897436
+            },
+            {
+                "index_name": "16255",
+                "memory_usage": 38274240,
+                "serialized_length": 16674892
+            },
+            {
+                "index_name": "32384",
+                "memory_usage": 72352960,
+                "serialized_length": 30089996
+            },
+            {
+                "index_name": "28288",
+                "memory_usage": 38274240,
+                "serialized_length": 11989112
+            },
+            {
+                "index_name": "51014",
+                "memory_usage": 38798528,
+                "serialized_length": 22564636
+            },
+            {
+                "index_name": "11598",
+                "memory_usage": 38274240,
+                "serialized_length": 15094492
+            },
+            {
+                "index_name": "59206",
+                "memory_usage": 38798528,
+                "serialized_length": 25852812
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 38274240,
+                "serialized_length": 20708308
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972816,
+                "serialized_length": 32912
+            }
+        ],
+        "total_memory_usage": 439366800,
+        "total_serialized_length": 197096352,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 15,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "42822",
+                "memory_usage": 38274240,
+                "serialized_length": 13687660
+            },
+            {
+                "index_name": "5454",
+                "memory_usage": 38012096,
+                "serialized_length": 10031784
+            },
+            {
+                "index_name": "30336",
+                "memory_usage": 38012096,
+                "serialized_length": 9371688
+            },
+            {
+                "index_name": "51014",
+                "memory_usage": 38012096,
+                "serialized_length": 9677272
+            },
+            {
+                "index_name": "32384",
+                "memory_usage": 38274240,
+                "serialized_length": 16676608
+            },
+            {
+                "index_name": "46918",
+                "memory_usage": 38274240,
+                "serialized_length": 11089100
+            },
+            {
+                "index_name": "28288",
+                "memory_usage": 38012096,
+                "serialized_length": 10129844
+            },
+            {
+                "index_name": "11598",
+                "memory_usage": 38274240,
+                "serialized_length": 19398856
+            },
+            {
+                "index_name": "40576",
+                "memory_usage": 38274240,
+                "serialized_length": 11940252
+            },
+            {
+                "index_name": "59206",
+                "memory_usage": 38274240,
+                "serialized_length": 12416668
+            },
+            {
+                "index_name": "16255",
+                "memory_usage": 38274240,
+                "serialized_length": 18088096
+            },
+            {
+                "index_name": "10111",
+                "memory_usage": 38274240,
+                "serialized_length": 16236544
+            },
+            {
+                "index_name": "1358",
+                "memory_usage": 38274240,
+                "serialized_length": 12025668
+            },
+            {
+                "index_name": "34432",
+                "memory_usage": 38274240,
+                "serialized_length": 16706128
+            },
+            {
+                "index_name": "9550",
+                "memory_usage": 38012096,
+                "serialized_length": 9558648
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972856,
+                "serialized_length": 49312
+            }
+        ],
+        "total_memory_usage": 593775736,
+        "total_serialized_length": 197084128,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 20,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "1919",
+                "memory_usage": 21103808,
+                "serialized_length": 3836796
+            },
+            {
+                "index_name": "9550",
+                "memory_usage": 21234880,
+                "serialized_length": 7644028
+            },
+            {
+                "index_name": "11598",
+                "memory_usage": 38274240,
+                "serialized_length": 11351976
+            },
+            {
+                "index_name": "15694",
+                "memory_usage": 21103808,
+                "serialized_length": 4165476
+            },
+            {
+                "index_name": "38528",
+                "memory_usage": 21234880,
+                "serialized_length": 7273116
+            },
+            {
+                "index_name": "5454",
+                "memory_usage": 21103808,
+                "serialized_length": 5223540
+            },
+            {
+                "index_name": "16255",
+                "memory_usage": 38274240,
+                "serialized_length": 13342036
+            },
+            {
+                "index_name": "20351",
+                "memory_usage": 38274240,
+                "serialized_length": 11897204
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 38274240,
+                "serialized_length": 16680092
+            },
+            {
+                "index_name": "10111",
+                "memory_usage": 38274240,
+                "serialized_length": 14775040
+            },
+            {
+                "index_name": "1358",
+                "memory_usage": 38274240,
+                "serialized_length": 17458540
+            },
+            {
+                "index_name": "34432",
+                "memory_usage": 38274240,
+                "serialized_length": 15231572
+            },
+            {
+                "index_name": "36480",
+                "memory_usage": 21234880,
+                "serialized_length": 5650484
+            },
+            {
+                "index_name": "40576",
+                "memory_usage": 21103808,
+                "serialized_length": 4566316
+            },
+            {
+                "index_name": "59206",
+                "memory_usage": 38274240,
+                "serialized_length": 15435408
+            },
+            {
+                "index_name": "32384",
+                "memory_usage": 38274240,
+                "serialized_length": 16062976
+            },
+            {
+                "index_name": "51014",
+                "memory_usage": 21234880,
+                "serialized_length": 5568484
+            },
+            {
+                "index_name": "8063",
+                "memory_usage": 38012096,
+                "serialized_length": 10139616
+            },
+            {
+                "index_name": "28288",
+                "memory_usage": 21234880,
+                "serialized_length": 6971084
+            },
+            {
+                "index_name": "46918",
+                "memory_usage": 21103808,
+                "serialized_length": 3751584
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972896,
+                "serialized_length": 65712
+            }
+        ],
+        "total_memory_usage": 615146592,
+        "total_serialized_length": 197091080,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 5,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "46918",
+                "memory_usage": 73401536,
+                "serialized_length": 57598604
+            },
+            {
+                "index_name": "16255",
+                "memory_usage": 38798528,
+                "serialized_length": 24559488
+            },
+            {
+                "index_name": "13646",
+                "memory_usage": 73401536,
+                "serialized_length": 53998352
+            },
+            {
+                "index_name": "3406",
+                "memory_usage": 72352960,
+                "serialized_length": 30195312
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 72352960,
+                "serialized_length": 30721472
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972776,
+                "serialized_length": 16512
+            }
+        ],
+        "total_memory_usage": 351280296,
+        "total_serialized_length": 197089740,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 10,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "5454",
+                "memory_usage": 72352960,
+                "serialized_length": 27065188
+            },
+            {
+                "index_name": "16255",
+                "memory_usage": 38274240,
+                "serialized_length": 14591020
+            },
+            {
+                "index_name": "48966",
+                "memory_usage": 38274240,
+                "serialized_length": 13559128
+            },
+            {
+                "index_name": "1919",
+                "memory_usage": 38274240,
+                "serialized_length": 13240356
+            },
+            {
+                "index_name": "13646",
+                "memory_usage": 38274240,
+                "serialized_length": 21091320
+            },
+            {
+                "index_name": "38528",
+                "memory_usage": 38274240,
+                "serialized_length": 12944816
+            },
+            {
+                "index_name": "3406",
+                "memory_usage": 72352960,
+                "serialized_length": 26546540
+            },
+            {
+                "index_name": "3967",
+                "memory_usage": 38274240,
+                "serialized_length": 19580412
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 38274240,
+                "serialized_length": 18499660
+            },
+            {
+                "index_name": "36480",
+                "memory_usage": 72352960,
+                "serialized_length": 29930108
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972816,
+                "serialized_length": 32912
+            }
+        ],
+        "total_memory_usage": 505951376,
+        "total_serialized_length": 197081460,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 15,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "16255",
+                "memory_usage": 38012096,
+                "serialized_length": 10714500
+            },
+            {
+                "index_name": "3967",
+                "memory_usage": 38274240,
+                "serialized_length": 15921596
+            },
+            {
+                "index_name": "15694",
+                "memory_usage": 21234880,
+                "serialized_length": 6425380
+            },
+            {
+                "index_name": "36480",
+                "memory_usage": 38274240,
+                "serialized_length": 19816912
+            },
+            {
+                "index_name": "3406",
+                "memory_usage": 38012096,
+                "serialized_length": 10695364
+            },
+            {
+                "index_name": "19790",
+                "memory_usage": 21234880,
+                "serialized_length": 6442324
+            },
+            {
+                "index_name": "1919",
+                "memory_usage": 38274240,
+                "serialized_length": 13016908
+            },
+            {
+                "index_name": "38528",
+                "memory_usage": 38274240,
+                "serialized_length": 12182836
+            },
+            {
+                "index_name": "5454",
+                "memory_usage": 38274240,
+                "serialized_length": 18351720
+            },
+            {
+                "index_name": "8063",
+                "memory_usage": 38274240,
+                "serialized_length": 19767644
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 38798528,
+                "serialized_length": 24128584
+            },
+            {
+                "index_name": "7502",
+                "memory_usage": 21234880,
+                "serialized_length": 8113544
+            },
+            {
+                "index_name": "59206",
+                "memory_usage": 38012096,
+                "serialized_length": 8917824
+            },
+            {
+                "index_name": "13646",
+                "memory_usage": 38274240,
+                "serialized_length": 12366856
+            },
+            {
+                "index_name": "10111",
+                "memory_usage": 38012096,
+                "serialized_length": 10172620
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972856,
+                "serialized_length": 49312
+            }
+        ],
+        "total_memory_usage": 543444088,
+        "total_serialized_length": 197083924,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 20,
+        "dataset_size": 60000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "16255",
+                "memory_usage": 38274240,
+                "serialized_length": 15087252
+            },
+            {
+                "index_name": "48966",
+                "memory_usage": 21103808,
+                "serialized_length": 4779720
+            },
+            {
+                "index_name": "11598",
+                "memory_usage": 21234880,
+                "serialized_length": 6448612
+            },
+            {
+                "index_name": "3967",
+                "memory_usage": 38274240,
+                "serialized_length": 11063268
+            },
+            {
+                "index_name": "13646",
+                "memory_usage": 21234880,
+                "serialized_length": 6534096
+            },
+            {
+                "index_name": "38528",
+                "memory_usage": 38012096,
+                "serialized_length": 9482732
+            },
+            {
+                "index_name": "5454",
+                "memory_usage": 38274240,
+                "serialized_length": 14823968
+            },
+            {
+                "index_name": "15694",
+                "memory_usage": 21234880,
+                "serialized_length": 7499368
+            },
+            {
+                "index_name": "24192",
+                "memory_usage": 21103808,
+                "serialized_length": 5006584
+            },
+            {
+                "index_name": "42822",
+                "memory_usage": 38274240,
+                "serialized_length": 17898536
+            },
+            {
+                "index_name": "14207",
+                "memory_usage": 21234880,
+                "serialized_length": 8231760
+            },
+            {
+                "index_name": "36480",
+                "memory_usage": 21234880,
+                "serialized_length": 7437116
+            },
+            {
+                "index_name": "3406",
+                "memory_usage": 38274240,
+                "serialized_length": 12015420
+            },
+            {
+                "index_name": "10111",
+                "memory_usage": 38274240,
+                "serialized_length": 15320064
+            },
+            {
+                "index_name": "12159",
+                "memory_usage": 21234880,
+                "serialized_length": 6244912
+            },
+            {
+                "index_name": "19790",
+                "memory_usage": 21103808,
+                "serialized_length": 5022916
+            },
+            {
+                "index_name": "1919",
+                "memory_usage": 38274240,
+                "serialized_length": 10859568
+            },
+            {
+                "index_name": "7502",
+                "memory_usage": 21234880,
+                "serialized_length": 7427208
+            },
+            {
+                "index_name": "8063",
+                "memory_usage": 38274240,
+                "serialized_length": 21061732
+            },
+            {
+                "index_name": "22144",
+                "memory_usage": 21103808,
+                "serialized_length": 4779788
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972896,
+                "serialized_length": 65712
+            }
+        ],
+        "total_memory_usage": 598238304,
+        "total_serialized_length": 197090332,
+        "vectory_dimensionality": 784
+    },
+    {
+        "cluster_amount": 5,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "68451",
+                "memory_usage": 205521984,
+                "serialized_length": 136193680
+            },
+            {
+                "index_name": "60259",
+                "memory_usage": 423625728,
+                "serialized_length": 251769160
+            },
+            {
+                "index_name": "84259",
+                "memory_usage": 205521984,
+                "serialized_length": 117923848
+            },
+            {
+                "index_name": "406594",
+                "memory_usage": 205521984,
+                "serialized_length": 86100732
+            },
+            {
+                "index_name": "82787",
+                "memory_usage": 96470144,
+                "serialized_length": 68625496
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972776,
+                "serialized_length": 3392
+            }
+        ],
+        "total_memory_usage": 1157634600,
+        "total_serialized_length": 660616308,
+        "vectory_dimensionality": 128
+    },
+    {
+        "cluster_amount": 10,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "289858",
+                "memory_usage": 96470144,
+                "serialized_length": 45019804
+            },
+            {
+                "index_name": "449379",
+                "memory_usage": 96470144,
+                "serialized_length": 54194416
+            },
+            {
+                "index_name": "275522",
+                "memory_usage": 96470144,
+                "serialized_length": 44276772
+            },
+            {
+                "index_name": "447331",
+                "memory_usage": 96470144,
+                "serialized_length": 42716484
+            },
+            {
+                "index_name": "437091",
+                "memory_usage": 96470144,
+                "serialized_length": 49618688
+            },
+            {
+                "index_name": "441187",
+                "memory_usage": 205521984,
+                "serialized_length": 124749444
+            },
+            {
+                "index_name": "279618",
+                "memory_usage": 96470144,
+                "serialized_length": 49076528
+            },
+            {
+                "index_name": "453475",
+                "memory_usage": 205521984,
+                "serialized_length": 108690544
+            },
+            {
+                "index_name": "432995",
+                "memory_usage": 205521984,
+                "serialized_length": 86085308
+            },
+            {
+                "index_name": "273474",
+                "memory_usage": 96470144,
+                "serialized_length": 56219812
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972816,
+                "serialized_length": 6672
+            }
+        ],
+        "total_memory_usage": 1312829776,
+        "total_serialized_length": 660654472,
+        "vectory_dimensionality": 128
+    },
+    {
+        "cluster_amount": 15,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "72547",
+                "memory_usage": 41944256,
+                "serialized_length": 21365884
+            },
+            {
+                "index_name": "652354",
+                "memory_usage": 23069888,
+                "serialized_length": 9935564
+            },
+            {
+                "index_name": "76643",
+                "memory_usage": 96470144,
+                "serialized_length": 59521580
+            },
+            {
+                "index_name": "662018",
+                "memory_usage": 39847104,
+                "serialized_length": 14720184
+            },
+            {
+                "index_name": "80739",
+                "memory_usage": 104858752,
+                "serialized_length": 69686672
+            },
+            {
+                "index_name": "82211",
+                "memory_usage": 205521984,
+                "serialized_length": 108366568
+            },
+            {
+                "index_name": "78691",
+                "memory_usage": 96470144,
+                "serialized_length": 44255276
+            },
+            {
+                "index_name": "68451",
+                "memory_usage": 205521984,
+                "serialized_length": 95114028
+            },
+            {
+                "index_name": "640066",
+                "memory_usage": 104858752,
+                "serialized_length": 72383392
+            },
+            {
+                "index_name": "74595",
+                "memory_usage": 41944256,
+                "serialized_length": 22234576
+            },
+            {
+                "index_name": "654402",
+                "memory_usage": 96470144,
+                "serialized_length": 36737888
+            },
+            {
+                "index_name": "66403",
+                "memory_usage": 23069888,
+                "serialized_length": 10488084
+            },
+            {
+                "index_name": "646210",
+                "memory_usage": 96470144,
+                "serialized_length": 35562772
+            },
+            {
+                "index_name": "86883",
+                "memory_usage": 96470144,
+                "serialized_length": 50802592
+            },
+            {
+                "index_name": "70499",
+                "memory_usage": 23069888,
+                "serialized_length": 9560256
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972856,
+                "serialized_length": 9952
+            }
+        ],
+        "total_memory_usage": 1317030328,
+        "total_serialized_length": 660745268,
+        "vectory_dimensionality": 128
+    },
+    {
+        "cluster_amount": 20,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "420987",
+                "memory_usage": 96470144,
+                "serialized_length": 38365928
+            },
+            {
+                "index_name": "667413",
+                "memory_usage": 96470144,
+                "serialized_length": 40788072
+            },
+            {
+                "index_name": "76643",
+                "memory_usage": 41944256,
+                "serialized_length": 27837140
+            },
+            {
+                "index_name": "78691",
+                "memory_usage": 41944256,
+                "serialized_length": 22590256
+            },
+            {
+                "index_name": "72547",
+                "memory_usage": 41944256,
+                "serialized_length": 24002276
+            },
+            {
+                "index_name": "994638",
+                "memory_usage": 41944256,
+                "serialized_length": 27123268
+            },
+            {
+                "index_name": "530246",
+                "memory_usage": 96470144,
+                "serialized_length": 49372364
+            },
+            {
+                "index_name": "18994",
+                "memory_usage": 41944256,
+                "serialized_length": 23579468
+            },
+            {
+                "index_name": "976415",
+                "memory_usage": 92275840,
+                "serialized_length": 33267292
+            },
+            {
+                "index_name": "84452",
+                "memory_usage": 58721408,
+                "serialized_length": 30279348
+            },
+            {
+                "index_name": "250640",
+                "memory_usage": 92275840,
+                "serialized_length": 33961688
+            },
+            {
+                "index_name": "361331",
+                "memory_usage": 41944256,
+                "serialized_length": 24995360
+            },
+            {
+                "index_name": "64355",
+                "memory_usage": 58721408,
+                "serialized_length": 30229356
+            },
+            {
+                "index_name": "596429",
+                "memory_usage": 96470144,
+                "serialized_length": 58310680
+            },
+            {
+                "index_name": "517958",
+                "memory_usage": 41944256,
+                "serialized_length": 25634084
+            },
+            {
+                "index_name": "82787",
+                "memory_usage": 96470144,
+                "serialized_length": 40050808
+            },
+            {
+                "index_name": "673557",
+                "memory_usage": 41944256,
+                "serialized_length": 27296160
+            },
+            {
+                "index_name": "363379",
+                "memory_usage": 96470144,
+                "serialized_length": 36528448
+            },
+            {
+                "index_name": "633353",
+                "memory_usage": 96470144,
+                "serialized_length": 41918036
+            },
+            {
+                "index_name": "425083",
+                "memory_usage": 41944256,
+                "serialized_length": 24470168
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972896,
+                "serialized_length": 13232
+            }
+        ],
+        "total_memory_usage": 1375756704,
+        "total_serialized_length": 660613432,
+        "vectory_dimensionality": 128
+    },
+    {
+        "cluster_amount": 5,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "447331",
+                "memory_usage": 2302673920,
+                "serialized_length": 1226346400
+            },
+            {
+                "index_name": "644162",
+                "memory_usage": 1145046080,
+                "serialized_length": 566507244
+            },
+            {
+                "index_name": "648258",
+                "memory_usage": 2235565120,
+                "serialized_length": 1170286816
+            },
+            {
+                "index_name": "435043",
+                "memory_usage": 1145046080,
+                "serialized_length": 657675352
+            },
+            {
+                "index_name": "445283",
+                "memory_usage": 566232192,
+                "serialized_length": 367797532
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972776,
+                "serialized_length": 20032
+            }
+        ],
+        "total_memory_usage": 7415536168,
+        "total_serialized_length": 3988633376,
+        "vectory_dimensionality": 960
+    },
+    {
+        "cluster_amount": 10,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "691043",
+                "memory_usage": 566232192,
+                "serialized_length": 320553712
+            },
+            {
+                "index_name": "688995",
+                "memory_usage": 1145046080,
+                "serialized_length": 725988880
+            },
+            {
+                "index_name": "693091",
+                "memory_usage": 297796736,
+                "serialized_length": 239456408
+            },
+            {
+                "index_name": "686947",
+                "memory_usage": 566232192,
+                "serialized_length": 362199508
+            },
+            {
+                "index_name": "402498",
+                "memory_usage": 574620800,
+                "serialized_length": 476518140
+            },
+            {
+                "index_name": "698659",
+                "memory_usage": 1145046080,
+                "serialized_length": 835871300
+            },
+            {
+                "index_name": "695139",
+                "memory_usage": 293602432,
+                "serialized_length": 204637724
+            },
+            {
+                "index_name": "400450",
+                "memory_usage": 276825280,
+                "serialized_length": 162382540
+            },
+            {
+                "index_name": "684899",
+                "memory_usage": 297796736,
+                "serialized_length": 249843392
+            },
+            {
+                "index_name": "697187",
+                "memory_usage": 566232192,
+                "serialized_length": 411173048
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972816,
+                "serialized_length": 39952
+            }
+        ],
+        "total_memory_usage": 5750403536,
+        "total_serialized_length": 3988664604,
+        "vectory_dimensionality": 960
+    },
+    {
+        "cluster_amount": 15,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "453475",
+                "memory_usage": 140510400,
+                "serialized_length": 61062188
+            },
+            {
+                "index_name": "439139",
+                "memory_usage": 293602432,
+                "serialized_length": 193262368
+            },
+            {
+                "index_name": "642114",
+                "memory_usage": 72352960,
+                "serialized_length": 47971128
+            },
+            {
+                "index_name": "437091",
+                "memory_usage": 142607552,
+                "serialized_length": 107743000
+            },
+            {
+                "index_name": "640066",
+                "memory_usage": 140510400,
+                "serialized_length": 82399872
+            },
+            {
+                "index_name": "650306",
+                "memory_usage": 566232192,
+                "serialized_length": 331615080
+            },
+            {
+                "index_name": "447331",
+                "memory_usage": 1145046080,
+                "serialized_length": 739003428
+            },
+            {
+                "index_name": "450851",
+                "memory_usage": 297796736,
+                "serialized_length": 231302804
+            },
+            {
+                "index_name": "652354",
+                "memory_usage": 140510400,
+                "serialized_length": 96755492
+            },
+            {
+                "index_name": "644162",
+                "memory_usage": 566232192,
+                "serialized_length": 316114556
+            },
+            {
+                "index_name": "441187",
+                "memory_usage": 140510400,
+                "serialized_length": 94725052
+            },
+            {
+                "index_name": "646210",
+                "memory_usage": 140510400,
+                "serialized_length": 72367464
+            },
+            {
+                "index_name": "435043",
+                "memory_usage": 608175168,
+                "serialized_length": 542428976
+            },
+            {
+                "index_name": "445283",
+                "memory_usage": 566232192,
+                "serialized_length": 310077136
+            },
+            {
+                "index_name": "648258",
+                "memory_usage": 1145046080,
+                "serialized_length": 761799868
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972856,
+                "serialized_length": 59872
+            }
+        ],
+        "total_memory_usage": 6126848440,
+        "total_serialized_length": 3988688284,
+        "vectory_dimensionality": 960
+    },
+    {
+        "cluster_amount": 20,
+        "dataset_size": 1000000,
+        "memory_measures_indexes": [
+            {
+                "index_name": "750352",
+                "memory_usage": 276825280,
+                "serialized_length": 164306064
+            },
+            {
+                "index_name": "318307",
+                "memory_usage": 140510400,
+                "serialized_length": 87465536
+            },
+            {
+                "index_name": "898114",
+                "memory_usage": 297796736,
+                "serialized_length": 268931368
+            },
+            {
+                "index_name": "889922",
+                "memory_usage": 293602432,
+                "serialized_length": 195107260
+            },
+            {
+                "index_name": "338404",
+                "memory_usage": 574620800,
+                "serialized_length": 439568344
+            },
+            {
+                "index_name": "887874",
+                "memory_usage": 140510400,
+                "serialized_length": 104407072
+            },
+            {
+                "index_name": "964899",
+                "memory_usage": 297796736,
+                "serialized_length": 233043352
+            },
+            {
+                "index_name": "342500",
+                "memory_usage": 574620800,
+                "serialized_length": 485482784
+            },
+            {
+                "index_name": "719884",
+                "memory_usage": 276825280,
+                "serialized_length": 159733600
+            },
+            {
+                "index_name": "264754",
+                "memory_usage": 276825280,
+                "serialized_length": 157045800
+            },
+            {
+                "index_name": "668795",
+                "memory_usage": 566232192,
+                "serialized_length": 360684704
+            },
+            {
+                "index_name": "606925",
+                "memory_usage": 297796736,
+                "serialized_length": 253920972
+            },
+            {
+                "index_name": "139785",
+                "memory_usage": 140510400,
+                "serialized_length": 89189276
+            },
+            {
+                "index_name": "885826",
+                "memory_usage": 142607552,
+                "serialized_length": 105093884
+            },
+            {
+                "index_name": "127497",
+                "memory_usage": 142607552,
+                "serialized_length": 117242816
+            },
+            {
+                "index_name": "742160",
+                "memory_usage": 276825280,
+                "serialized_length": 156638548
+            },
+            {
+                "index_name": "463147",
+                "memory_usage": 293602432,
+                "serialized_length": 171473160
+            },
+            {
+                "index_name": "407366",
+                "memory_usage": 276825280,
+                "serialized_length": 156718228
+            },
+            {
+                "index_name": "494559",
+                "memory_usage": 293602432,
+                "serialized_length": 184745268
+            },
+            {
+                "index_name": "141833",
+                "memory_usage": 140510400,
+                "serialized_length": 97972312
+            },
+            {
+                "index_name": "centroid_index",
+                "memory_usage": 20972896,
+                "serialized_length": 79792
+            }
+        ],
+        "total_memory_usage": 5742027296,
+        "total_serialized_length": 3988850140,
+        "vectory_dimensionality": 960
+    }
+]
