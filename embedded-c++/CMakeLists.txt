@@ -3,6 +3,8 @@ project(example-c++)
 
 set(CMAKE_CXX_STANDARD 11)
 
+add_compile_options(-O3)
+
 include_directories(../duckdb/src/include include)
 link_directories(../build/release/src)
 
@@ -14,7 +16,14 @@ else()
     message(STATUS "Benchmark library found: ${BENCHMARK_LIB}")
 endif()
 
-add_executable(example main.cpp)
+# add_executable(example main.cpp)
+add_executable(benchmark_idx_creation benchmark_idx_creation.cpp)
+add_executable(benchmark_search benchmark_search.cpp)
+add_executable(benchmark_memory benchmark_memory.cpp)
 add_executable(results get_results.cpp)
-target_link_libraries(example duckdb ${BENCHMARK_LIB})
+
+# Linking libraries
+target_link_libraries(benchmark_idx_creation duckdb ${BENCHMARK_LIB})
+target_link_libraries(benchmark_search duckdb ${BENCHMARK_LIB})
+target_link_libraries(benchmark_memory duckdb ${BENCHMARK_LIB})
 target_link_libraries(results duckdb ${BENCHMARK_LIB})

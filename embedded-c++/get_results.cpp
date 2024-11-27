@@ -16,7 +16,6 @@ void SetupTrainTable(Connection& con, const std::string& table_name, int& vector
 
 // Load the data from the raw.db file and copy it to the memory database
 void SetupTable(Connection& con, const std::string& table_name, int& vector_dimensionality) {
-	con.Query("SET threads = 10;"); // My puter has 10 cores
     con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
 
     SetupTrainTable(con, table_name, vector_dimensionality);
@@ -54,8 +53,6 @@ void InitializeResultsTable(Connection& con, const std::string& table_name, int&
     con.Query("INSERT INTO results." + table_name + "_results SELECT * FROM memory." + table_name + "_results;");
     auto res = con.Query("SELECT * FROM results." + table_name + "_results LIMIT 1;");
     assert(res->RowCount() == 1);
-    // con.Query("CREATE OR REPLACE TABLE results." + table_name + "_results (dataset_name VARCHAR, cluster_amount INT, top_k INT, test_query_vector_index INT, test_query_vector FLOAT[" + std::to_string(vector_dimensionality) + "], cluster_index INT, query_result_set FLOAT[" + std::to_string(vector_dimensionality) + "][100]);");
-    // con.Query("CREATE OR REPLACE TABLE results." + table_name + "_results (dataset_name VARCHAR, cluster_amount INT, top_k INT, test_query_vector_index INT, test_query_vector VARCHAR, cluster_index INT, query_result_set VARCHAR);");
 }
 
 void GetResults() {
@@ -65,7 +62,7 @@ void GetResults() {
     std::vector<int> cluster_amounts = {5, 10, 15, 20};
     std::string cluster_index;
 
-    for (int tableIndex = 0; tableIndex <= 2; ++tableIndex) {
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
         auto table_name = GetTableName(tableIndex);
         std::cout << "Table name: " << table_name << std::endl;
         auto vector_dimensionality = GetVectorDimensionality(tableIndex);
@@ -93,7 +90,6 @@ void GetResults() {
             std::cout << "Index created" << std::endl;
 
             for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
-                std::cout << "Running test query " << i << " of " << test_vectors->RowCount() << std::endl;
                 auto test_query_vector = test_vectors->GetValue(0, i);
                 auto test_query_vector_string = test_vectors->GetValue(0, i).ToString();
                 int test_query_vector_index = i;
@@ -148,10 +144,11 @@ void OutputResultTables() {
 
     con.Query("ATTACH 'results.db' AS results;");
 
-    for (int tableIndex = 0; tableIndex <= 1; ++tableIndex) {
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
         auto table_name = GetTableName(tableIndex);
-        con.Query("COPY results." + table_name + "_results TO '" + table_name + "_results.parquet' (FORMAT PARQUET);");
-        // con.Query("COPY results." + table_name + "_results TO '" + table_name + "_results.csv' (HEADER, DELIMITER ',');");
+        auto check = con.Query("SELECT * FROM results." + table_name + "_results LIMIT 1;");
+        assert(check->RowCount() == 1);
+        con.Query("COPY results." + table_name + "_results TO 'clustering_" + table_name + "_results.parquet' (FORMAT PARQUET);");
     }
 
     con.Query("DETACH results;");
