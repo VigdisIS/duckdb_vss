@@ -1,0 +1,22 @@
+[
+    {   
+        "dataset": "fashion-mnist",
+        "total_memory_usage": 289888128,
+        "total_serialized_length": 197095232
+    },
+    {
+        "dataset": "mnist",
+        "total_memory_usage": 289888128,
+        "total_serialized_length": 197095232
+    },
+    {
+        "dataset": "sift",
+        "total_memory_usage": 800724416,
+        "total_serialized_length": 660537412
+    },
+    {
+        "dataset": "gist",
+        "total_memory_usage": 4558820800,
+        "total_serialized_length": 3988538024
+    }
+]

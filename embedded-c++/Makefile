@@ -1,17 +1,31 @@
+.PHONY: clean duckdb-vss duckdb-vss-debug bm_performance bm_memory results
 
-.PHONY: duckdb clean main
+all: duckdb-vss bm_performance
 
-all: duckdb-vss main
+all-bm_memory: duckdb-vss bm_memory
 
 clean:
 	rm -rf build
 
 duckdb-vss:
-	cd ../ && make release
+	cd ../ && make
 
-main:
+duckdb-vss-debug:
+	cd ../ && make debug
+
+prepare-build:
 	mkdir -p build
-	cd build && cmake .. && make
-	build/example --benchmark_out=bm_vss_all.json --benchmark_out_format=json
-	# build/results
 
+bm_performance: clean prepare-build
+	cd build && cmake .. && make
+	build/benchmark_search --benchmark_out=bm_vss_search_time.json --benchmark_out_format=json
+	build/benchmark_idx_creation --benchmark_out=bm_vss_idx_creation_time.json --benchmark_out_format=json
+
+# Uncomment JSON output in physical operator before running this
+bm_memory: clean prepare-build
+	cd build && cmake .. && make
+	build/benchmark_memory
+
+results: clean prepare-build
+	cd build && cmake .. && make
+	build/results

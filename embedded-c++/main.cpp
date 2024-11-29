@@ -25,7 +25,7 @@ std::string GetTableName(int tableIndex) {
         case 0: return "fashion_mnist";
         case 1: return "mnist";
         case 2: return "sift";
-        case 3: return "gist"; // Too large for now..(?)
+        case 3: return "gist";
         default: return "unknown";
     }
 }

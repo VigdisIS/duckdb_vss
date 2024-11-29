@@ -10,6 +10,9 @@
 #include "duckdb/storage/table_io_manager.hpp"
 #include "hnsw/hnsw_index.hpp"
 
+// #include <nlohmann/json.hpp>
+// #include <fstream>
+
 #include "duckdb/parallel/base_pipeline_event.hpp"
 
 namespace duckdb {
@@ -274,6 +277,40 @@ public:
 		D_ASSERT(index_entry);
 		auto &duck_index = index_entry->Cast<DuckIndexEntry>();
 		duck_index.initial_index_size = gstate.global_index->Cast<BoundIndex>().GetInMemorySize();
+
+		// // For outputting memory measures
+		// unum::usearch::index_dense_serialization_config_t s_config;
+		// s_config.exclude_vectors = false;
+		// s_config.use_64_bit_dimensions = false; // DuckDB currently only supports 32-bit, single-precision
+
+    	// nlohmann::json jsonOutput;
+
+		// std::ifstream inputFile("vss_memory_measures.json");
+		// if (inputFile.good()) {
+		// 	inputFile >> jsonOutput;
+		// 	inputFile.close();
+		// }
+
+		// // Create a new JSON object for this run
+		// nlohmann::json newRun;
+
+		// size_t total_memory_usage = 0;
+		// size_t total_serialized_length = 0;
+
+		// total_memory_usage += gstate.global_index->index.memory_usage();
+		// total_serialized_length += gstate.global_index->index.serialized_length(s_config);
+
+		// // Update the new run object with totals and the indexes array
+		// newRun["total_memory_usage"] = total_memory_usage;
+		// newRun["total_serialized_length"] = total_serialized_length;
+
+		// // Append the new run to the main JSON object (which might be an array of runs)
+		// jsonOutput.push_back(newRun);
+
+		// // Write the updated JSON back to the file
+		// std::ofstream outputFile("vss_memory_measures.json");
+		// outputFile << jsonOutput.dump(4); // Pretty-printing with 4 spaces indent
+		// outputFile.close();
 
 		// Finally add it to storage
 		storage.AddIndex(std::move(gstate.global_index));
