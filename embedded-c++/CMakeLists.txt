@@ -16,13 +16,14 @@ else()
     message(STATUS "Benchmark library found: ${BENCHMARK_LIB}")
 endif()
 
-# add_executable(example main.cpp)
+add_executable(example main.cpp)
 add_executable(benchmark_idx_creation benchmark_idx_creation.cpp)
 add_executable(benchmark_search benchmark_search.cpp)
 add_executable(benchmark_memory benchmark_memory.cpp)
 add_executable(results get_results.cpp)
 
 # Linking libraries
+target_link_libraries(example duckdb)
 target_link_libraries(benchmark_idx_creation duckdb ${BENCHMARK_LIB})
 target_link_libraries(benchmark_search duckdb ${BENCHMARK_LIB})
 target_link_libraries(benchmark_memory duckdb ${BENCHMARK_LIB})
