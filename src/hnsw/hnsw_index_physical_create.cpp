@@ -6,18 +6,19 @@
 #include "duckdb/common/exception/transaction_exception.hpp"
 #include "duckdb/main/attached_database.hpp"
 #include "duckdb/main/database.hpp"
+#include "duckdb/parallel/base_pipeline_event.hpp"
 #include "duckdb/storage/storage_manager.hpp"
 #include "duckdb/storage/table_io_manager.hpp"
 #include "hnsw/hnsw_index.hpp"
-#include <iostream>
 #include "usearch/duckdb_usearch.hpp"
-#include <vector>
+
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
-// #include <nlohmann/json.hpp>
-// #include <fstream>
-
-#include "duckdb/parallel/base_pipeline_event.hpp"
+#include <vector>
 
 using some_scalar_t = float;
 
@@ -186,6 +187,8 @@ public:
 	// Count vectors in each cluster
 	std::unordered_map<unum::usearch::default_key_t, int> countMap;
 
+	// nlohmann::json idx_creation_tasks = nlohmann::json::array();
+	// std::chrono::time_point<std::chrono::high_resolution_clock> chrono_start;
 
 	// Unbound expressions
 	duckdb::vector<duckdb::unique_ptr<duckdb::Expression, std::__1::default_delete<duckdb::Expression>, true>, true> unbound_expressions;
@@ -573,10 +576,34 @@ public:
 		for (size_t tnum = 0; tnum < num_threads; tnum++) {
 			construct_tasks.push_back(make_uniq<HNSWIndexClusteringTask>(shared_from_this(), context, gstate, tnum, op));
 		}
+
+		// // Start timing
+		// gstate.chrono_start = std::chrono::high_resolution_clock::now();
+
 		SetTasks(std::move(construct_tasks));
 	}
 
 	void FinishEvent() override {
+
+		// // Stop timing
+		// auto chrono_end = std::chrono::high_resolution_clock::now();
+		
+		// // Calculate the duration
+		// auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(chrono_end - gstate.chrono_start);
+		
+		// // Output the time spent
+		// std::cout << "Time spent HNSWIndexClusteringTask: " << duration.count() << " nanoseconds" << std::endl;
+
+		// gstate.idx_creation_tasks.push_back({
+		// 			{"task", "HNSWIndexClusteringTask"},
+		// 			{"duration (ns)", duration.count()},
+		// 			{"duration (ms)", duration.count() / 1000000 }
+		// 		});
+		
+		// // NEXT TASK
+
+		// // Start timing
+		// gstate.chrono_start = std::chrono::high_resolution_clock::now();
 
 		auto &context = pipeline->GetClientContext();
 
@@ -597,8 +624,6 @@ public:
 
 		unum::usearch::executor_stl_t executor(ts.NumberOfThreads());
 
-		// index.reserve({static_cast<size_t>(gstate.estimated_cardinality), static_cast<size_t>(executor.size())});
-
 		unum::usearch::index_dense_t::clustering_result_t result = index.cluster(
 			iterable.begin(), iterable.end(),
 			config,
@@ -606,7 +631,28 @@ public:
 			executor
 		);
 
+		// // Stop timing
+		// chrono_end = std::chrono::high_resolution_clock::now();
+
+		// // Calculate the duration
+		// duration = std::chrono::duration_cast<std::chrono::nanoseconds>(chrono_end - gstate.chrono_start);
+
+		// // Output the time spent
+		// std::cout << "Time spent index.cluster+config (ns): " << duration.count() << " nanoseconds" << std::endl;
+
+		// gstate.idx_creation_tasks.push_back({
+		// 			{"task", "index.cluster+config"},
+		// 			{"duration (ns)", duration.count()},
+		// 			{"duration (ms)", duration.count() / 1000000 }
+		// 		});
+
+
 		index.reset();
+
+		// // NEXT TASK
+
+		// // Start timing
+		// gstate.chrono_start = std::chrono::high_resolution_clock::now();
 
 		gstate.cluster_centroid_size = 0;
 
@@ -619,6 +665,22 @@ public:
 				gstate.countMap[centroid_key]++;
 			}
 		}
+		
+		// // Stop timing
+		// chrono_end = std::chrono::high_resolution_clock::now();
+
+		// // Calculate the duration
+		// duration = std::chrono::duration_cast<std::chrono::nanoseconds>(chrono_end - gstate.chrono_start);
+
+		// // Output the time spent
+		// std::cout << "Time spent counting cluster vectors: " << duration.count() << " nanoseconds" << std::endl;
+
+		// gstate.idx_creation_tasks.push_back({
+		// 			{"task", "counting cluster vectors"},
+		// 			{"duration (ns)", duration.count()},
+		// 			{"duration (ms)", duration.count() / 1000000 }
+		// 		});
+
 	}
 
 	void FinalizeFinish() override {
@@ -657,10 +719,36 @@ public:
 		for (size_t tnum = 0; tnum < num_threads; tnum++) {
 			construct_tasks.push_back(make_uniq<HNSWIndexConstructTask>(shared_from_this(), context, gstate, tnum, op));
 		}
+
+		// // NEXT TASK
+
+		// // Start timing
+		// gstate.chrono_start = std::chrono::high_resolution_clock::now();
+
 		SetTasks(std::move(construct_tasks));
 	}
 
 	void FinishEvent() override {
+		// // Stop timing
+		// auto chrono_end = std::chrono::high_resolution_clock::now();
+
+		// // Calculate the duration
+		// auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(chrono_end - gstate.chrono_start);
+
+		// // Output the time spent
+		// std::cout << "Time spent counting populating all indexes: " << duration.count() << " nanoseconds" << std::endl;
+
+		// gstate.idx_creation_tasks.push_back({
+		// 			{"task", "HNSWIndexConstructTask"},
+		// 			{"duration (ns)", duration.count()},
+		// 			{"duration (ms)", duration.count() / 1000000 }
+		// 		});
+		
+		// // NEXT TASK
+
+		// // Start timing
+		// gstate.chrono_start = std::chrono::high_resolution_clock::now();
+
 		auto &storage = table.GetStorage();
 		if (!storage.IsRoot()) {
 			throw TransactionException("Cannot create index on non-root transaction");
@@ -673,25 +761,6 @@ public:
 		// unum::usearch::index_dense_serialization_config_t s_config;
 		// s_config.exclude_vectors = false;
 		// s_config.use_64_bit_dimensions = false; // DuckDB currently only supports 32-bit, single-precision
-
-    	// nlohmann::json jsonOutput;
-
-		// std::ifstream inputFile("clustering_memory_measures.json");
-		// if (inputFile.good()) {
-		// 	inputFile >> jsonOutput;
-		// 	inputFile.close();
-		// }
-
-		// // Create a new JSON object for this run
-		// nlohmann::json newRun;
-		// newRun["dataset_size"] = gstate.train_data.size();
-		// newRun["vectory_dimensionality"] = gstate.train_data[0].size();
-		// newRun["cluster_amount"] = gstate.cluster_amount;
-		// size_t total_memory_usage = 0;
-		// size_t total_serialized_length = 0;
-
-		// // Memory measures indexes array
-    	// nlohmann::json memory_measures_indexes = nlohmann::json::array();
 
 		// Add all cluster indexes to table
 		for (auto &cluster_index : gstate.cluster_indexes) {
@@ -727,17 +796,46 @@ public:
 				auto &duck_index = index_entry->Cast<DuckIndexEntry>();
 				duck_index.initial_index_size = index->Cast<BoundIndex>().GetInMemorySize();
 
-				// total_memory_usage += index->index.memory_usage();
-				// total_serialized_length += index->index.serialized_length(s_config);
+				// auto max_level = index->index.max_level();
+				// auto stats_per_level = new unum::usearch::index_dense_gt<duckdb::row_t, unum::usearch::default_slot_t>::stats_t[max_level + 1];
 
-				// memory_measures_indexes.push_back({
+				// index->index.stats(stats_per_level, max_level);
+
+				// // Create a JSON array to store stats for each level
+				// nlohmann::json stats_array = nlohmann::json::array();
+
+				// for (std::size_t level = 0; level <= max_level; ++level) {
+				// 	std::cout << "Level " << level << ":" << std::endl;
+				// 	std::cout << "Nodes: " << stats_per_level[level].nodes << std::endl;
+				// 	std::cout << "Edges: " << stats_per_level[level].edges << std::endl;
+				// 	std::cout << "Max Edges: " << stats_per_level[level].max_edges << std::endl;
+				// 	std::cout << "Allocated Bytes: " << stats_per_level[level].allocated_bytes << std::endl;
+				// 	std::cout << "-----------------------" << std::endl;
+
+				// 	// Add the stats of the current level to the stats_array
+				// 	stats_array.push_back({
+				// 		{"level", level},
+				// 		{"nodes", stats_per_level[level].nodes},
+				// 		{"edges", stats_per_level[level].edges},
+				// 		{"max_edges", stats_per_level[level].max_edges},
+				// 		{"allocated_bytes", stats_per_level[level].allocated_bytes}
+				// 	});
+				// }
+
+				// cluster_stats.push_back({
 				// 	{"index_name", info.index_name},
+				// 	{"size", index->index.size()},
 				// 	{"memory_usage", index->index.memory_usage()},
-				// 	{"serialized_length", index->index.serialized_length(s_config)}
+				// 	{"serialized_length", index->index.serialized_length(s_config)},
+				// 	{"memory_usage", index->index.memory_usage()},
+				// 	{"serialized_length", index->index.max_level()},
+				// 	{"stats_per_level", stats_array}
 				// });
 
-				// Finally add it to storage
+			    // Finally add it to storage
 				storage.AddIndex(std::move(index));
+				// Cleanup allocated memory
+				// delete[] stats_per_level;
 		}
 
 		// And the centroid index
@@ -771,30 +869,45 @@ public:
 				auto &duck_index = index_entry->Cast<DuckIndexEntry>();
 				duck_index.initial_index_size = index->Cast<BoundIndex>().GetInMemorySize();
 
-				// total_memory_usage += index->index.memory_usage();
-				// total_serialized_length += index->index.serialized_length(s_config);
-
-				// memory_measures_indexes.push_back({
-				// 	{"index_name", info.index_name},
-				// 	{"memory_usage", index->index.memory_usage()},
-				// 	{"serialized_length", index->index.serialized_length(s_config)}
-				// });
-
 				// Finally add it to storage
 				storage.AddIndex(std::move(index));
 
-				// // Update the new run object with totals and the indexes array
-				// newRun["total_memory_usage"] = total_memory_usage;
-				// newRun["total_serialized_length"] = total_serialized_length;
-				// newRun["memory_measures_indexes"] = memory_measures_indexes;
+				// // Stop timing
+				// chrono_end = std::chrono::high_resolution_clock::now();
 
-				// // Append the new run to the main JSON object (which might be an array of runs)
-				// jsonOutput.push_back(newRun);
+				// // Calculate the duration
+				// duration = std::chrono::duration_cast<std::chrono::nanoseconds>(chrono_end - gstate.chrono_start);
 
-				// // Write the updated JSON back to the file
-				// std::ofstream outputFile("clustering_memory_measures.json");
+				// // Output the time spent
+				// std::cout << "Time spent adding all indexes to storage: " << duration.count() << " nanoseconds" << std::endl;
+
+				// gstate.idx_creation_tasks.push_back({
+				// 			{"task", "add indexes to storage"},
+				// 			{"duration (ns)", duration.count()},
+				// 			{"duration (ms)", duration.count() / 1000000 }
+				// 		});
+				
+				// nlohmann::json newOperatorRun;
+
+				// newOperatorRun["dataset"] = gstate.storage->GetDataTableInfo()->GetTableName();
+				// newOperatorRun["cluster_amount"] = gstate.cluster_amount;
+				// newOperatorRun["operator"] = "CREATE INDEX";
+				// newOperatorRun["tasks"] = gstate.idx_creation_tasks;
+
+				// std::ifstream inputFileTime("clustering_time_operations_idx_create.json");
+
+				// nlohmann::json jsonOutput;
+
+				// if (inputFileTime.good()) {
+				// 	inputFileTime >> jsonOutput;
+				// 	inputFileTime.close();
+				// }
+
+				// jsonOutput.push_back(newOperatorRun);
+
+				// std::ofstream outputFile("clustering_time_operations_idx_create.json");
 				// outputFile << jsonOutput.dump(4); // Pretty-printing with 4 spaces indent
-				// outputFile.close();
+				// outputFile.close();		
 	}
 };
 

@@ -4,6 +4,8 @@ all: duckdb-vss bm_performance
 
 all-bm_memory: duckdb-vss bm_memory
 
+all-main: duckdb-vss main
+
 clean:
 	rm -rf build
 
@@ -30,3 +32,7 @@ bm_memory: clean prepare-build
 results: clean prepare-build
 	cd build && cmake .. && make
 	build/results
+
+main: clean prepare-build
+	cd build && cmake .. && make
+	build/example
