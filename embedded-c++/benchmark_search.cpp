@@ -104,7 +104,9 @@ static void BM_ClusteringSearchRandomQuery(benchmark::State& state) {
     auto query_vector = GetRandomRow(table_name);
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;"));
+        auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+        benchmark::DoNotOptimize(result);
+        benchmark::ClobberMemory();
     }
 }
 
@@ -123,20 +125,22 @@ static void BM_ClusteringSearchControlledQuery(benchmark::State& state) {
     auto query_vector = GetFirstRow(table_name);
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;"));
+        auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+        benchmark::DoNotOptimize(result);
+        benchmark::ClobberMemory();
     }
 }
 
 void RegisterBenchmarks() {
     std::vector<int> cluster_amounts = {5, 10, 15, 20};
-    for (int tableIndex = 0; tableIndex <= 1; ++tableIndex) {
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
 
             auto table_name = GetTableName(tableIndex);
             auto vector_dimensionality = GetVectorDimensionality(tableIndex);
 
             SetupTable(table_name, vector_dimensionality);
         for (int cluster_amount : cluster_amounts) {
-			benchmark::RegisterBenchmark("BM_ClusteringSearchControlledQuery", BM_ClusteringSearchControlledQuery)->Repetitions(20)
+			benchmark::RegisterBenchmark("BM_ClusteringSearchControlledQuery", BM_ClusteringSearchControlledQuery)->Repetitions(100)
                 ->ComputeStatistics("max", [](const std::vector<double>& v) -> double {
                     return *(std::max_element(std::begin(v), std::end(v)));
                 })
@@ -145,7 +149,7 @@ void RegisterBenchmarks() {
                 })
                 ->DisplayAggregatesOnly(true)->ReportAggregatesOnly(true)
                 ->Args({tableIndex, cluster_amount});
-            benchmark::RegisterBenchmark("BM_ClusteringSearchRandomQuery", BM_ClusteringSearchRandomQuery)->Repetitions(20)
+            benchmark::RegisterBenchmark("BM_ClusteringSearchRandomQuery", BM_ClusteringSearchRandomQuery)->Repetitions(100)
                 ->ComputeStatistics("max", [](const std::vector<double>& v) -> double {
                     return *(std::max_element(std::begin(v), std::end(v)));
                 })
