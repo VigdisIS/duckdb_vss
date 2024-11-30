@@ -1,0 +1,6 @@
+[
+	{"dataset":"mnis","mean_duration_ns":114043.71,"median_duration_ns":10688.0,"stddev_duration_ns":258086.82266684712,"cv_duration_ns":2.263051795376063,"mean_total_duration_ns":128491.64,"median_total_duration_ns":26645.5,"stddev_total_duration_ns":258687.9354052537,"cv_total_duration_ns":2.013266663926569},
+	{"dataset":"sif","mean_duration_ns":3122.96,"median_duration_ns":2875.0,"stddev_duration_ns":619.6180465709207,"cv_duration_ns":0.19840729518499137,"mean_total_duration_ns":11970.86,"median_total_duration_ns":10667.0,"stddev_total_duration_ns":3683.8060056513186,"cv_total_duration_ns":0.3077311075103475},
+	{"dataset":"gis","mean_duration_ns":12599.6,"median_duration_ns":12020.5,"stddev_duration_ns":1637.7694735477419,"cv_duration_ns":0.1299858307841314,"mean_total_duration_ns":29334.53,"median_total_duration_ns":29750.0,"stddev_total_duration_ns":3447.71727864022,"cv_total_duration_ns":0.11753102158583144},
+	{"dataset":"fashion_mnis","mean_duration_ns":73488.27,"median_duration_ns":30041.5,"stddev_duration_ns":165362.31079240257,"cv_duration_ns":2.2501864691113638,"mean_total_duration_ns":93066.65,"median_total_duration_ns":54812.5,"stddev_total_duration_ns":166364.06554321817,"cv_total_duration_ns":1.787579820947871}
+]

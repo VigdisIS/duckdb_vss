@@ -1,0 +1,10 @@
+[
+	{"dataset":"fashion_mnist","mean_duration_ns":2747012271.0,"median_duration_ns":2731984125.5,"stddev_duration_ns":82211636.38539235,"cv_duration_ns":0.02992765531238952},
+	{"dataset":"fashion_mnist","mean_duration_ns":513340.3333333333,"median_duration_ns":508813.0,"stddev_duration_ns":22429.55031797709,"cv_duration_ns":0.04369333337268211},
+	{"dataset":"gist","mean_duration_ns":177987057437.75,"median_duration_ns":176336009313.0,"stddev_duration_ns":5381995622.0317335,"cv_duration_ns":0.030238129106179852},
+	{"dataset":"gist","mean_duration_ns":8686822.75,"median_duration_ns":8666916.5,"stddev_duration_ns":111856.28098703241,"cv_duration_ns":0.012876546950037909},
+	{"dataset":"mnits","mean_duration_ns":498367.8333333333,"median_duration_ns":491874.5,"stddev_duration_ns":26897.844340516695,"cv_duration_ns":0.053971870858137976},
+	{"dataset":"mnist","mean_duration_ns":3318514271.0,"median_duration_ns":3296526958.5,"stddev_duration_ns":112392996.86428313,"cv_duration_ns":0.03386846874412104},
+	{"dataset":"sift","mean_duration_ns":8482437.75,"median_duration_ns":8428917.0,"stddev_duration_ns":383669.13336656365,"cv_duration_ns":0.04523099899749499},
+	{"dataset":"sift","mean_duration_ns":39162898510.5,"median_duration_ns":38776646146.5,"stddev_duration_ns":1058083040.8560703,"cv_duration_ns":0.027017485454310455}
+]

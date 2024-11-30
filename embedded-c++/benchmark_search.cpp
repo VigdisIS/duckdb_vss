@@ -130,7 +130,7 @@ void RegisterBenchmarks() {
 
             SetupTable(table_name, vector_dimensionality);
 
-			benchmark::RegisterBenchmark("BM_VSSSearchControlledQuery", BM_VSSSearchControlledQuery)->Repetitions(20)
+			benchmark::RegisterBenchmark("BM_VSSSearchControlledQuery", BM_VSSSearchControlledQuery)->Repetitions(100)
                 ->ComputeStatistics("max", [](const std::vector<double>& v) -> double {
                     return *(std::max_element(std::begin(v), std::end(v)));
                 })
@@ -139,7 +139,7 @@ void RegisterBenchmarks() {
                 })
                 ->DisplayAggregatesOnly(true)->ReportAggregatesOnly(true)
                 ->Args({tableIndex});
-            benchmark::RegisterBenchmark("BM_VSSSearchRandomQuery", BM_VSSSearchRandomQuery)->Repetitions(20)
+            benchmark::RegisterBenchmark("BM_VSSSearchRandomQuery", BM_VSSSearchRandomQuery)->Repetitions(100)
                 ->ComputeStatistics("max", [](const std::vector<double>& v) -> double {
                     return *(std::max_element(std::begin(v), std::end(v)));
                 })
@@ -152,9 +152,37 @@ void RegisterBenchmarks() {
 }
 
 int main(int argc, char** argv) {
-    RegisterBenchmarks();
-    benchmark::Initialize(&argc, argv);
-    benchmark::RunSpecifiedBenchmarks();
+    // RegisterBenchmarks();
+    // benchmark::Initialize(&argc, argv);
+    // benchmark::RunSpecifiedBenchmarks();
+
+    // int table = 0;
+
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
+
+
+        auto table_name = GetTableName(tableIndex);
+        auto vector_dimensionality = GetVectorDimensionality(tableIndex);
+
+        SetupTable(table_name, vector_dimensionality);
+
+        auto vec_dim_string = std::to_string(vector_dimensionality);
+
+        auto indexes_count = con.Query("select count(index_name) from duckdb_indexes;");
+        if(indexes_count->GetValue(0, 0) != 1) {
+            SetupIndex(table_name);
+        }
+
+        auto query_vector = GetFirstRow(table_name);
+
+        for (int i = 0; i < 100; i++) {
+            auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+            benchmark::DoNotOptimize(result);
+            benchmark::ClobberMemory();
+        }
+
+        CleanUpIndexes();
+    }
 
     return 0;
 }

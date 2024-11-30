@@ -161,8 +161,7 @@ public:
 
 		// idx_searches.push_back({
 		// 					{"index", last_index},
-		// 					{"duration (ns)", chrono_duration.count()},
-		// 					{"duration (ms)", chrono_duration.count() / 1000000 }
+		// 					{"duration (ns)", chrono_duration.count()}
 		// 				});
 
 		if (!bind_data) {
@@ -189,7 +188,7 @@ public:
 			// // Full try optimize
 			// nlohmann::json jsonOutputS;
 			
-			// std::ifstream inputFileTimeS("vss_time_operations_search_2.json");
+			// std::ifstream inputFileTimeS("vss_time_operations_search_bm.json");
 			
 			// if (inputFileTimeS.good()) {
 			// 	inputFileTimeS >> jsonOutputS;
@@ -199,13 +198,12 @@ public:
 			// nlohmann::json newSearch;
 
 			// newSearch["dataset"] = table_info.GetTableName();
-			// newSearch["operator"] = "SCAN";
 			// newSearch["total_duration (ns)"] = total_duration.count();
 			// newSearch["searches"] = idx_searches;
 
 			// jsonOutputS.push_back(newSearch);
 
-			// std::ofstream outputFile("vss_time_operations_search_2.json");
+			// std::ofstream outputFile("vss_time_operations_search_bm.json");
 			// outputFile << jsonOutputS.dump(4); // Pretty-printing with 4 spaces indent
 			// outputFile.close();
 

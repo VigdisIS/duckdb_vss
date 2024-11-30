@@ -68,7 +68,7 @@ static void BM_VSSIndexCreation(benchmark::State& state) {
 
 void RegisterBenchmarks() {
     for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
-            benchmark::RegisterBenchmark("BM_VSSIndexCreation", BM_VSSIndexCreation)->Repetitions(5) // last two are FOUL😭 I simply do not have the time
+            benchmark::RegisterBenchmark("BM_VSSIndexCreation", BM_VSSIndexCreation)->Repetitions((tableIndex <= 1) ? 5 : 3) // last two are FOUL😭 I simply do not have the time
                 ->ComputeStatistics("max", [](const std::vector<double>& v) -> double {
                     return *(std::max_element(std::begin(v), std::end(v)));
                 })

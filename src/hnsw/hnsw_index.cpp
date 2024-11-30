@@ -7,6 +7,10 @@
 #include "duckdb/storage/table/scan_state.hpp"
 #include "hnsw/hnsw.hpp"
 
+// #include <fstream>
+// #include <iostream>
+// #include <nlohmann/json.hpp>
+
 namespace duckdb {
 //------------------------------------------------------------------------------
 // Linked Blocks
@@ -298,6 +302,34 @@ unique_ptr<IndexScanState> HNSWIndex::InitializeScan(float *query_vector, idx_t 
 	// Acquire a shared lock to search the index
 	auto lock = rwlock.GetSharedLock();
 	auto search_result = index.ef_search(query_vector, limit, ef_search);
+
+	// // Full try optimize
+	// 		nlohmann::json jsonOutputS;
+			
+	// 		std::ifstream inputFileTimeS("vss_index_search_data.json");
+			
+	// 		if (inputFileTimeS.good()) {
+	// 			inputFileTimeS >> jsonOutputS;
+	// 			inputFileTimeS.close();
+	// 		}
+
+	// 		nlohmann::json newSearch;
+
+	// 		newSearch["dataset"] = "fashion-mnist";
+	// 		newSearch["visited_members"] = search_result.visited_members;
+	// 		newSearch["computed_distances"] = search_result.computed_distances;
+	// 		newSearch["count"] = search_result.count;
+
+
+	// 		jsonOutputS.push_back(newSearch);
+
+	// 		std::ofstream outputFile("vss_index_search_data.json");
+	// 		outputFile << jsonOutputS.dump(4); // Pretty-printing with 4 spaces indent
+	// 		outputFile.close();
+
+	// std::cout << search_result.visited_members << std::endl;
+	// std::cout << search_result.computed_distances << std::endl;
+	// std::cout << search_result.count << std::endl;
 
 	state->current_row = 0;
 	state->total_rows = search_result.size();

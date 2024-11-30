@@ -1,0 +1,262 @@
+[
+    {
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2888280167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 518084,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3535527791,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 475083,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 40724255041,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8659209,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 174046516917,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8634541,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2718945084,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 550875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2647022333,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 523500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2780030916,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 499542,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2745023167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 489333,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2702771959,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 498708,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3304606750,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 484250,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3288447167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 496000,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3317523834,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 490708,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3241635917,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 493041,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3223344167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 551125,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38784262084,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8198625,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38374046708,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8938500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38769030209,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8133417,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 178625501709,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8576625,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 173914896667,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8699292,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 185361314458,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8836833,
+                "task": "add indexes to storage"
+            }
+        ]
+    }
+]

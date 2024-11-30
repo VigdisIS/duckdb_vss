@@ -1,0 +1,4002 @@
+[
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 24958,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 63000
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24750
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29416
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28917
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10334,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22500
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10334,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23500
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27250
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 44083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 57208
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 16959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 39167
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 942000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 965416
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 54417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 76500
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 50417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 67750
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 65708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 86583
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 61166,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 80125
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 994458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 1024958
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 56625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 79708
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 37375
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 18584,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 38792
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 55458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 71291
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26000
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 14333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30417
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 52583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 74917
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 58125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 80708
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12291,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22333
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12709,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 45125
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 14125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30584
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 57459,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 78125
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 255042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 280667
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 54625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 76542
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 14167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 39334
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31791
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 190750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 211917
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25917
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 140542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 158916
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 55708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 70500
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30375
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 35125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 59709
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 16791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 39416
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 54042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 74875
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31791
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24625
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 154000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 179542
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 50875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 64916
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 56042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 75083
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 85292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 108916
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25000
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 21541,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 42000
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26667
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 148042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 168042
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 50125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 67084
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22375
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 35041
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 51666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 68708
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11291,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29417
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 60708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 82166
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 65959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 88958
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 17833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 45500
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 61583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 78834
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33459
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 37750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 56209
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 89250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 103167
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 48625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 59917
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 40416,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 59250
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 15417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 39875
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22292
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 39541,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 53416
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29750
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26542
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25583
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 14750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 45417
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 956250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 973583
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 49625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 68333
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 53083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 72791
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 58791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 75208
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34584
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23792
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28166
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31708
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27084
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34208
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33833
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31500
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 16167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 35916
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 268791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 281666
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25917
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 153458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 170291
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 76750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 110708
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 133291,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 154667
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 63250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 88334
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 53375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 76041
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 50208,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 59459
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34416
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 50417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 70416
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 52333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 69042
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 138625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 158084
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30167
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 42708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 75209
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 174000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 202417
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 41792
+    },
+    {
+        "dataset": "fashion_mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 16333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 35417
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 95292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 116250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26334
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24416
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25500
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20541
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 90625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 107791
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 88334,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 99209
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 88708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 100875
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21958
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23208
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24750
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21666
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30167
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28500
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 87083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 101917
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26916
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21417
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 90125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 108209
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 88833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 103750
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21375
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 388041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 407750
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 741291,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 757083
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 372750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 387000
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 370625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 381541
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 294000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 308875
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 324750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 337458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31541
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10584,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24916
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20833
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25167
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25875
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 322625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 336042
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26125
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 327666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 341167
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 291000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 311291
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22625
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18500
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18291
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17459
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8958,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 16834
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 13916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 95833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 111667
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 99666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 111167
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31500
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18625
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 329791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 349250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 14083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27459
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9541,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20917
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 1137500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 1150833
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 14042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31500
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9166,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 19125
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26750
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10709,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 101750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 114375
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33792
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27917
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 19625
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22625
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17750
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17666
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 88458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 101584
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 86417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 96917
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 84500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 93708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 85416,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 94166
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 96833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 106042
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23375
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18042
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23666
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 36542
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30209
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 35166
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20458
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 12875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 41792
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 181083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 210917
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 38250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18542
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 1512084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 1530667
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 10292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20542
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 369709,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 385708
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9541,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22083
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26541
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27250
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 1389375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 1404167
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 410958,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 428375
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 583417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 601084
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 11500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23209
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 8917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21125
+    },
+    {
+        "dataset": "mnist_train",
+        "searches": [
+            {
+                "duration (ns)": 9542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20542
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30209
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13459
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9917
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9959
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 11500
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9708
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9416
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9209
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4541,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 18917
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 11209
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10041
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10667
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13959
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9333
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9125
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 11000
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9583
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12208
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 14292
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3208,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 15333
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10291
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9208
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10167
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9291
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12084
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 11417
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9791
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2584,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9292
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3208,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12416
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 5292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 21333
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13541
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9459
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9500
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 15500
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12166
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3416,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 11666
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 6333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26959
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 14042
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10667
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17167
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12750
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10917
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 15458
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10875
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4416,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 17750
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25583
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13833
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13250
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10208
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10000
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9958
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10917
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9167
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12166
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9625
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12000
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9917
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9708
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2916,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 11125
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2709,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13500
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9709
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9208
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13041
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 4084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 16334
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 14917
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10500
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10667
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9750
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 14542
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10000
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9583
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10334
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12333
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 14667
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9333
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9250
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9334
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12042
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9292
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10125
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9584
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12583
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13625
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9542
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13708
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13625
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9542
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9125
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2709,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9333
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9417
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9875
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2958,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9791
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 14458
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2833,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9375
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9750
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9458
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 3000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 10500
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 13042
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 12834
+    },
+    {
+        "dataset": "sift_train",
+        "searches": [
+            {
+                "duration (ns)": 2750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 9250
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 13792,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33000
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 17708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 35083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30625
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25417
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 14083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31875
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 14000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33208
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26041
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 15458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33834
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 13250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29625
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 13709,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32000
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27500
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 16417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 39333
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32625
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26750
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34542
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 15125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29833
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32959
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 16083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34292
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29667
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28583
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11666,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27250
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31750
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 15291,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32791
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 10834,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25208
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26208
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32375
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32416
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11166,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 22250
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29334
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 13458,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31000
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28458
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23833
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 14959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29250
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29000
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 14917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32584
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12291,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27291
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12083,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 13459,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31000
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 14375,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 33416
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31375
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 14000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11416,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34625
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 16917,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30458
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 10667,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29209
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12208,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34750
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12333,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28958
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 34291
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20333
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11209,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 23333
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 32625
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25291
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30250
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12292,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26667
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30167
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 15334,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30125
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11958,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24375
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12584,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28417
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 15500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11417,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28875
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11958,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28459
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31542
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26375
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11750,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26916
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25292
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 16625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30750
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11000,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28834
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 16042,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 35083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11583,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29959
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12041,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27667
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12125,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 27792
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 17208,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 31875
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12084,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25667
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 10708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 20708
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30292
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12875,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24417
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11791,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25083
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 28208
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11250,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25042
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25250
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 10959,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 24875
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 15500,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29000
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11542,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 30208
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 10708,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 26166
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 12625,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 29833
+    },
+    {
+        "dataset": "gist_train",
+        "searches": [
+            {
+                "duration (ns)": 11167,
+                "index": "vss_hnsw_index"
+            }
+        ],
+        "total_duration (ns)": 25292
+    }
+]

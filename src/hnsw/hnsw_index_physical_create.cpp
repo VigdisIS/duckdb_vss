@@ -271,8 +271,7 @@ public:
 
 		// gstate.idx_creation_tasks.push_back({
 		// 			{"task", "HNSWIndexConstructTask"},
-		// 			{"duration (ns)", duration.count()},
-		// 			{"duration (ms)", duration.count() / 1000000 }
+		// 			{"duration (ns)", duration.count()}
 		// 		});
 		
 		// // NEXT TASK
@@ -325,17 +324,15 @@ public:
 
 		// gstate.idx_creation_tasks.push_back({
 		// 			{"task", "add indexes to storage"},
-		// 			{"duration (ns)", duration.count()},
-		// 			{"duration (ms)", duration.count() / 1000000 }
+		// 			{"duration (ns)", duration.count()}
 		// 		});
 		
 		// nlohmann::json newOperatorRun;
 
 		// 		newOperatorRun["dataset"] = storage.GetDataTableInfo()->GetTableName();
-		// 		newOperatorRun["operator"] = "CREATE INDEX";
 		// 		newOperatorRun["tasks"] = gstate.idx_creation_tasks;
 
-		// 		std::ifstream inputFileTime("vss_time_operations_idx_create_2.json");
+		// 		std::ifstream inputFileTime("vss_time_operations_index_bm.json");
 
 		// 		nlohmann::json jsonOutput;
 
@@ -346,7 +343,7 @@ public:
 
 		// 		jsonOutput.push_back(newOperatorRun);
 
-		// 		std::ofstream outputFile("vss_time_operations_idx_create_2.json");
+		// 		std::ofstream outputFile("vss_time_operations_index_bm.json");
 		// 		outputFile << jsonOutput.dump(4); // Pretty-printing with 4 spaces indent
 		// 		outputFile.close();	
 	}
