@@ -96,7 +96,9 @@ static void BM_VSSSearchRandomQuery(benchmark::State& state) {
     auto query_vector = GetRandomRow(table_name);
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;"));
+        auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+        benchmark::DoNotOptimize(result);
+        benchmark::ClobberMemory();
     }
 }
 
@@ -114,7 +116,9 @@ static void BM_VSSSearchControlledQuery(benchmark::State& state) {
     auto query_vector = GetFirstRow(table_name);
 
 	for (auto _ : state) {
-        benchmark::DoNotOptimize(con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;"));
+        auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
+        benchmark::DoNotOptimize(result);
+        benchmark::ClobberMemory();
     }
 }
 

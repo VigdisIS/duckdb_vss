@@ -15,6 +15,11 @@
 #include "hnsw/hnsw_index.hpp"
 #include "hnsw/hnsw_index_scan.hpp"
 
+// #include <chrono>
+// #include <fstream>
+// #include <nlohmann/json.hpp>
+// #include <iostream>
+
 namespace duckdb {
 
 //-----------------------------------------------------------------------------
@@ -27,6 +32,8 @@ public:
 	}
 
 	static bool TryOptimize(ClientContext &context, unique_ptr<LogicalOperator> &plan) {
+		// auto total_start = std::chrono::high_resolution_clock::now();
+
 		// Look for a TopN operator
 		auto &op = *plan;
 
@@ -100,7 +107,12 @@ public:
 		unique_ptr<HNSWIndexScanBindData> bind_data = nullptr;
 		vector<reference<Expression>> bindings;
 
+		// auto chrono_starts = std::chrono::high_resolution_clock::now();
+		// std::string last_index;
 		table_info.GetIndexes().BindAndScan<HNSWIndex>(context, table_info, [&](HNSWIndex &hnsw_index) {
+
+			// last_index = hnsw_index.GetIndexName();
+
 			// Reset the bindings
 			bindings.clear();
 
@@ -140,6 +152,19 @@ public:
 			return true;
 		});
 
+		// auto chrono_ends = std::chrono::high_resolution_clock::now();
+		// auto chrono_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(chrono_ends - chrono_starts);
+
+		// std::cout << "Time spent searching index " << last_index << ": " << chrono_duration.count() << " nanoseconds" << std::endl;
+
+		// nlohmann::json idx_searches = nlohmann::json::array();
+
+		// idx_searches.push_back({
+		// 					{"index", last_index},
+		// 					{"duration (ns)", chrono_duration.count()},
+		// 					{"duration (ms)", chrono_duration.count() / 1000000 }
+		// 				});
+
 		if (!bind_data) {
 			// No index found
 			return false;
@@ -155,6 +180,35 @@ public:
 
 			// Remove the TopN operator
 			plan = std::move(top_n.children[0]);
+
+			// auto total_end = std::chrono::high_resolution_clock::now();
+			// auto total_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(total_end - total_start);
+
+			// std::cout << "Total time spent TryOptimize: " << total_duration.count() << " nanoseconds" << std::endl;
+
+			// // Full try optimize
+			// nlohmann::json jsonOutputS;
+			
+			// std::ifstream inputFileTimeS("vss_time_operations_search_2.json");
+			
+			// if (inputFileTimeS.good()) {
+			// 	inputFileTimeS >> jsonOutputS;
+			// 	inputFileTimeS.close();
+			// }
+
+			// nlohmann::json newSearch;
+
+			// newSearch["dataset"] = table_info.GetTableName();
+			// newSearch["operator"] = "SCAN";
+			// newSearch["total_duration (ns)"] = total_duration.count();
+			// newSearch["searches"] = idx_searches;
+
+			// jsonOutputS.push_back(newSearch);
+
+			// std::ofstream outputFile("vss_time_operations_search_2.json");
+			// outputFile << jsonOutputS.dump(4); // Pretty-printing with 4 spaces indent
+			// outputFile.close();
+
 			return true;
 		}
 

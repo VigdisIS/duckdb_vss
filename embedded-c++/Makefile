@@ -4,6 +4,8 @@ all: duckdb-vss bm_performance
 
 all-bm_memory: duckdb-vss bm_memory
 
+all-main: duckdb-vss main
+
 clean:
 	rm -rf build
 
@@ -18,8 +20,8 @@ prepare-build:
 
 bm_performance: clean prepare-build
 	cd build && cmake .. && make
-	build/benchmark_search --benchmark_out=bm_vss_search_time.json --benchmark_out_format=json
-	build/benchmark_idx_creation --benchmark_out=bm_vss_idx_creation_time.json --benchmark_out_format=json
+	build/benchmark_search --benchmark_out=bm_vss_search_time_hmm.json --benchmark_out_format=json
+	# build/benchmark_idx_creation --benchmark_out=bm_vss_idx_creation_time.json --benchmark_out_format=json
 
 # Uncomment JSON output in physical operator before running this
 bm_memory: clean prepare-build
@@ -29,3 +31,7 @@ bm_memory: clean prepare-build
 results: clean prepare-build
 	cd build && cmake .. && make
 	build/results
+
+main: clean prepare-build
+	cd build && cmake .. && make
+	build/example
