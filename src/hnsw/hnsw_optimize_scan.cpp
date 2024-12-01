@@ -165,31 +165,6 @@ public:
 
 			key = centroid.member.key;
 
-			// // Convert the key to a string representation
-			// auto string_val = std::to_string(key);
-
-			// // // Use setenv to set the environment variable
-			// // int result = setenv("CLUSTER_INDEX", string_val.c_str(), 1);
-			// // if(result != 0) {
-			// // 	std::cerr << "Failed to set CLUSTER_INDEX" << std::endl;
-			// // }
-
-			// // // Convert the key to a string representation
-			// // auto string_val = std::to_string(key);
-
-			// // Open a file in append mode.
-    		// std::ofstream outFile("cluster_indexes.txt");
-
-			// if (outFile.is_open()) {
-			// 	// Write the string_val to the file
-			// 	outFile << string_val;
-
-			// 	// Close the file after writing
-			// 	outFile.close();
-			// } else {
-			// 	std::cerr << "Failed to open file for writing." << std::endl;
-			// }
-
 			return true;
 		});
 
@@ -202,10 +177,9 @@ public:
 
 		// idx_searches.push_back({
 		// 					{"index", "centroid_index"},
-		// 					{"duration (ns)", chrono_duration.count()},
-		// 					{"duration (ms)", chrono_duration.count() / 1000000 }
+		// 					{"duration (ns)", chrono_duration.count()}
 		// 				});
-		
+
 		// auto chrono_start_second = std::chrono::high_resolution_clock::now();
 
 		// std::string last_index;
@@ -262,9 +236,22 @@ public:
 
 		// idx_searches.push_back({
 		// 					{"index", last_index},
-		// 					{"duration (ns)", chrono_duration_second.count()},
-		// 					{"duration (ms)", chrono_duration_second.count() / 1000000 }
+		// 					{"duration (ns)", chrono_duration_second.count()}
 		// 				});
+
+	
+			// // Open a file in append mode.
+    		// std::ofstream outFile("cluster_indexes.txt");
+
+			// if (outFile.is_open()) {
+			// 	// Write the string_val to the file
+			// 	outFile << last_index;
+
+			// 	// Close the file after writing
+			// 	outFile.close();
+			// } else {
+			// 	std::cerr << "Failed to open file for writing." << std::endl;
+			// }
 
 		if (!bind_data) {
 			// No index found
@@ -290,7 +277,7 @@ public:
 			// // Full try optimize
 			// nlohmann::json jsonOutputS;
 			
-			// std::ifstream inputFileTimeS("clustering_time_operations_search.json");
+			// std::ifstream inputFileTimeS("clustering_time_operations_search_bm.json");
 			
 			// if (inputFileTimeS.good()) {
 			// 	inputFileTimeS >> jsonOutputS;
@@ -301,13 +288,12 @@ public:
 
 			// newSearch["dataset"] = table_info.GetTableName();
 			// newSearch["cluster_amount"] = table_info.GetIndexes().Count() - 1;
-			// newSearch["operator"] = "SCAN";
 			// newSearch["total_duration (ns)"] = total_duration.count();
 			// newSearch["searches"] = idx_searches;
 
 			// jsonOutputS.push_back(newSearch);
 
-			// std::ofstream outputFile("clustering_time_operations_search.json");
+			// std::ofstream outputFile("clustering_time_operations_search_bm.json");
 			// outputFile << jsonOutputS.dump(4); // Pretty-printing with 4 spaces indent
 			// outputFile.close();
 			

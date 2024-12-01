@@ -1,0 +1,1796 @@
+[
+    {
+        "cluster_amount": 5,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3091350166,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 667790917,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 312583,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 3339208042,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 527792,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3049689292,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 529695875,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 540166,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2292347292,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 552041,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3072215750,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 615533792,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 342333,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 5380148333,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 587666,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2683255875,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 569832625,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 513000,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2282781542,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 643667,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3568820625,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 767061000,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 551417,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2839501333,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 507333,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3069430167,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 426558375,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 562209,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2823277709,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 538333,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3565216500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 659578584,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 516708,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2504041875,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 581917,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3127670375,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 595858042,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 384375,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2124661666,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 583292,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3052607792,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 838827875,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 533709,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2190308334,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 650208,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3544655042,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 800415417,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 661500,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 3391494917,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 523875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3589982834,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 547881500,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 247458,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2502679208,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 565250,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3331942583,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 641811958,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 394250,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2163788959,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 676833,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3380967833,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 776957083,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 597625,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2229635500,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 645416,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 40186763792,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 121458391291,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 9072208,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 37934279250,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8404958,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 41040839917,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 105672811750,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 8031125,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 41681878625,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8585333,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 41655368500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 50762071625,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 8753583,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 45005737792,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8965791,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 41663578791,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 104322614167,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 9882250,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 60246329167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8851458,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 180154662000,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 110648030208,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 10136792,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 164726720083,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8733416,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 176959899500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 103426234208,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 10963125,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 153617986875,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8561417,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 178427345833,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 116159794666,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 6616792,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 161042382000,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8453500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 175741399833,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 142324744458,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 8188375,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 180024125292,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8670458,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2657929875,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 486080125,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 520500,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 4690139750,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 573042,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2687584666,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 563090875,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 489125,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 6741880333,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 527375,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2671145167,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 484288166,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 441709,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2313024500,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 530000,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2687851584,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 675512792,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 183125,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2686925250,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 584458,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2758158292,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 484907333,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 536792,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2501792458,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 547334,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2744408250,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 558923125,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 584125,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2324258167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 540416,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2690062541,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 600469125,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 593541,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 5850100583,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 547875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2706074334,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 565167250,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 443917,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2327624125,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 585291,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2737386917,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 769442875,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 385042,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 1824751667,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 599583,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2665912917,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 549768083,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 269958,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2096731875,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 597542,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2689203834,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 666442000,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 398750,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 5274669333,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 589666,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2736153417,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 660748084,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 412791,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 1995288709,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 614542,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2689024209,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 630819250,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 455750,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 1693004958,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 645791,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2658339333,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 639029000,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 586667,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2089883375,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 698667,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2680201750,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 731833041,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 564958,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 9625286875,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 665334,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "fashion_mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 2720715916,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 693328084,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 513083,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2053996750,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 702875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3280378167,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 808075916,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 598458,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2842469042,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 585417,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3281888500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 582100958,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 675209,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2523653167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 551584,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3271051916,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 796102042,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 371417,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2792451000,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 533500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3280491375,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 789170208,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 741834,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 3578174792,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 597208,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3270339584,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 708083167,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 470042,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2566599459,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 567708,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3230882584,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 744251541,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 383542,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2577295208,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 539000,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3273909291,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 667943542,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 444042,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2324147750,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 584125,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3238310583,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 721622417,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 377375,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 3545064542,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 580042,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3298359416,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 735988000,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 548459,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2168461000,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 638875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3260581459,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 821008917,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 482833,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2099479292,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 600750,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3336547083,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 778985042,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 332125,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2173172291,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 643833,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3277695500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 912287250,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 401833,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2671185833,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 655917,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3228836500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 763919708,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 495167,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2401956375,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 690375,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3313512083,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 751342666,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 465166,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 1933114542,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 642500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3303260458,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 761066167,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 518708,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2113546584,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 647875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "mnist_train",
+        "tasks": [
+            {
+                "duration (ns)": 3272650292,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 747268792,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 447291,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 2968772500,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 668583,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38751797916,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 160876124458,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 8150042,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 50161517625,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 9134250,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 39056822875,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 107943382750,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 5273792,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 37643020042,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8950500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38466214042,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 232597749709,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 7885334,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 40633811833,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8544792,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38453391500,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 173116604833,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 13881959,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 46486908416,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 9186458,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38559279542,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 29898900541,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 6856834,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 33166849375,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 9068500,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38761885250,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 217711025167,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 10690208,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 38653627083,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8653875,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38325862167,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 190806618500,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 9444875,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 48284267000,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8694667,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "sift_train",
+        "tasks": [
+            {
+                "duration (ns)": 38611365459,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 138733346916,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 10867459,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 41893017375,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 9141166,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 170736085792,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 166802461334,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 8490542,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 268192526167,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8741125,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 5,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 170676091459,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 218664592583,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 13201917,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 183583229417,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8884292,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 171980344834,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 115272234667,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 3717583,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 244260579958,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8727625,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 10,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 171020591791,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 157764272042,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 3830583,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 435909568875,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8830917,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 170966378541,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 99605686084,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 10225792,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 149943164416,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8861125,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 15,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 171391721250,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 110414239542,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 10059375,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 137787630542,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8646792,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 171204609625,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 110849878459,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 13439791,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 378148165625,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8564417,
+                "task": "add indexes to storage"
+            }
+        ]
+    },
+    {
+        "cluster_amount": 20,
+        "dataset": "gist_train",
+        "tasks": [
+            {
+                "duration (ns)": 170696878166,
+                "task": "HNSWIndexClusteringTask"
+            },
+            {
+                "duration (ns)": 105896314708,
+                "task": "index.cluster+config"
+            },
+            {
+                "duration (ns)": 7129708,
+                "task": "counting cluster vectors"
+            },
+            {
+                "duration (ns)": 124569116333,
+                "task": "HNSWIndexConstructTask"
+            },
+            {
+                "duration (ns)": 8933542,
+                "task": "add indexes to storage"
+            }
+        ]
+    }
+]

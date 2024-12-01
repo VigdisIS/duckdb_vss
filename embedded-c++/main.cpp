@@ -134,22 +134,97 @@ void RunOnceAll(int dataset, int cluster_amount) {
         CleanUpIndexes();
 }
 
+void AggregateStats() {
+
+    std::string search_path = "clustering_time_operations_search_bm.json";
+    std::string index_path = "clustering_time_operations_index_bm.json";
+
+    con.Query("INSTALL json;");
+    con.Query("LOAD json;");
+
+    // SEARCH AGGREGATION
+
+    con.Query("CREATE TABLE results AS SELECT * FROM read_json_auto('" + search_path + "');");
+    con.Query("CREATE TABLE aaares as SELECT dataset, cluster_amount, unnest(searches, recursive := true), \"total_duration (ns)\" FROM results;");
+    con.Query("CREATE TABLE hum as SELECT dataset, cluster_amount, \"duration (ns)\", if(index = 'centroid_index', true, false) as is_centroid, \"total_duration (ns)\" FROM aaares;");
+
+    auto query = R""""(
+        CREATE TABLE aggregated_stats AS
+        SELECT
+            concat(trim(dataset, '_train'), 't') AS dataset,
+            cluster_amount,
+            is_centroid,
+            AVG("duration (ns)") AS mean_duration_ns,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "duration (ns)") AS median_duration_ns,
+            STDDEV("duration (ns)") AS stddev_duration_ns,
+            STDDEV("duration (ns)") / AVG("duration (ns)") AS cv_duration_ns,
+            AVG("total_duration (ns)") AS mean_total_duration_ns,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "total_duration (ns)") AS median_total_duration_ns,
+            STDDEV("total_duration (ns)") AS stddev_total_duration_ns,
+            STDDEV("total_duration (ns)") / AVG("total_duration (ns)") AS cv_total_duration_ns
+        FROM
+            hum
+        GROUP BY
+            dataset, cluster_amount, is_centroid ;)"""";
+
+    con.Query(query);
+    auto hem = con.Query("select * from aggregated_stats order by dataset, cluster_amount, is_centroid");
+    hem->Print();
+
+    con.Query("COPY (select * from aggregated_stats order by dataset, cluster_amount, is_centroid) TO 'clustering_scan_tasks_stats_by_cluster.json' (FORMAT JSON, ARRAY true);");
+
+
+    // INDEX AGGREGATION
+
+    con.Query("CREATE TABLE results_index AS SELECT * FROM read_json_auto('" + index_path + "');");
+    con.Query("CREATE TABLE results_unnested as SELECT dataset, cluster_amount, unnest(tasks, recursive := true) FROM results_index;");
+
+    con.Query("select * from results_unnested");
+
+    auto query_index = R""""(
+        CREATE TABLE aggregated_stats_index AS
+        SELECT
+            concat(trim(dataset, '_train'), 't') AS dataset,
+            cluster_amount,
+            task,
+            AVG("duration (ns)") AS mean_duration_ns,
+            PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "duration (ns)") AS median_duration_ns,
+            STDDEV("duration (ns)") AS stddev_duration_ns,
+            STDDEV("duration (ns)") / AVG("duration (ns)") AS cv_duration_ns
+        FROM
+            results_unnested
+        GROUP BY
+            dataset, cluster_amount, task;)"""";
+
+    con.Query(query_index);
+
+    auto hem_index = con.Query("select * from aggregated_stats_index order by dataset, cluster_amount, task");
+    hem_index->Print();
+
+    con.Query("COPY (select * from aggregated_stats_index order by dataset, cluster_amount, task) TO 'clustering_create_tasks_stats_by_cluster.json' (FORMAT JSON, ARRAY true);");
+
+    // Can also aggregate by only dataset and task, ignore cluster_amount
+
+}
+
 int main(int argc, char** argv) {
-    std::vector<int> cluster_amounts = {5, 10, 15, 20};
+    // std::vector<int> cluster_amounts = {5, 10, 15, 20};
 
-    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
-        auto table_name = GetTableName(tableIndex);
-        auto vector_dimensionality = GetVectorDimensionality(tableIndex);
+    // for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
+    //     auto table_name = GetTableName(tableIndex);
+    //     auto vector_dimensionality = GetVectorDimensionality(tableIndex);
 
-        SetupTable(table_name, vector_dimensionality);
+    //     SetupTable(table_name, vector_dimensionality);
 
-        for (int cluster_amount : cluster_amounts) {
-            RunOnceAll(tableIndex, cluster_amount);
-        }
+    //     for (int cluster_amount : cluster_amounts) {
+    //         RunOnceAll(tableIndex, cluster_amount);
+    //     }
 
-        con.Query("DROP TABLE memory." + table_name + "_train;");
-        con.Query("DROP TABLE memory." + table_name + "_test;");
-    }
+    //     con.Query("DROP TABLE memory." + table_name + "_train;");
+    //     con.Query("DROP TABLE memory." + table_name + "_test;");
+    // }
+
+    AggregateStats();
 
     return 0;
 }
