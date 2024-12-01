@@ -74,9 +74,9 @@ static void BM_ClusteringIndexCreation(benchmark::State& state) {
 
 void RegisterBenchmarks() {
     std::vector<int> cluster_amounts = {5, 10, 15, 20};
-    for (int tableIndex = 0; tableIndex <= 1; ++tableIndex) {
+    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
         for (int cluster_amount : cluster_amounts) {
-            benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)->Repetitions(tableIndex < 2 ? 5 : 3) // last two are FOUL😭 I simply do not have the time
+            benchmark::RegisterBenchmark("BM_ClusteringIndexCreation", BM_ClusteringIndexCreation)->Repetitions(tableIndex < 3 ? 5 : 2) // last two are FOUL😭 I simply do not have the time
                 ->ComputeStatistics("max", [](const std::vector<double>& v) -> double {
                     return *(std::max_element(std::begin(v), std::end(v)));
                 })

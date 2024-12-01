@@ -1,0 +1,22 @@
+[
+	{"dataset":"fashion_mnist","task":"HNSWIndexClusteringTask","mean_duration_ns":2828816204.9583335,"median_duration_ns":2713395125.0,"stddev_duration_ns":230630804.60408986,"cv_duration_ns":0.08152908775050194},
+	{"dataset":"fashion_mnist","task":"HNSWIndexConstructTask","mean_duration_ns":3292755562.5416665,"median_duration_ns":2325941146.0,"stddev_duration_ns":1965486802.3880162,"cv_duration_ns":0.5969124537355163},
+	{"dataset":"fashion_mnist","task":"add indexes to storage","mean_duration_ns":592279.4583333334,"median_duration_ns":584874.5,"stddev_duration_ns":52120.48047926547,"cv_duration_ns":0.08799981114646761},
+	{"dataset":"fashion_mnist","task":"counting cluster vectors","mean_duration_ns":461871.5,"median_duration_ns":501062.5,"stddev_duration_ns":107956.04589308356,"cv_duration_ns":0.2337361060231765},
+	{"dataset":"fashion_mnist","task":"index.cluster+config","mean_duration_ns":610980220.5416666,"median_duration_ns":608001458.5,"stddev_duration_ns":96900750.16097514,"cv_duration_ns":0.15859883332240682},
+	{"dataset":"gist","task":"HNSWIndexClusteringTask","mean_duration_ns":173329667385.33334,"median_duration_ns":171298165437.5,"stddev_duration_ns":3480736164.5711737,"cv_duration_ns":0.020081594899925965},
+	{"dataset":"gist","task":"HNSWIndexConstructTask","mean_duration_ns":215150432965.25,"median_duration_ns":172375422687.5,"stddev_duration_ns":99495320581.97871,"cv_duration_ns":0.46244536536930275},
+	{"dataset":"gist","task":"add indexes to storage","mean_duration_ns":8717385.5,"median_duration_ns":8730520.5,"stddev_duration_ns":145728.25592706984,"cv_duration_ns":0.016716968169764874},
+	{"dataset":"gist","task":"counting cluster vectors","mean_duration_ns":8833364.583333334,"median_duration_ns":9274958.5,"stddev_duration_ns":3155491.5493900315,"cv_duration_ns":0.3572241946566734},
+	{"dataset":"gist","task":"index.cluster+config","mean_duration_ns":129819040246.58333,"median_duration_ns":113061056563.0,"stddev_duration_ns":35525209433.66319,"cv_duration_ns":0.27365176453458007},
+	{"dataset":"mnist","task":"HNSWIndexClusteringTask","mean_duration_ns":3325479224.1904764,"median_duration_ns":3280491375.0,"stddev_duration_ns":107615939.82071371,"cv_duration_ns":0.03236103206956908},
+	{"dataset":"mnist","task":"HNSWIndexConstructTask","mean_duration_ns":2590792537.8095236,"median_duration_ns":2523653167.0,"stddev_duration_ns":475862677.6480009,"cv_duration_ns":0.18367455931084922},
+	{"dataset":"mnist","task":"add indexes to storage","mean_duration_ns":602190.4285714285,"median_duration_ns":597208.0,"stddev_duration_ns":54490.939769443714,"cv_duration_ns":0.09048788752539978},
+	{"dataset":"mnist","task":"counting cluster vectors","mean_duration_ns":485988.14285714284,"median_duration_ns":470042.0,"stddev_duration_ns":122873.60906772687,"cv_duration_ns":0.25283252456602795},
+	{"dataset":"mnist","task":"index.cluster+config","mean_duration_ns":743968728.1428572,"median_duration_ns":761066167.0,"stddev_duration_ns":81438535.69062059,"cv_duration_ns":0.10946499847367606},
+	{"dataset":"sift","task":"HNSWIndexClusteringTask","mean_duration_ns":39461097479.25,"median_duration_ns":38756841583.0,"stddev_duration_ns":1302888828.1079826,"cv_duration_ns":0.03301704492109188},
+	{"dataset":"sift","task":"HNSWIndexConstructTask","mean_duration_ns":43482603631.916664,"median_duration_ns":41787448000.0,"stddev_duration_ns":7189231796.300037,"cv_duration_ns":0.16533581698918942},
+	{"dataset":"sift","task":"add indexes to storage","mean_duration_ns":8848479.0,"median_duration_ns":8900979.0,"stddev_duration_ns":265237.524837987,"cv_duration_ns":0.029975493510013072},
+	{"dataset":"sift","task":"counting cluster vectors","mean_duration_ns":9065805.75,"median_duration_ns":8912895.5,"stddev_duration_ns":2185684.696130134,"cv_duration_ns":0.24109105758527136},
+	{"dataset":"sift","task":"index.cluster+config","mean_duration_ns":136158303475.58333,"median_duration_ns":130095869103.5,"stddev_duration_ns":62128892208.59506,"cv_duration_ns":0.4562989595396682}
+]
