@@ -49,7 +49,8 @@ int GetVectorDimensionality(int tableIndex) {
 }
 
 void InitializeResultsTable(Connection& con, const std::string& table_name, int& vector_dimensionality) {
-    con.Query("CREATE OR REPLACE TABLE results." + table_name + "_results (dataset_name VARCHAR, cluster_amount INT, top_k INT, test_query_vector_index INT, test_query_vector FLOAT[" + std::to_string(vector_dimensionality) + "], cluster_index INT, query_result_set VARCHAR);");
+    con.Query("CREATE OR REPLACE TABLE results." + table_name + "_results (dataset_name VARCHAR, cluster_amount INT, top_k INT, test_query_vector_index INT, test_query_vector FLOAT[" + std::to_string(vector_dimensionality) + "], cluster_index INT, result_vector_index INT, result_vector FLOAT[" + std::to_string(vector_dimensionality) + "]);");
+
     con.Query("INSERT INTO results." + table_name + "_results SELECT * FROM memory." + table_name + "_results;");
     auto res = con.Query("SELECT * FROM results." + table_name + "_results LIMIT 1;");
     assert(res->RowCount() == 1);
@@ -77,7 +78,12 @@ void GetResults() {
         std::string full_table_name = table_name + "_results";
         std::cout << "Results table: " << full_table_name << std::endl;
 
-        con.Query("CREATE OR REPLACE TABLE " + table_name + "_results (dataset_name VARCHAR, cluster_amount INT, top_k INT, test_query_vector_index INT, test_query_vector FLOAT[" + std::to_string(vector_dimensionality) + "], cluster_index INT, query_result_set VARCHAR);");
+        con.Query("CREATE OR REPLACE TABLE " + table_name + "_results (dataset_name VARCHAR, cluster_amount INT, top_k INT, test_query_vector_index INT, test_query_vector FLOAT[" + std::to_string(vector_dimensionality) + "],  cluster_index INT, result_vector_index INT, result_vector FLOAT[" + std::to_string(vector_dimensionality) + "]);");
+
+        auto abb = con.Query("CREATE SEQUENCE " + table_name + "_id_sequence START 1;");
+        abb->Print();
+        auto abbc = con.Query("ALTER TABLE memory." + table_name + "_train ADD COLUMN id INTEGER DEFAULT nextval('" + table_name + "_id_sequence');");
+        abbc->Print();
 
         Appender appender(con, full_table_name);
 
@@ -90,23 +96,13 @@ void GetResults() {
             std::cout << "Index created" << std::endl;
 
             for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
+                std::cout << "Querying for test vector " << i + 1 << "/100" << std::endl;
                 auto test_query_vector = test_vectors->GetValue(0, i);
                 auto test_query_vector_string = test_vectors->GetValue(0, i).ToString();
                 int test_query_vector_index = i;
                 auto test_query_vector_index_string = std::to_string(test_query_vector_index);
 
                 auto result = con.Query("SELECT * FROM " + table_name + "_train" + " ORDER BY array_distance(vec, " + test_query_vector_string + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
-
-                std::string result_string = "[";
-                for (idx_t j = 0; j < result->RowCount(); j++) {
-                    auto row = result->GetValue(0, j);
-                    result_string += row.ToString();
-                    // Check if this is not the last iteration
-                    if (j < result->RowCount() - 1) {
-                        result_string += ", ";
-                    }
-                }
-                result_string += "]";
 
                 std::ifstream file("cluster_indexes.txt");
                 if (file.is_open()) {
@@ -118,8 +114,22 @@ void GetResults() {
                     std::cout << "Unable to open file." << std::endl;
                 }
 
-                appender.AppendRow(Value(table_name), Value::INTEGER(cluster_amount), Value::INTEGER(100), Value::INTEGER(test_query_vector_index), Value(test_query_vector), Value(std::stoi(cluster_index)), Value(result_string));
-                
+                for (idx_t j = 0; j < result->RowCount(); j++) {
+
+                    auto result_vector = result->GetValue(0, j);
+                    auto result_vector_string = result_vector.ToString();
+                    auto result_vector_row = result->GetValue(1, j);
+                    int result_vector_index_int = result_vector_row.GetValue<int>();
+                    int result_vector_index;
+                    if (result_vector_index_int == 0) {
+                        result_vector_index = 0;
+                    } else {
+                        result_vector_index = result_vector_index_int - 1;
+                        assert(result_vector_index_int - result_vector_index == 1);
+                    }
+
+                    appender.AppendRow(Value(table_name), Value::INTEGER(cluster_amount), Value::INTEGER(100), Value::INTEGER(test_query_vector_index), Value(test_query_vector), Value(std::stoi(cluster_index)), Value::INTEGER(result_vector_index), Value(result_vector));
+                }
             }
             auto indexes = con.Query("select distinct index_name from duckdb_indexes where table_name = '" + table_name + "_train';");
             for (idx_t i = 0; i < indexes->RowCount(); i++) {
@@ -149,6 +159,9 @@ void OutputResultTables() {
         auto check = con.Query("SELECT * FROM results." + table_name + "_results LIMIT 1;");
         assert(check->RowCount() == 1);
         con.Query("COPY results." + table_name + "_results TO 'clustering_" + table_name + "_results.parquet' (FORMAT PARQUET);");
+        auto check_pq = con.Query("SELECT * from 'clustering_" + table_name + "_results.parquet' limit 1;");
+        check_pq->Print();
+        assert(check_pq->RowCount() == 1);
     }
 
     con.Query("DETACH results;");
