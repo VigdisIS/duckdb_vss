@@ -5,8 +5,7 @@
 
 using namespace duckdb;
 
-// All share the same database and connection otherwise the indexes would be lost 
-// and I DO NOT have the time to wait for 20 x 4 gist index creation time😭
+// All share the same database and connection otherwise the indexes would be lost between random/controlled queries
 DuckDB db(nullptr);
 Connection con(db);
 
@@ -163,39 +162,9 @@ void RegisterBenchmarks() {
 }
 
 int main(int argc, char** argv) {
-    // RegisterBenchmarks();
-    // benchmark::Initialize(&argc, argv);
-    // benchmark::RunSpecifiedBenchmarks();
-    std::vector<int> cluster_amounts = {5, 10, 15, 20};
-
-    for (int tableIndex = 0; tableIndex <= 3; ++tableIndex) {
-
-
-        auto table_name = GetTableName(tableIndex);
-        auto vector_dimensionality = GetVectorDimensionality(tableIndex);
-
-        SetupTable(table_name, vector_dimensionality);
-
-        auto vec_dim_string = std::to_string(vector_dimensionality);
-        for (int cluster_amount : cluster_amounts) {
-
-            auto indexes_count = con.Query("select count(index_name) from duckdb_indexes;");
-            if(indexes_count->GetValue(0, 0) != 1) {
-                SetupIndex(table_name, cluster_amount);
-            }
-
-            auto query_vector = GetFirstRow(table_name);
-
-            for (int i = 0; i < 100; i++) {
-                auto result = con.Query("SELECT * FROM memory." + table_name + "_train ORDER BY array_distance(vec, " + query_vector + "::FLOAT[" + vec_dim_string + "]) LIMIT 100;");
-                benchmark::DoNotOptimize(result);
-                benchmark::ClobberMemory();
-            }
-        }
-
-        CleanUpIndexes();
-    }
-
+    RegisterBenchmarks();
+    benchmark::Initialize(&argc, argv);
+    benchmark::RunSpecifiedBenchmarks();
 
     return 0;
 }

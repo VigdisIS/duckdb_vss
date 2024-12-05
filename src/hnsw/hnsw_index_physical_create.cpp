@@ -12,13 +12,13 @@
 #include "hnsw/hnsw_index.hpp"
 #include "usearch/duckdb_usearch.hpp"
 
-#include <chrono>
-#include <fstream>
+// #include <chrono>
+// #include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
-#include <string>
-#include <unordered_map>
-#include <vector>
+// #include <nlohmann/json.hpp>
+// #include <string>
+// #include <unordered_map>
+// #include <vector>
 
 using some_scalar_t = float;
 
@@ -260,7 +260,6 @@ unique_ptr<GlobalSinkState> PhysicalCreateHNSWIndex::GetGlobalSinkState(ClientCo
 	    make_uniq<HNSWIndex>("centroid_index", constraint_type, storage_ids, table_manager, unbound_expressions, db,
 	                         info->options, IndexStorageInfo(), gstate->cluster_amount);
 
-	// duckdb::vector<duckdb::unique_ptr<duckdb::Expression>> destination;
     for (const auto& expr : unbound_expressions) {
         // Use the Copy() method to clone each Expression
         gstate->unbound_expressions.push_back(expr->Copy());
@@ -442,7 +441,6 @@ public:
 	auto &constraint_type = gstate.info->constraint_type;
 	auto &db = gstate.storage->db;
 	auto &unbound_expressions = gstate.unbound_expressions;
-	//auto data_types = gstate.data_types;
 
 	auto &train_data = gstate.train_data;
 	auto cluster_centroid_size = gstate.cluster_centroid_size;
@@ -656,8 +654,7 @@ public:
 
 		gstate.cluster_centroid_size = 0;
 
-		// For Gist this is 1 000 000😭 
-		// must be a better way to  size of cluster indexes or at least estimate...
+		// must be a better way to get size of cluster indexes or at least estimate...
 		for (int i = 0; i < gstate.estimated_cardinality; ++i) {
 			if (gstate.cluster_centroids_keys[i] != -1) {
 				gstate.cluster_centroid_size++;

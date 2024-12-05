@@ -14,10 +14,10 @@
 #include "hnsw/hnsw_index.hpp"
 #include "hnsw/hnsw_index_scan.hpp"
 
-#include <chrono>
-#include <fstream>
-#include <nlohmann/json.hpp>
-#include <iostream>
+// #include <chrono>
+// #include <fstream>
+// #include <nlohmann/json.hpp>
+// #include <iostream>
 
 namespace duckdb {
 
@@ -32,6 +32,7 @@ public:
 
 	static bool TryOptimize(ClientContext &context, unique_ptr<LogicalOperator> &plan) {
 		// auto total_start = std::chrono::high_resolution_clock::now();
+		
 		// Look for a TopN operator
 		auto &op = *plan;
 
