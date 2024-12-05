@@ -1,44 +1,6 @@
 [
     {
-        "cluster_amount": 5,
-        "dataset_size": 60000,
-        "memory_measures_indexes": [
-            {
-                "index_name": "16255",
-                "memory_usage": 72352960,
-                "serialized_length": 34898988
-            },
-            {
-                "index_name": "32384",
-                "memory_usage": 73401536,
-                "serialized_length": 55747884
-            },
-            {
-                "index_name": "51014",
-                "memory_usage": 73401536,
-                "serialized_length": 47789428
-            },
-            {
-                "index_name": "11598",
-                "memory_usage": 72352960,
-                "serialized_length": 36097956
-            },
-            {
-                "index_name": "59206",
-                "memory_usage": 38798528,
-                "serialized_length": 22544820
-            },
-            {
-                "index_name": "centroid_index",
-                "memory_usage": 20972776,
-                "serialized_length": 16512
-            }
-        ],
-        "total_memory_usage": 351280296,
-        "total_serialized_length": 197095588,
-        "vectory_dimensionality": 784
-    },
-    {
+        "dataset": "fashion-mnist",
         "cluster_amount": 5,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -78,6 +40,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "fashion-mnist",
         "cluster_amount": 10,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -142,6 +105,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "fashion-mnist",
         "cluster_amount": 15,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -231,6 +195,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "fashion-mnist",
         "cluster_amount": 20,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -345,6 +310,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "mnist",
         "cluster_amount": 5,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -384,6 +350,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "mnist",
         "cluster_amount": 10,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -448,6 +415,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "mnist",
         "cluster_amount": 15,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -537,6 +505,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "mnist",
         "cluster_amount": 20,
         "dataset_size": 60000,
         "memory_measures_indexes": [
@@ -651,6 +620,7 @@
         "vectory_dimensionality": 784
     },
     {
+        "dataset": "sift",
         "cluster_amount": 5,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -690,6 +660,7 @@
         "vectory_dimensionality": 128
     },
     {
+        "dataset": "sift",
         "cluster_amount": 10,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -754,6 +725,7 @@
         "vectory_dimensionality": 128
     },
     {
+        "dataset": "sift",
         "cluster_amount": 15,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -843,6 +815,7 @@
         "vectory_dimensionality": 128
     },
     {
+        "dataset": "sift",
         "cluster_amount": 20,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -957,6 +930,7 @@
         "vectory_dimensionality": 128
     },
     {
+        "dataset": "gist",
         "cluster_amount": 5,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -996,6 +970,7 @@
         "vectory_dimensionality": 960
     },
     {
+        "dataset": "gist",
         "cluster_amount": 10,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -1060,6 +1035,7 @@
         "vectory_dimensionality": 960
     },
     {
+        "dataset": "gist",
         "cluster_amount": 15,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
@@ -1149,6 +1125,7 @@
         "vectory_dimensionality": 960
     },
     {
+        "dataset": "gist",
         "cluster_amount": 20,
         "dataset_size": 1000000,
         "memory_measures_indexes": [
