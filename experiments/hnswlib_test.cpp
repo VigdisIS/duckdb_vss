@@ -21,6 +21,39 @@ std::vector<DatasetConfig> getDatasetConfigs() {
     };
 }
 
+class HelperFunctions {
+    public:
+        static std::vector<float> parseVector(const std::string& vec_str) {
+            std::vector<float> vec;
+            size_t start = vec_str.find_first_of("[");
+            size_t end = vec_str.find_last_of("]");
+            if (start == std::string::npos || end == std::string::npos) {
+                return vec;
+            }
+            std::string values_str = vec_str.substr(start + 1, end - start - 1);
+            size_t pos = 0;
+            while ((pos = values_str.find(",")) != std::string::npos) {
+                vec.push_back(std::stof(values_str.substr(0, pos)));
+                values_str.erase(0, pos + 1);
+            }
+            vec.push_back(std::stof(values_str));
+            return vec;
+        }
+    
+        static std::string parseVector(const std::vector<float>& vec) {
+            std::string vec_str = "[";
+            for (size_t i = 0; i < vec.size(); i++) {
+                vec_str += std::to_string(vec[i]);
+                if (i < vec.size() - 1) {
+                    vec_str += ", ";
+                }
+            }
+            vec_str += "]";
+            return vec_str;
+        }
+    };
+    
+
 // ==================== HNSW Index Operations ====================
 class HNSWIndex {
 private:
@@ -29,8 +62,8 @@ private:
     int dimensions;
 
 public:
-    HNSWIndex(int dims, int max_elements = 60000, int ef_construction = 200, int m = 16)
-        : space(dims), index(&space, max_elements, m, ef_construction), dimensions(dims) {
+    HNSWIndex(int dims, int max_elements = 100000, int ef_construction = 200, int m = 16)
+        : space(dims), index(&space, max_elements, m, ef_construction, 100, true), dimensions(dims) {
         std::cout << "🆕 Created new in-memory HNSW index" << std::endl;
     }
     
@@ -38,13 +71,14 @@ public:
         auto train_vectors = con.Query("SELECT id, vec FROM " + table_name + "_train;");
         std::cout << "🔄 Indexing " << train_vectors->RowCount() << " vectors..." << std::endl;
 
-        std::cout << "🔄 Indexing " << train_vectors->RowCount() << " vectors..." << std::endl;
+        HelperFunctions helper;
 
         for (idx_t i = 0; i < train_vectors->RowCount(); i++) {
           
             int id = train_vectors->GetValue(0, i).GetValue<int>();
-            std::vector<float> vec(dimensions);
-            train_vectors->GetValue(1, i);
+            std::string vec_str = train_vectors->GetValue(1, i).ToString();
+            std::vector<float> vec = HelperFunctions::parseVector(vec_str);
+            
             addPoint(id, vec);
 
             // Display progress bar
@@ -68,12 +102,25 @@ public:
         auto results = index.searchKnn(vec.data(), k);
         std::vector<int> neighbors;
         while (!results.empty()) {
-            std::cout << results.top().first << " ";
-            neighbors.push_back(results.top().first);
+            std::cout << results.top().second << " ";
+            neighbors.push_back(results.top().second);
             results.pop();
         }
         return neighbors;
     }
+
+    void deleteVectors (const std::vector<int>& ids) {
+        for (int id : ids) {
+            index.markDelete(id);
+        }
+    }
+
+    void addVectorsAfterDeletion(const std::vector<int>& ids, const std::vector<std::vector<float>>& vecs) {
+        for (int id: ids) {
+            index.addPoint(vecs[id].data(), id, true);
+        }
+    }
+    
 };
 
 // ==================== Database Setup Functions ====================
@@ -106,27 +153,55 @@ public:
         con.Query("COPY memory.recall_stats TO '" + table_name + "_output.csv' (HEADER, DELIMITER ',');");
     }   
 
+
+
     
 };
+
 
 // ==================== Query Runner ====================
 class QueryRunner {
 public:
+
     static void runTestQueries(Connection& con, const std::string& table_name, int vector_dimensionality,
-                               HNSWIndex& hnsw_index, const unique_ptr<MaterializedQueryResult>& test_vectors,
+                               HNSWIndex& hnsw_index, const unique_ptr<MaterializedQueryResult>& test_vectors, const unique_ptr<MaterializedQueryResult>& delete_vectors,
                                Appender& appender, int iteration) {
         std::cout << "🧪 Running test queries using HNSWLib 🧪" << std::endl;
 
+        HelperFunctions helper;
+                            
+
+        
+
         for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
-            std::vector<float> test_query_vector(vector_dimensionality);
-            test_vectors->GetValue(1, i);
+            std::string vec_str = test_vectors->GetValue(1, i).ToString();
+            std::vector<float> vec = HelperFunctions::parseVector(vec_str);
 
             int test_query_vector_index = test_vectors->GetValue(0, i).GetValue<int>();
             Value neighbor_ids = test_vectors->GetValue(2, i);
 
-            auto result = hnsw_index.search(test_query_vector, 100);
 
-            std::cout << "Query " << i << " returned " << result.size() << " results" << std::endl;
+            std::vector<int> deletion_ids;
+            std::vector<std::vector<float>> deletion_vecs;
+
+            std::cout << "🔍 Prepering deletion vectors " << test_query_vector_index << " 🔍" << std::endl;
+            for (idx_t j = 0; j < delete_vectors->RowCount(); j++) {
+                int id = delete_vectors->GetValue(0, j).GetValue<int>();
+                std::string vec_str = delete_vectors->GetValue(1, j).ToString();
+                std::vector<float> vec = HelperFunctions::parseVector(vec_str);
+
+                deletion_ids.push_back(id);
+                deletion_vecs.push_back(vec);
+            }
+
+            std::cout << "🔍 Deleting vectors " << test_query_vector_index << " 🔍" << std::endl;
+            hnsw_index.deleteVectors(deletion_ids);
+
+            std::cout << "🔍 Adding deleted vectors " << test_query_vector_index << " 🔍" << std::endl;
+            hnsw_index.addVectorsAfterDeletion(deletion_ids, deletion_vecs);
+
+            auto result = hnsw_index.search(vec, 100);
+
            
 
             appender.AppendRow(
@@ -210,6 +285,7 @@ class FileOperations {
         
     };
 
+
 // ==================== Main Test Runner ====================
 class RecallTestRunner {
 private:
@@ -223,6 +299,9 @@ public:
         con.Query("SET THREADS TO 1;");
         datasets = getDatasetConfigs();
     }
+
+    
+
 
     void runTest(int datasetIdx = 0) {
         try {
@@ -238,16 +317,20 @@ public:
             DatabaseSetup::initializeResultsTable(con, dataset.name);
             DatabaseSetup::setupFullDataset(con, dataset);
             
-
             HNSWIndex hnsw_index(dataset.dimensions);
             hnsw_index.initializeIndex(con, dataset.name);
 
-            auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test;");
+            auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test LIMIT 100;");
+            
 
             Appender appender(con, dataset.name + "_results");
 
             for (int iteration = 0; iteration <= max_iterations; iteration++) {
-                QueryRunner::runTestQueries(con, dataset.name, dataset.dimensions, hnsw_index, test_vectors, appender, iteration);
+
+                auto delete_vectors = con.Query("SELECT id, vec FROM " + dataset.name + "_train USING SAMPLE 1%;");
+
+
+                QueryRunner::runTestQueries(con, dataset.name, dataset.dimensions, hnsw_index, test_vectors, delete_vectors, appender, iteration);
                 std::cout << "✅ Finished iteration " << iteration << " ✅" << std::endl;
             }
 
@@ -269,6 +352,7 @@ public:
         }
     }
 };
+
 
 // ==================== Main Function ====================
 int main() {
