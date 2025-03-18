@@ -61,9 +61,14 @@ private:
     hnswlib::HierarchicalNSW<float> index;
     int dimensions;
 
+    // Finding:
+    // Label has to be next in line and should therefore be the next available label in the list
+    std::unordered_map<size_t, size_t> index_map;
+    int max_elements;
+
 public:
-    HNSWIndex(int dims, int max_elements = 100000, int ef_construction = 200, int m = 16)
-        : space(dims), index(&space, max_elements, m, ef_construction, 100, true), dimensions(dims) {
+    HNSWIndex(int dims, int max_elements = 120000, int ef_construction = 200, int m = 16)
+        : space(dims), index(&space, max_elements, m, ef_construction, 100, true), dimensions(dims), max_elements(max_elements) {
         std::cout << "🆕 Created new in-memory HNSW index" << std::endl;
     }
     
@@ -72,8 +77,11 @@ public:
         std::cout << "🔄 Indexing " << train_vectors->RowCount() << " vectors..." << std::endl;
 
         HelperFunctions helper;
+        
 
         for (idx_t i = 0; i < train_vectors->RowCount(); i++) {
+
+            index_map[train_vectors->GetValue(0, i).GetValue<int>()] = train_vectors->GetValue(0, i).GetValue<int>();
           
             int id = train_vectors->GetValue(0, i).GetValue<int>();
             std::string vec_str = train_vectors->GetValue(1, i).ToString();
@@ -95,30 +103,50 @@ public:
     }
 
     void addPoint(int id, const std::vector<float>& vec) {
-        index.addPoint(vec.data(), id);
+        auto mappedId = index_map[id];
+        index.addPoint(vec.data(), mappedId);
     }
 
     std::vector<int> search(const std::vector<float>& vec, int k = 100) {
         auto results = index.searchKnn(vec.data(), k);
         std::vector<int> neighbors;
         while (!results.empty()) {
-            std::cout << results.top().second << " ";
             neighbors.push_back(results.top().second);
             results.pop();
+            
         }
         return neighbors;
     }
 
     void deleteVectors (const std::vector<int>& ids) {
         for (int id : ids) {
-            index.markDelete(id);
+            auto mappedId = index_map.at(id);
+            std::cout << "Deleting vector with id: " << id << " and internal id: " << mappedId << std::endl;
+            index.markDelete(mappedId);
         }
     }
 
     void addVectorsAfterDeletion(const std::vector<int>& ids, const std::vector<std::vector<float>>& vecs) {
         for (int id: ids) {
-            index.addPoint(vecs[id].data(), id, true);
+            auto idx = index_map.at(id);
+            size_t new_idx = (idx < (max_elements / 2)) ? idx + (max_elements / 2) : idx - (max_elements / 2);
+            std::cout << "Adding vector with id: " << id << " and internal id: " << new_idx << std::endl;
+            index.addPoint(vecs[id].data(), new_idx, true);
+            index_map[id] = new_idx;
         }
+    }
+
+    int getInternalId(int id) {
+        return index_map[id];
+    }
+
+    int getExternalId(int internal_id) {
+        for (auto& pair : index_map) {
+            if (pair.second == internal_id) {
+                return pair.first;
+            }
+        }
+        return -1;
     }
     
 };
@@ -130,7 +158,7 @@ public:
         con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
 
         con.Query("CREATE OR REPLACE TABLE memory." + config.name + "_train AS SELECT * FROM raw." + config.name + "_train;");
-        con.Query("CREATE OR REPLACE TABLE memory." + config.name + "_test AS SELECT * FROM raw." + config.name + "_test LIMIT 100;");
+        con.Query("CREATE OR REPLACE TABLE memory." + config.name + "_test AS SELECT * FROM raw." + config.name + "_test;");
 
         con.Query("DETACH raw;");
     }
@@ -152,10 +180,6 @@ public:
     static void exportResultsToCSV(Connection& con, const std::string& table_name) {
         con.Query("COPY memory.recall_stats TO '" + table_name + "_output.csv' (HEADER, DELIMITER ',');");
     }   
-
-
-
-    
 };
 
 
@@ -170,48 +194,51 @@ public:
 
         HelperFunctions helper;
                             
+        std::vector<int> deletion_ids;
+        std::vector<std::vector<float>> deletion_vecs;
 
-        
 
-        for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
-            std::string vec_str = test_vectors->GetValue(1, i).ToString();
+        for (idx_t j = 0; j < delete_vectors->RowCount(); j++) {
+            int id = delete_vectors->GetValue(0, j).GetValue<int>();
+            std::string vec_str = delete_vectors->GetValue(1, j).ToString();
             std::vector<float> vec = HelperFunctions::parseVector(vec_str);
 
+            deletion_ids.push_back(id);
+            deletion_vecs.push_back(vec);
+        }
+
+      
+        hnsw_index.deleteVectors(deletion_ids); 
+
+        hnsw_index.addVectorsAfterDeletion(deletion_ids, deletion_vecs);
+
+
+        std::cout << "🔍 Running test queries iteration: " << iteration << " 🔍" << std::endl;
+        for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
+            
+            std::string vec_str = test_vectors->GetValue(1, i).ToString();
+            std::vector<float> vec = HelperFunctions::parseVector(vec_str);
+    
             int test_query_vector_index = test_vectors->GetValue(0, i).GetValue<int>();
             Value neighbor_ids = test_vectors->GetValue(2, i);
-
-
-            std::vector<int> deletion_ids;
-            std::vector<std::vector<float>> deletion_vecs;
-
-            std::cout << "🔍 Prepering deletion vectors " << test_query_vector_index << " 🔍" << std::endl;
-            for (idx_t j = 0; j < delete_vectors->RowCount(); j++) {
-                int id = delete_vectors->GetValue(0, j).GetValue<int>();
-                std::string vec_str = delete_vectors->GetValue(1, j).ToString();
-                std::vector<float> vec = HelperFunctions::parseVector(vec_str);
-
-                deletion_ids.push_back(id);
-                deletion_vecs.push_back(vec);
-            }
-
-            std::cout << "🔍 Deleting vectors " << test_query_vector_index << " 🔍" << std::endl;
-            hnsw_index.deleteVectors(deletion_ids);
-
-            std::cout << "🔍 Adding deleted vectors " << test_query_vector_index << " 🔍" << std::endl;
-            hnsw_index.addVectorsAfterDeletion(deletion_ids, deletion_vecs);
+    
 
             auto result = hnsw_index.search(vec, 100);
 
+            std::vector<Value> mapped_result_ids;
+            for (int id : result) {
+                mapped_result_ids.push_back(Value(hnsw_index.getExternalId(id)));
+            }
            
 
             appender.AppendRow(
                 Value(table_name), Value::INTEGER(iteration), Value::INTEGER(test_query_vector_index),
-                neighbor_ids, Value::LIST(std::vector<Value>(result.begin(), result.end())), Value::FLOAT(0.0)
+                neighbor_ids, Value::LIST(std::vector<Value>(mapped_result_ids.begin(), mapped_result_ids.end())), Value::FLOAT(0.0)
             );
         }
     }
 
-    static void calculateRecall(Connection& con, const std::string& table_name) {
+    static void calculateRecall(Connection& con, const std::string& table_name, HNSWIndex& hnsw_index) {
         std::cout << "🧮 CALCULATING RECALL 🧮" << std::endl;
         con.Query("UPDATE " + table_name + "_results " + 
                   "SET recall = len(list_intersect(neighbor_vec_ids, result_vec_ids)) / 100.0;");
@@ -281,9 +308,9 @@ class FileOperations {
             connectivity_stream.close();
             merged_stream.close();
         }
+};
 
-        
-    };
+
 
 
 // ==================== Main Test Runner ====================
@@ -299,10 +326,6 @@ public:
         con.Query("SET THREADS TO 1;");
         datasets = getDatasetConfigs();
     }
-
-    
-
-
     void runTest(int datasetIdx = 0) {
         try {
             if (datasetIdx < 0 || datasetIdx >= (int)datasets.size()) {
@@ -312,23 +335,23 @@ public:
 
             const auto& dataset = datasets[datasetIdx];
             std::cout << "📊 Testing dataset: " << dataset.name << " 📊" << std::endl;
-
-
             DatabaseSetup::initializeResultsTable(con, dataset.name);
             DatabaseSetup::setupFullDataset(con, dataset);
-            
             HNSWIndex hnsw_index(dataset.dimensions);
             hnsw_index.initializeIndex(con, dataset.name);
-
-            auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test LIMIT 100;");
             
 
             Appender appender(con, dataset.name + "_results");
 
+
+
             for (int iteration = 0; iteration <= max_iterations; iteration++) {
+                auto delete_vectors = con.Query("SELECT id, vec FROM " + dataset.name + "_train LIMIT 600;");
+                auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test USING SAMPLE 100 (reservoir);");
 
-                auto delete_vectors = con.Query("SELECT id, vec FROM " + dataset.name + "_train USING SAMPLE 1%;");
 
+
+                std::cout << "✅ Fetched delete items:  " << delete_vectors->RowCount() << "vectors ✅" << std::endl;
 
                 QueryRunner::runTestQueries(con, dataset.name, dataset.dimensions, hnsw_index, test_vectors, delete_vectors, appender, iteration);
                 std::cout << "✅ Finished iteration " << iteration << " ✅" << std::endl;
@@ -337,7 +360,7 @@ public:
             appender.Close();
 
             // Calculate recall and aggregate stats
-            QueryRunner::calculateRecall(con, dataset.name);
+            QueryRunner::calculateRecall(con, dataset.name, hnsw_index);
             QueryRunner::aggregateRecallStats(con, dataset.name);
                         
             // Export results
@@ -357,7 +380,10 @@ public:
 // ==================== Main Function ====================
 int main() {
     try {
-        RecallTestRunner runner(119);
+        RecallTestRunner runner(3000);
+        // Run test on fashion_mnist
+        runner.runTest(0);
+        //Run test on mnist
         runner.runTest(1);
         return 0;
     } catch (std::exception& e) {

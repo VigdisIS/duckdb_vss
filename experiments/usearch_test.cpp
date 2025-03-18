@@ -23,12 +23,46 @@ std::vector<DatasetConfig> getDatasetConfigs() {
     };
 }
 
+class HelperFunctions {
+    public:
+        static std::vector<float> parseVector(const std::string& vec_str) {
+            std::vector<float> vec;
+            size_t start = vec_str.find_first_of("[");
+            size_t end = vec_str.find_last_of("]");
+            if (start == std::string::npos || end == std::string::npos) {
+                return vec;
+            }
+            std::string values_str = vec_str.substr(start + 1, end - start - 1);
+            size_t pos = 0;
+            while ((pos = values_str.find(",")) != std::string::npos) {
+                vec.push_back(std::stof(values_str.substr(0, pos)));
+                values_str.erase(0, pos + 1);
+            }
+            vec.push_back(std::stof(values_str));
+            return vec;
+        }
+    
+        static std::string parseVector(const std::vector<float>& vec) {
+            std::string vec_str = "[";
+            for (size_t i = 0; i < vec.size(); i++) {
+                vec_str += std::to_string(vec[i]);
+                if (i < vec.size() - 1) {
+                    vec_str += ", ";
+                }
+            }
+            vec_str += "]";
+            return vec_str;
+        }
+    };
+
 // ==================== HNSW Index Operations ====================
 class HNSWIndex {
 private:
     metric_punned_t metric;
     index_dense_t index;
     int dimensions;
+    std::unordered_map<size_t, size_t> index_map;
+
 
 public:
     HNSWIndex(int dims, int max_elements = 60000, int ef_construction = 200, int m = 16)
@@ -44,11 +78,15 @@ public:
 
         index.reserve(train_vectors->RowCount());
 
+        HelperFunctions helper;
+
+
         for (idx_t i = 0; i < train_vectors->RowCount(); i++) {
           
             int id = train_vectors->GetValue(0, i).GetValue<int>();
-            std::vector<float> vec(dimensions);
-            train_vectors->GetValue(1, i);
+            std::string vec_str = train_vectors->GetValue(1, i).ToString();
+            std::vector<float> vec = HelperFunctions::parseVector(vec_str);
+
             addPoint(id, vec);
 
             // Display progress bar
@@ -65,8 +103,9 @@ public:
     }
 
     void addPoint(int id, const std::vector<float>& vec) {
-            index.add(id, vec.data());
-        }
+        auto mappedId = index_map[id];
+        index.add(mappedId, vec.data());
+    }
 
     std::vector<int> search(const std::vector<float>& vec, int k = 100) {
         auto results = index.search(vec.data(), k);
@@ -76,6 +115,18 @@ public:
             neighbors.push_back(results[i].member.key);
         }
         return neighbors;
+    }
+
+    void deleteVectors(const std::vector<int>& ids) {
+        for (const auto& id : ids) {
+            index.remove(id);
+        }
+    }
+
+    void addVectorsAfterDeletion(const std::vector<int>& ids, const std::vector<std::vector<float>>& vecs) {
+        for (std::size_t i = 0; i < ids.size(); i++) {
+            index.add(ids[i], vecs[i].data());
+        }
     }
 };
 
@@ -116,25 +167,49 @@ public:
 class QueryRunner {
 public:
     static void runTestQueries(Connection& con, const std::string& table_name, int vector_dimensionality,
-                               HNSWIndex& hnsw_index, const unique_ptr<MaterializedQueryResult>& test_vectors,
-                               Appender& appender, int iteration) {
+        HNSWIndex& hnsw_index, const unique_ptr<MaterializedQueryResult>& test_vectors, const unique_ptr<MaterializedQueryResult>& delete_vectors,
+        Appender& appender, int iteration) {
         std::cout << "🧪 Running test queries using HNSWLib 🧪" << std::endl;
 
+        HelperFunctions helper;
+        
+
+
+
         for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
-            std::vector<float> test_query_vector(vector_dimensionality);
-            test_vectors->GetValue(1, i);
+            std::string vec_str = test_vectors->GetValue(1, i).ToString();
+            std::vector<float> vec = HelperFunctions::parseVector(vec_str);
 
             int test_query_vector_index = test_vectors->GetValue(0, i).GetValue<int>();
             Value neighbor_ids = test_vectors->GetValue(2, i);
 
-            auto result = hnsw_index.search(test_query_vector, 100);
 
-            std::cout << "Query " << i << " returned " << result.size() << " results" << std::endl;
-           
+            std::vector<int> deletion_ids;
+            std::vector<std::vector<float>> deletion_vecs;
+
+            std::cout << "🔍 Prepering deletion vectors " << test_query_vector_index << " 🔍" << std::endl;
+            for (idx_t j = 0; j < delete_vectors->RowCount(); j++) {
+                int id = delete_vectors->GetValue(0, j).GetValue<int>();
+                std::string vec_str = delete_vectors->GetValue(1, j).ToString();
+                std::vector<float> vec = HelperFunctions::parseVector(vec_str);
+
+                deletion_ids.push_back(id);
+                deletion_vecs.push_back(vec);
+            }
+
+            std::cout << "🔍 Deleting vectors " << test_query_vector_index << " 🔍" << std::endl;
+            hnsw_index.deleteVectors(deletion_ids);
+
+            std::cout << "🔍 Adding deleted vectors " << test_query_vector_index << " 🔍" << std::endl;
+            hnsw_index.addVectorsAfterDeletion(deletion_ids, deletion_vecs);
+
+            auto result = hnsw_index.search(vec, 100);
+
+
 
             appender.AppendRow(
-                Value(table_name), Value::INTEGER(iteration), Value::INTEGER(test_query_vector_index),
-                neighbor_ids, Value::LIST(std::vector<Value>(result.begin(), result.end())), Value::FLOAT(0.0)
+            Value(table_name), Value::INTEGER(iteration), Value::INTEGER(test_query_vector_index),
+            neighbor_ids, Value::LIST(std::vector<Value>(result.begin(), result.end())), Value::FLOAT(0.0)
             );
         }
     }
@@ -249,8 +324,13 @@ public:
 
             Appender appender(con, dataset.name + "_results");
 
+            
+
             for (int iteration = 0; iteration <= max_iterations; iteration++) {
-                QueryRunner::runTestQueries(con, dataset.name, dataset.dimensions, hnsw_index, test_vectors, appender, iteration);
+
+                auto delete_vectors = con.Query("SELECT id, vec FROM " + dataset.name + "_train USING SAMPLE 1%;");
+
+                QueryRunner::runTestQueries(con, dataset.name, dataset.dimensions, hnsw_index, test_vectors, delete_vectors, appender, iteration);
                 std::cout << "✅ Finished iteration " << iteration << " ✅" << std::endl;
             }
 
