@@ -1,7 +1,7 @@
 """Main script for generating all plots from HNSW index experiments."""
 
 import os
-from scripts.plots.plot_utils import get_experiment_paths
+from scripts.plots.plot_utils import get_experiment_paths, combine_scenario_plots
 from scripts.plots.benchmark_plots import generate_benchmark_plots
 from scripts.plots.memory_connectivity_plots import generate_memory_connectivity_plots
 from scripts.plots.search_analysis_plots import generate_search_analysis_plots
@@ -25,6 +25,9 @@ def main():
 
     print("Generating search analysis plots...")
     generate_search_analysis_plots(experiment_paths)
+
+    print("Generating combined plots for all scenarios...")
+    combine_scenario_plots(experiment_paths)
 
     print("All plots generated successfully!")
 
