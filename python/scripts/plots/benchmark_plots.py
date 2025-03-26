@@ -45,7 +45,7 @@ def plot_benchmark_metrics(df: pd.DataFrame,
             print(f"Warning: Could not calculate error bounds for {filename}: {str(e)}")
             return
 
-        # Plot with error bounds
+        # Plot with error bounds for mean
         plot_with_error_bounds(
             ax,
             df['iteration'],
@@ -54,6 +54,14 @@ def plot_benchmark_metrics(df: pd.DataFrame,
             upper_bound,
             label=f'Mean {metric}'
         )
+
+        # Add median line if median column exists
+        if f'median_{metric}' in df.columns:
+            ax.plot(df['iteration'], df[f'median_{metric}'],
+                   label=f'Median {metric}',
+                   color='red',
+                   linestyle='--',
+                   linewidth=2)
 
         ax.set_xlabel('Iteration')
         ax.set_ylabel(ylabel)
@@ -134,7 +142,7 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
                              title: str,
                              save_dir: str,
                              filename: str):
-    """Plot mean times for add, search, and delete operations over iterations."""
+    """Plot mean and median times for add, search, and delete operations over iterations."""
     try:
         # Validate inputs
         if not dfs or len(dfs) == 0:
@@ -151,17 +159,29 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
             'bm_delete.csv': 'red'
         }
 
-        # Plot mean time for each operation
+        # Plot mean and median time for each operation
         for bm_file, df in dfs.items():
             if df is None or df.empty:
                 continue
 
             operation = bm_file.replace('.csv', '').replace('bm_', '')
+            base_color = colors.get(bm_file, 'gray')
+
+            # Plot mean time
             if 'iteration' in df.columns and 'mean_time' in df.columns:
                 ax.plot(df['iteration'],
                        df['mean_time'],
-                       label=f'{operation.capitalize()} Time',
-                       color=colors.get(bm_file, 'gray'),
+                       label=f'{operation.capitalize()} Mean',
+                       color=base_color,
+                       linewidth=2)
+
+            # Plot median time with dashed line
+            if 'iteration' in df.columns and 'median_time' in df.columns:
+                ax.plot(df['iteration'],
+                       df['median_time'],
+                       label=f'{operation.capitalize()} Median',
+                       color=base_color,
+                       linestyle='--',
                        linewidth=2)
 
         ax.set_xlabel('Iteration')
