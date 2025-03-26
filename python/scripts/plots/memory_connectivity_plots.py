@@ -12,7 +12,8 @@ from scripts.plots.plot_utils import (load_csv_data, setup_plot_style, save_plot
 def plot_memory_usage(df: pd.DataFrame,
                      title: str,
                      save_dir: str,
-                     filename: str):
+                     filename: str,
+                     experiment_paths: Dict[str, List[str]]):
     """Plot memory usage metrics over iterations."""
     fig, ax = plt.subplots()
     setup_plot_style()
@@ -33,66 +34,73 @@ def plot_memory_usage(df: pd.DataFrame,
     # Set axis limits without extra space
     set_axis_limits(ax, df.index)
 
-    save_plot(fig, save_dir, filename)
+    save_plot(fig, save_dir, filename, experiment_paths)
 
-def plot_slot_lookup_stats(df: pd.DataFrame,
-                         title: str,
-                         save_dir: str,
-                         filename: str):
-    """Plot slot lookup statistics showing the distribution of slot types."""
+def plot_slot_distribution(df: pd.DataFrame,
+                          title: str,
+                          save_dir: str,
+                          filename: str,
+                          experiment_paths: Dict[str, List[str]]):
+    """Plot slot distribution showing the distribution of slot types over time."""
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Create figure with two subplots
-    fig = plt.figure(figsize=(15, 6))
-    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1])
-    ax1 = fig.add_subplot(gs[0])
-    ax2 = fig.add_subplot(gs[1])
-
-    # 1. Stacked bar chart showing slot distribution
+    # Stacked bar chart showing slot distribution
     x = range(len(df))
     bottom = np.zeros(len(df))
 
     # Plot deleted slots at the bottom
-    ax1.bar(x, df['slot_lookup_deleted_slots'], label='Deleted Slots', bottom=bottom)
+    ax.bar(x, df['slot_lookup_deleted_slots'], label='Deleted Slots', bottom=bottom)
     bottom += df['slot_lookup_deleted_slots']
 
     # Plot populated slots in the middle
-    ax1.bar(x, df['slot_lookup_populated_slots'], label='Populated Slots', bottom=bottom)
+    ax.bar(x, df['slot_lookup_populated_slots'], label='Populated Slots', bottom=bottom)
     bottom += df['slot_lookup_populated_slots']
 
     # Plot empty slots at the top
     empty_slots = df['slot_lookup_total_slots'] - df['slot_lookup_populated_slots'] - df['slot_lookup_deleted_slots']
-    ax1.bar(x, empty_slots, label='Empty Slots', bottom=bottom)
+    ax.bar(x, empty_slots, label='Empty Slots', bottom=bottom)
 
-    ax1.set_xlabel('Iteration')
-    ax1.set_ylabel('Number of Slots')
-    ax1.set_title('Slot Distribution Over Time')
-    ax1.legend()
-    ax1.grid(True)
-
-    # Set axis limits without extra space
-    set_axis_limits(ax1, pd.Series(x))
-
-    # 2. Line plot showing memory usage
-    ax2.plot(df.index, df['index_mem_usage'], label='Memory Usage')
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('Memory Usage (bytes)')
-    ax2.set_title('Index Memory Usage Over Time')
-    ax2.legend()
-    ax2.grid(True)
+    ax.set_xlabel('Iteration')
+    ax.set_ylabel('Number of Slots')
+    ax.set_title('Slot Distribution Over Time')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
 
     # Set axis limits without extra space
-    set_axis_limits(ax2, df.index)
+    set_axis_limits(ax, pd.Series(x))
 
-    # Adjust layout
-    fig.set_constrained_layout(True)
-    save_plot(fig, save_dir, filename)
+    save_plot(fig, save_dir, f"{filename}_slot_distribution", experiment_paths)
+    plt.close()
+
+def plot_memory_usage_over_time(df: pd.DataFrame,
+                            title: str,
+                            save_dir: str,
+                            filename: str,
+                            experiment_paths: Dict[str, List[str]]):
+    """Plot memory usage over time."""
+    setup_plot_style()
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Line plot showing memory usage
+    ax.plot(range(len(df)), df['index_mem_usage'], label='Memory Usage', linewidth=2)
+    ax.set_xlabel('Iteration')
+    ax.set_ylabel('Memory Usage (bytes)')
+    ax.set_title('Index Memory Usage Over Time')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    # Set x-axis limits to start at 0 and end at max iteration
+    ax.set_xlim(0, len(df) - 1)
+
+    save_plot(fig, save_dir, f"{filename}_memory_usage_over_time", experiment_paths)
     plt.close()
 
 def plot_node_connectivity(df: pd.DataFrame,
                          title: str,
                          save_dir: str,
-                         filename: str):
+                         filename: str,
+                         experiment_paths: Dict[str, List[str]]):
     """Plot non-level-specific node connectivity metrics over time."""
     setup_plot_style()
 
@@ -121,7 +129,7 @@ def plot_node_connectivity(df: pd.DataFrame,
             # Set x-axis limits to start at 0 and end at max iteration
             ax.set_xlim(0, len(df) - 1)
 
-            save_plot(fig, save_dir, f"{filename}_{metric}")
+            save_plot(fig, save_dir, f"{filename}_{metric}", experiment_paths)
             plt.close()
 
     # 2. Combined plot with all metrics
@@ -143,13 +151,14 @@ def plot_node_connectivity(df: pd.DataFrame,
     # Set x-axis limits to start at 0 and end at max iteration
     ax.set_xlim(0, len(df) - 1)
 
-    save_plot(fig, save_dir, f"{filename}_combined")
+    save_plot(fig, save_dir, f"{filename}_combined", experiment_paths)
     plt.close()
 
 def plot_connectivity_heatmap(df: pd.DataFrame,
                          title: str,
                          save_dir: str,
-                         filename: str):
+                         filename: str,
+                         experiment_paths: Dict[str, List[str]]):
     """Plot heatmaps of node connectivity metrics - average across all iterations, first iteration, and last iteration."""
     setup_plot_style()
 
@@ -207,7 +216,7 @@ def plot_connectivity_heatmap(df: pd.DataFrame,
         ax.set_title(f'{title}\n{subtitle}')
 
         # Save plot
-        save_plot(fig, save_dir, f"{filename}_level_metrics_heatmap_{save_suffix}")
+        save_plot(fig, save_dir, f"{filename}_level_metrics_heatmap_{save_suffix}", experiment_paths)
         plt.close()
 
     # 1. Average across all iterations (original heatmap)
@@ -240,7 +249,8 @@ def plot_connectivity_heatmap(df: pd.DataFrame,
 def plot_level_connectivity(df: pd.DataFrame,
                          title: str,
                          save_dir: str,
-                         filename: str):
+                         filename: str,
+                         experiment_paths: Dict[str, List[str]]):
     """Plot average connectivity per level over iterations."""
     setup_plot_style()
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -266,13 +276,14 @@ def plot_level_connectivity(df: pd.DataFrame,
     # Set x-axis limits to start at 0 and end at max iteration
     ax.set_xlim(0, len(df) - 1)
 
-    save_plot(fig, save_dir, f"{filename}_level_connectivity")
+    save_plot(fig, save_dir, f"{filename}_level_connectivity", experiment_paths)
     plt.close()
 
 def plot_level_unreachable(df: pd.DataFrame,
                          title: str,
                          save_dir: str,
-                         filename: str):
+                         filename: str,
+                         experiment_paths: Dict[str, List[str]]):
     """Plot unreachable points per level over iterations."""
     setup_plot_style()
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -298,13 +309,14 @@ def plot_level_unreachable(df: pd.DataFrame,
     # Set x-axis limits to start at 0 and end at max iteration
     ax.set_xlim(0, len(df) - 1)
 
-    save_plot(fig, save_dir, f"{filename}_level_unreachable")
+    save_plot(fig, save_dir, f"{filename}_level_unreachable", experiment_paths)
     plt.close()
 
 def plot_level_nodes(df: pd.DataFrame,
                    title: str,
                    save_dir: str,
-                   filename: str):
+                   filename: str,
+                   experiment_paths: Dict[str, List[str]]):
     """Plot number of nodes per level over iterations."""
     setup_plot_style()
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -330,13 +342,14 @@ def plot_level_nodes(df: pd.DataFrame,
     # Set x-axis limits to start at 0 and end at max iteration
     ax.set_xlim(0, len(df) - 1)
 
-    save_plot(fig, save_dir, f"{filename}_level_nodes")
+    save_plot(fig, save_dir, f"{filename}_level_nodes", experiment_paths)
     plt.close()
 
 def plot_level_distances(df: pd.DataFrame,
                       title: str,
                       save_dir: str,
-                      filename: str):
+                      filename: str,
+                      experiment_paths: Dict[str, List[str]]):
     """Plot average, minimum, and maximum distances per level over iterations."""
     setup_plot_style()
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
@@ -363,7 +376,7 @@ def plot_level_distances(df: pd.DataFrame,
     ax.grid(True, alpha=0.3)
     ax.legend()
     ax.set_xlim(0, len(df) - 1)
-    save_plot(fig, save_dir, f"{filename}_level_avg_distances")
+    save_plot(fig, save_dir, f"{filename}_level_avg_distances", experiment_paths)
     plt.close()
 
     # 2. Minimum distances
@@ -378,7 +391,7 @@ def plot_level_distances(df: pd.DataFrame,
     ax.grid(True, alpha=0.3)
     ax.legend()
     ax.set_xlim(0, len(df) - 1)
-    save_plot(fig, save_dir, f"{filename}_level_min_distances")
+    save_plot(fig, save_dir, f"{filename}_level_min_distances", experiment_paths)
     plt.close()
 
     # 3. Maximum distances
@@ -393,14 +406,15 @@ def plot_level_distances(df: pd.DataFrame,
     ax.grid(True, alpha=0.3)
     ax.legend()
     ax.set_xlim(0, len(df) - 1)
-    save_plot(fig, save_dir, f"{filename}_level_max_distances")
+    save_plot(fig, save_dir, f"{filename}_level_max_distances", experiment_paths)
     plt.close()
 
 def plot_connectivity_scatter(df: pd.DataFrame,
                           search_df: pd.DataFrame,
                           title: str,
                           save_dir: str,
-                          filename: str):
+                          filename: str,
+                          experiment_paths: Dict[str, List[str]]):
     """Plot scatter plot of average connections vs node count, colored by mean recall."""
     setup_plot_style()
     fig, ax = plt.subplots(figsize=(10, 6), constrained_layout=True)
@@ -419,15 +433,16 @@ def plot_connectivity_scatter(df: pd.DataFrame,
     ax.set_title('Node Count vs Average Connections\nColored by Mean Recall')
     ax.grid(True, alpha=0.3)
 
-    save_plot(fig, save_dir, f"{filename}_connectivity_scatter")
+    save_plot(fig, save_dir, f"{filename}_connectivity_scatter", experiment_paths)
     plt.close()
 
 def plot_recall_vs_connectivity(df: pd.DataFrame,
                               search_df: pd.DataFrame,
                               title: str,
                               save_dir: str,
-                              filename: str):
-    """Plot mean recall vs connectivity metrics."""
+                              filename: str,
+                              experiment_paths: Dict[str, List[str]]):
+    """Plot connectivity metrics over iterations, colored by mean recall."""
     setup_plot_style()
     fig = plt.figure(figsize=(15, 12), constrained_layout=True)
     gs = fig.add_gridspec(2, 2)
@@ -435,6 +450,9 @@ def plot_recall_vs_connectivity(df: pd.DataFrame,
     ax2 = fig.add_subplot(gs[0, 1])
     ax3 = fig.add_subplot(gs[1, 0])
     ax4 = fig.add_subplot(gs[1, 1])
+
+    # Create iteration sequence
+    iterations = range(len(df))
 
     # Create scatter plots for different metrics
     metrics = {
@@ -446,27 +464,65 @@ def plot_recall_vs_connectivity(df: pd.DataFrame,
 
     for metric, (metric_label, ax) in metrics.items():
         if metric in df.columns:
-            scatter = ax.scatter(df[metric], search_df['mean_recall'],
-                               alpha=0.6, c=range(len(df)), cmap='viridis')
+            scatter = ax.scatter(iterations, df[metric],
+                               alpha=0.6, c=search_df['mean_recall'], cmap='viridis')
 
             # Add colorbar
             cbar = plt.colorbar(scatter, ax=ax)
-            cbar.set_label('Iteration')
+            cbar.set_label('Mean Recall')
 
-            ax.set_xlabel(metric_label)
-            ax.set_ylabel('Mean Recall')
+            ax.set_xlabel('Iteration')
+            ax.set_ylabel(metric_label)
             ax.grid(True, alpha=0.3)
 
-    fig.suptitle('Mean Recall vs Connectivity Metrics')
+            # Set x-axis limits to start at 0 and end at max iteration
+            ax.set_xlim(0, len(df) - 1)
 
-    save_plot(fig, save_dir, f"{filename}_recall_vs_connectivity")
+    fig.suptitle('Connectivity Metrics Over Time\nColored by Mean Recall')
+
+    save_plot(fig, save_dir, f"{filename}_recall_vs_connectivity", experiment_paths)
     plt.close()
 
 def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
     """Generate all memory and connectivity related plots."""
     for scenario, paths in experiment_paths.items():
+        # Create scenario-level directory for combined plots
+        scenario_dir = os.path.dirname(paths[0])  # Get directory containing dataset paths
+        scenario_images_dir = os.path.join(scenario_dir, 'images')
+        os.makedirs(scenario_images_dir, exist_ok=True)
+
+        # Generate individual dataset plots
         for dataset_path in paths:
             save_dir = os.path.join(dataset_path, 'images')
+            os.makedirs(save_dir, exist_ok=True)
+
+            # Memory stats plots
+            memory_stats_path = os.path.join(dataset_path, 'memory_stats.csv')
+            if os.path.exists(memory_stats_path):
+                memory_stats_df = load_csv_data(memory_stats_path)
+                plot_memory_usage(
+                    memory_stats_df,
+                    f'{scenario} - Memory Statistics',
+                    save_dir,
+                    f'{scenario}_memory_stats',
+                    experiment_paths
+                )
+
+                plot_slot_distribution(
+                    memory_stats_df,
+                    f'{scenario} - Slot Distribution',
+                    save_dir,
+                    f'{scenario}_memory_stats',
+                    experiment_paths
+                )
+
+                plot_memory_usage_over_time(
+                    memory_stats_df,
+                    f'{scenario} - Memory Usage Over Time',
+                    save_dir,
+                    f'{scenario}_memory_stats',
+                    experiment_paths
+                )
 
             # Memory usage plots
             memory_path = os.path.join(dataset_path, 'memory_usage.csv')
@@ -476,18 +532,8 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                     memory_df,
                     f'{scenario} - Memory Usage',
                     save_dir,
-                    f'{scenario}_memory_usage'
-                )
-
-            # Slot lookup stats plots
-            slot_lookup_path = os.path.join(dataset_path, 'slot_lookup_stats.csv')
-            if os.path.exists(slot_lookup_path):
-                slot_df = load_csv_data(slot_lookup_path)
-                plot_slot_lookup_stats(
-                    slot_df,
-                    f'{scenario} - Slot Lookup Statistics',
-                    save_dir,
-                    f'{scenario}_slot_lookup'
+                    f'{scenario}_memory_usage',
+                    experiment_paths
                 )
 
             # Node connectivity plots
@@ -502,14 +548,16 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                     connectivity_df,
                     f'{scenario} - Node Connectivity',
                     save_dir,
-                    f'{scenario}_node_connectivity'
+                    f'{scenario}_node_connectivity',
+                    experiment_paths
                 )
 
                 plot_connectivity_heatmap(
                     connectivity_df,
                     f'{scenario} - Connectivity Heatmap',
                     save_dir,
-                    f'{scenario}_connectivity_heatmap'
+                    f'{scenario}_connectivity_heatmap',
+                    experiment_paths
                 )
 
                 # New level-specific plots
@@ -517,28 +565,32 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                     connectivity_df,
                     f'{scenario} - Level Connectivity',
                     save_dir,
-                    f'{scenario}'
+                    f'{scenario}',
+                    experiment_paths
                 )
 
                 plot_level_unreachable(
                     connectivity_df,
                     f'{scenario} - Level Unreachable',
                     save_dir,
-                    f'{scenario}'
+                    f'{scenario}',
+                    experiment_paths
                 )
 
                 plot_level_nodes(
                     connectivity_df,
                     f'{scenario} - Level Nodes',
                     save_dir,
-                    f'{scenario}'
+                    f'{scenario}',
+                    experiment_paths
                 )
 
                 plot_level_distances(
                     connectivity_df,
                     f'{scenario} - Level Distances',
                     save_dir,
-                    f'{scenario}'
+                    f'{scenario}',
+                    experiment_paths
                 )
 
                 # Plot scatter and recall plots if search stats exist
@@ -551,7 +603,8 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                             search_df,
                             f'{scenario} - Connectivity Scatter',
                             save_dir,
-                            f'{scenario}'
+                            f'{scenario}',
+                            experiment_paths
                         )
 
                         plot_recall_vs_connectivity(
@@ -559,5 +612,6 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                             search_df,
                             f'{scenario} - Recall vs Connectivity',
                             save_dir,
-                            f'{scenario}'
+                            f'{scenario}',
+                            experiment_paths
                         )
