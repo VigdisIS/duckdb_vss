@@ -13,6 +13,7 @@ include_directories(
     ../src/include
     ${CMAKE_CURRENT_SOURCE_DIR}  
     ${CMAKE_CURRENT_SOURCE_DIR}/usearch/helpers
+    ${CMAKE_CURRENT_SOURCE_DIR}/hnswlib/helpers
 )
 
 # link_directories(../build/debug/src) # for debug
@@ -24,21 +25,51 @@ set(UTILS_SOURCES
     usearch/helpers/database_setup.cpp
     usearch/helpers/file_operations.cpp
     usearch/helpers/query_runner.cpp
+
+    
     # Add any missing implementation files here
 )
+
+set(HNSWLIB_UTILS_SOURCES
+    hnswlib/helpers/thread_pool.cpp
+    hnswlib/helpers/util.cpp
+    hnswlib/helpers/hnswlib_index_operations.cpp
+)
+
+
 
 # Shared helper classes - built as STATIC library
 add_library(usearch_utils STATIC ${UTILS_SOURCES})
 
+add_library(hnswlib_utils STATIC ${HNSWLIB_UTILS_SOURCES})
+
 target_link_libraries(usearch_utils duckdb)
+target_link_libraries(hnswlib_utils duckdb)
+   
+# usearch
 
 add_executable(usearch_random usearch/random.cpp)
 add_executable(usearch_full_coverage usearch/full_coverage.cpp)
 add_executable(usearch_new_data usearch/new_data.cpp)
 
+
+# hnswlib
+
+add_executable(hnswlib_random hnswlib/random.cpp)
+add_executable(hnswlib_full_coverage hnswlib/full_coverage.cpp)
+add_executable(hnswlib_new_data hnswlib/new_data.cpp)
+
+# usearch
+
 target_link_libraries(usearch_random usearch_utils duckdb)
 target_link_libraries(usearch_full_coverage usearch_utils duckdb)
 target_link_libraries(usearch_new_data usearch_utils duckdb)
+
+# hnswlib
+
+target_link_libraries(hnswlib_random hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_full_coverage hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_new_data hnswlib_utils usearch_utils duckdb)
 
 # Show verbose output during linking if there are issues
 set(CMAKE_VERBOSE_MAKEFILE ON)

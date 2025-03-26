@@ -1,5 +1,7 @@
 .PHONY: clean prepare-build duckdb-vss duckdb-vss-debug bm_performance recall recall-debug usearch_random usearch_full_coverage usearch_new_data
 
+all-hnswlib: #hnswlib_full_coverage #hnswlib_random hnswlib_new_data
+
 all-usearch: usearch_full_coverage usearch_random usearch_new_data
 
 clean:
@@ -25,3 +27,17 @@ usearch_full_coverage: clean prepare-build
 usearch_new_data: clean prepare-build
 	cd build && cmake .. && make
 	build/usearch_new_data
+
+
+hnswlib_random: clean prepare-build
+	cd build && cmake .. && make
+	build/hnswlib_random
+
+hnswlib_full_coverage: clean prepare-build
+	cd build && cmake .. && make
+	build/hnswlib_full_coverage
+
+hnswlib_new_data: clean prepare-build
+	cd build && cmake .. && make
+	build/hnswlib_new_data
+
