@@ -82,16 +82,16 @@ def plot_memory_usage_over_time(df: pd.DataFrame,
     setup_plot_style()
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Line plot showing memory usage
-    ax.plot(range(len(df)), df['index_mem_usage'], label='Memory Usage', linewidth=2)
+    # Line plot showing memory usage in megabytes
+    ax.plot(range(len(df)), df['index_mem_usage'] / 1e6, label='Memory Usage', linewidth=2)
     ax.set_xlabel('Iteration')
-    ax.set_ylabel('Memory Usage (bytes)')
+    ax.set_ylabel('Memory Usage (megabytes)')
     ax.set_title('Index Memory Usage Over Time')
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-    # Set x-axis limits to start at 0 and end at max iteration
-    ax.set_xlim(0, len(df) - 1)
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(range(len(df))), y_padding=0.4)
 
     save_plot(fig, save_dir, f"{filename}_memory_usage_over_time", experiment_paths)
     plt.close()
@@ -108,7 +108,6 @@ def plot_node_connectivity(df: pd.DataFrame,
     metrics = {
         'nodes_count': '#1f77b4',  # blue
         'unreachable_count': '#ff7f0e',  # orange
-        'disconnected_nodes': '#2ca02c',  # green
         'avg_connections': '#d62728'  # red
     }
 
@@ -126,125 +125,20 @@ def plot_node_connectivity(df: pd.DataFrame,
             ax.set_ylabel('Count')
             ax.grid(True, alpha=0.3)
 
-            # Set x-axis limits to start at 0 and end at max iteration
-            ax.set_xlim(0, len(df) - 1)
+            # Set axis limits with extra padding for better visualization
+            # Add more padding for unreachable_count and avg_connections
+            if metric == 'avg_connections':
+                max_val = df[metric].max()
+                # Add 20% padding at the top for better visualization
+                padding = max_val * 0.2
+                ax.set_ylim(bottom=0, top=max_val + padding)
+            else:
+                y_padding = 0.4 if metric == 'unreachable_count' else 0.2
+                set_axis_limits(ax, pd.Series(iterations), y_padding=y_padding)
+                ax.set_ylim(bottom=0)
 
             save_plot(fig, save_dir, f"{filename}_{metric}", experiment_paths)
             plt.close()
-
-    # 2. Combined plot with all metrics
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    for metric, color in metrics.items():
-        if metric in df.columns:
-            ax.plot(iterations, df[metric],
-                   label=metric.replace('_', ' ').title(),
-                   color=color,
-                   linewidth=2)
-
-    ax.set_title('Node Connectivity Metrics Over Time')
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Count')
-    ax.grid(True, alpha=0.3)
-    ax.legend()
-
-    # Set x-axis limits to start at 0 and end at max iteration
-    ax.set_xlim(0, len(df) - 1)
-
-    save_plot(fig, save_dir, f"{filename}_combined", experiment_paths)
-    plt.close()
-
-def plot_connectivity_heatmap(df: pd.DataFrame,
-                         title: str,
-                         save_dir: str,
-                         filename: str,
-                         experiment_paths: Dict[str, List[str]]):
-    """Plot heatmaps of node connectivity metrics - average across all iterations, first iteration, and last iteration."""
-    setup_plot_style()
-
-    # Extract level-specific metrics (columns ending with _l0, _l1, _l2, etc.)
-    level_cols = [col for col in df.columns if any(col.endswith(f'_l{i}') for i in range(10))]
-    if not level_cols:
-        print("No level-specific metrics found for heatmap")
-        return
-
-    # Group columns by metric type
-    metrics = {}
-    for col in level_cols:
-        # Split from the right to handle metrics with underscores
-        parts = col.rsplit('_l', 1)
-        if len(parts) != 2:
-            continue
-        metric = parts[0]
-        level = f'l{parts[1]}'
-
-        if metric not in metrics:
-            metrics[metric] = []
-        metrics[metric].append((level, col))
-
-    # Prepare data for heatmap
-    metric_names = list(metrics.keys())
-    levels = sorted(set(level for metric in metrics.values() for level, _ in metric))
-
-    if not metric_names or not levels:
-        print("No data available for heatmap")
-        return
-
-    def create_heatmap(data, subtitle, save_suffix):
-        fig, ax = plt.subplots(figsize=(10, 6))
-        im = ax.imshow(data, aspect='auto', cmap='YlOrRd')
-
-        # Add colorbar
-        cbar = ax.figure.colorbar(im, ax=ax)
-        cbar.ax.set_ylabel('Value', rotation=-90, va="bottom")
-
-        # Set labels
-        ax.set_xticks(np.arange(len(metric_names)))
-        ax.set_yticks(np.arange(len(levels)))
-        ax.set_xticklabels([m.replace('_', ' ').title() for m in metric_names])
-        ax.set_yticklabels([f'Level {l[1:]}' for l in levels])
-
-        # Rotate x-axis labels for better readability
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-
-        # Add value annotations
-        for i in range(len(levels)):
-            for j in range(len(metric_names)):
-                text = ax.text(j, i, f'{data[i, j]:.2f}',
-                             ha="center", va="center", color="black")
-
-        ax.set_title(f'{title}\n{subtitle}')
-
-        # Save plot
-        save_plot(fig, save_dir, f"{filename}_level_metrics_heatmap_{save_suffix}", experiment_paths)
-        plt.close()
-
-    # 1. Average across all iterations (original heatmap)
-    data_avg = np.zeros((len(levels), len(metric_names)))
-    for i, level in enumerate(levels):
-        for j, metric in enumerate(metric_names):
-            col = next((col for lvl, col in metrics[metric] if lvl == level), None)
-            if col and col in df.columns:
-                data_avg[i, j] = df[col].mean()
-    create_heatmap(data_avg, "Average Across All Iterations", "avg")
-
-    # 2. First iteration
-    data_first = np.zeros((len(levels), len(metric_names)))
-    for i, level in enumerate(levels):
-        for j, metric in enumerate(metric_names):
-            col = next((col for lvl, col in metrics[metric] if lvl == level), None)
-            if col and col in df.columns:
-                data_first[i, j] = df[col].iloc[0]
-    create_heatmap(data_first, "First Iteration (Initial State)", "first")
-
-    # 3. Last iteration
-    data_last = np.zeros((len(levels), len(metric_names)))
-    for i, level in enumerate(levels):
-        for j, metric in enumerate(metric_names):
-            col = next((col for lvl, col in metrics[metric] if lvl == level), None)
-            if col and col in df.columns:
-                data_last[i, j] = df[col].iloc[-1]
-    create_heatmap(data_last, "Last Iteration (Final State)", "last")
 
 def plot_level_connectivity(df: pd.DataFrame,
                          title: str,
@@ -273,8 +167,8 @@ def plot_level_connectivity(df: pd.DataFrame,
     ax.grid(True, alpha=0.3)
     ax.legend()
 
-    # Set x-axis limits to start at 0 and end at max iteration
-    ax.set_xlim(0, len(df) - 1)
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
     save_plot(fig, save_dir, f"{filename}_level_connectivity", experiment_paths)
     plt.close()
@@ -306,8 +200,8 @@ def plot_level_unreachable(df: pd.DataFrame,
     ax.grid(True, alpha=0.3)
     ax.legend()
 
-    # Set x-axis limits to start at 0 and end at max iteration
-    ax.set_xlim(0, len(df) - 1)
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
     save_plot(fig, save_dir, f"{filename}_level_unreachable", experiment_paths)
     plt.close()
@@ -339,8 +233,8 @@ def plot_level_nodes(df: pd.DataFrame,
     ax.grid(True, alpha=0.3)
     ax.legend()
 
-    # Set x-axis limits to start at 0 and end at max iteration
-    ax.set_xlim(0, len(df) - 1)
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
     save_plot(fig, save_dir, f"{filename}_level_nodes", experiment_paths)
     plt.close()
@@ -372,10 +266,13 @@ def plot_level_distances(df: pd.DataFrame,
 
     ax.set_title('Average Distances by Level')
     ax.set_xlabel('Iteration')
-    ax.set_ylabel('Distance')
+    ax.set_ylabel('Euclidean Distance')
     ax.grid(True, alpha=0.3)
     ax.legend()
-    ax.set_xlim(0, len(df) - 1)
+
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
+
     save_plot(fig, save_dir, f"{filename}_level_avg_distances", experiment_paths)
     plt.close()
 
@@ -387,10 +284,13 @@ def plot_level_distances(df: pd.DataFrame,
 
     ax.set_title('Minimum Distances by Level')
     ax.set_xlabel('Iteration')
-    ax.set_ylabel('Distance')
+    ax.set_ylabel('Euclidean Distance')
     ax.grid(True, alpha=0.3)
     ax.legend()
-    ax.set_xlim(0, len(df) - 1)
+
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
+
     save_plot(fig, save_dir, f"{filename}_level_min_distances", experiment_paths)
     plt.close()
 
@@ -402,10 +302,13 @@ def plot_level_distances(df: pd.DataFrame,
 
     ax.set_title('Maximum Distances by Level')
     ax.set_xlabel('Iteration')
-    ax.set_ylabel('Distance')
+    ax.set_ylabel('Euclidean Distance')
     ax.grid(True, alpha=0.3)
     ax.legend()
-    ax.set_xlim(0, len(df) - 1)
+
+    # Set axis limits with extra padding for better visualization
+    set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
+
     save_plot(fig, save_dir, f"{filename}_level_max_distances", experiment_paths)
     plt.close()
 
@@ -415,23 +318,28 @@ def plot_connectivity_scatter(df: pd.DataFrame,
                           save_dir: str,
                           filename: str,
                           experiment_paths: Dict[str, List[str]]):
-    """Plot scatter plot of average connections vs node count, colored by mean recall."""
+    """Plot scatter plot of connectivity vs search performance."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6), constrained_layout=True)
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Create scatter plot with avg_connections on x-axis and nodes_count on y-axis
-    # Color points by mean recall instead of iteration
-    scatter = ax.scatter(df['avg_connections'], df['nodes_count'],
-                        alpha=0.6, c=search_df['mean_recall'], cmap='viridis')
+    # Scatter plot with color gradient based on recall
+    scatter = ax.scatter(df['avg_connections'],
+                        search_df['mean_computed_distances'],
+                        c=search_df['mean_recall'],
+                        cmap='viridis',
+                        alpha=0.6)
 
-    # Add colorbar to show mean recall values
-    cbar = plt.colorbar(scatter)
-    cbar.set_label('Mean Recall')
+    # Add colorbar
+    cbar = fig.colorbar(scatter, ax=ax)
+    cbar.set_label('Mean Recall', rotation=270, labelpad=15)
 
-    ax.set_xlabel('Average Connections per Node')
-    ax.set_ylabel('Total Number of Nodes')
-    ax.set_title('Node Count vs Average Connections\nColored by Mean Recall')
+    ax.set_xlabel('Average Connections')
+    ax.set_ylabel('Euclidean Distance')
+    ax.set_title('Connectivity vs Search Performance')
     ax.grid(True, alpha=0.3)
+
+    # Set axis limits without forcing x-axis to start at 0
+    set_axis_limits(ax, df['avg_connections'], force_x_zero=False, y_padding=0.2)
 
     save_plot(fig, save_dir, f"{filename}_connectivity_scatter", experiment_paths)
     plt.close()
@@ -442,43 +350,29 @@ def plot_recall_vs_connectivity(df: pd.DataFrame,
                               save_dir: str,
                               filename: str,
                               experiment_paths: Dict[str, List[str]]):
-    """Plot connectivity metrics over iterations, colored by mean recall."""
+    """Plot recall vs connectivity metrics."""
     setup_plot_style()
-    fig = plt.figure(figsize=(15, 12), constrained_layout=True)
-    gs = fig.add_gridspec(2, 2)
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax2 = fig.add_subplot(gs[0, 1])
-    ax3 = fig.add_subplot(gs[1, 0])
-    ax4 = fig.add_subplot(gs[1, 1])
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Create iteration sequence
-    iterations = range(len(df))
+    # Scatter plot with color gradient based on computed distances
+    scatter = ax.scatter(df['avg_connections'],
+                        search_df['mean_recall'],
+                        c=search_df['mean_computed_distances'],
+                        cmap='viridis',
+                        alpha=0.6)
 
-    # Create scatter plots for different metrics
-    metrics = {
-        'avg_connections': ('Average Connections per Node', ax1),
-        'nodes_count': ('Total Number of Nodes', ax2),
-        'disconnected_nodes': ('Number of Disconnected Nodes', ax3),
-        'unreachable_count': ('Number of Unreachable Points', ax4)
-    }
+    # Add colorbar
+    cbar = fig.colorbar(scatter, ax=ax)
+    cbar.set_label('Mean Computed Distances', rotation=270, labelpad=15)
 
-    for metric, (metric_label, ax) in metrics.items():
-        if metric in df.columns:
-            scatter = ax.scatter(iterations, df[metric],
-                               alpha=0.6, c=search_df['mean_recall'], cmap='viridis')
+    ax.set_xlabel('Average Connections')
+    ax.set_ylabel('Mean Recall')
+    ax.set_title('Recall vs Connectivity')
+    ax.grid(True, alpha=0.3)
 
-            # Add colorbar
-            cbar = plt.colorbar(scatter, ax=ax)
-            cbar.set_label('Mean Recall')
-
-            ax.set_xlabel('Iteration')
-            ax.set_ylabel(metric_label)
-            ax.grid(True, alpha=0.3)
-
-            # Set x-axis limits to start at 0 and end at max iteration
-            ax.set_xlim(0, len(df) - 1)
-
-    fig.suptitle('Connectivity Metrics Over Time\nColored by Mean Recall')
+    # Set axis limits without forcing x-axis to start at 0 and set y-axis max to 1.2
+    set_axis_limits(ax, df['avg_connections'], force_x_zero=False)
+    ax.set_ylim(top=1.2)
 
     save_plot(fig, save_dir, f"{filename}_recall_vs_connectivity", experiment_paths)
     plt.close()
@@ -500,13 +394,6 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
             memory_stats_path = os.path.join(dataset_path, 'memory_stats.csv')
             if os.path.exists(memory_stats_path):
                 memory_stats_df = load_csv_data(memory_stats_path)
-                plot_memory_usage(
-                    memory_stats_df,
-                    f'{scenario} - Memory Statistics',
-                    save_dir,
-                    f'{scenario}_memory_stats',
-                    experiment_paths
-                )
 
                 plot_slot_distribution(
                     memory_stats_df,
@@ -549,14 +436,6 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                     f'{scenario} - Node Connectivity',
                     save_dir,
                     f'{scenario}_node_connectivity',
-                    experiment_paths
-                )
-
-                plot_connectivity_heatmap(
-                    connectivity_df,
-                    f'{scenario} - Connectivity Heatmap',
-                    save_dir,
-                    f'{scenario}_connectivity_heatmap',
                     experiment_paths
                 )
 

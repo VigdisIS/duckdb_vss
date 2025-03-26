@@ -19,18 +19,14 @@ def load_csv_data(filepath: str) -> pd.DataFrame:
 
 def calculate_error_bounds(df: pd.DataFrame,
                          mean_col: str,
-                         std_col: Optional[str] = None,
-                         min_col: Optional[str] = None,
-                         max_col: Optional[str] = None) -> Tuple[pd.Series, pd.Series]:
-    """Calculate error bounds using standard deviation or min/max values."""
+                         std_col: str = None) -> Tuple[pd.Series, pd.Series]:
+    """Calculate error bounds using standard deviation if available."""
     if std_col and std_col in df.columns:
+        # Use standard deviation for error bounds
         lower_bound = df[mean_col] - df[std_col]
         upper_bound = df[mean_col] + df[std_col]
-    elif min_col and max_col and min_col in df.columns and max_col in df.columns:
-        lower_bound = df[min_col]
-        upper_bound = df[max_col]
     else:
-        raise ValueError("Either std_col or min_col/max_col must be provided")
+        raise ValueError("Standard deviation column not available.")
     return lower_bound, upper_bound
 
 def plot_with_error_bounds(ax: plt.Axes,
@@ -39,24 +35,13 @@ def plot_with_error_bounds(ax: plt.Axes,
                          lower_bound: pd.Series,
                          upper_bound: pd.Series,
                          label: str,
-                         color: str = 'blue',
-                         alpha: float = 0.15):
-    """Plot line with error bounds for publication-quality figures."""
-    # Plot the main line with solid style
-    line = ax.plot(x, y, label=label, color=color, linewidth=1.5, zorder=2)
-
-    # Add error bounds with transparency
+                         color: str = 'blue'):
+    """Plot data with error bounds."""
+    # Plot error bounds
     ax.fill_between(x, lower_bound, upper_bound,
-                   color=color, alpha=alpha,
-                   linewidth=0, zorder=1)  # No edge for cleaner look
-
-    # Add thin lines at the bounds for better visibility
-    ax.plot(x, lower_bound, color=color, alpha=0.3,
-            linewidth=0.5, linestyle='--', zorder=1)
-    ax.plot(x, upper_bound, color=color, alpha=0.3,
-            linewidth=0.5, linestyle='--', zorder=1)
-
-    return line
+                   alpha=0.2, color=color, label=f'{label} ±1 Std Dev')
+    # Plot mean line
+    ax.plot(x, y, label=label, color=color, linewidth=2)
 
 def setup_plot_style():
     """Set up the plot style for publication-quality figures."""
@@ -107,24 +92,39 @@ def setup_plot_style():
         '#BBBBBB',  # Gray
     ])
 
-def set_axis_limits(ax: plt.Axes, x_data: pd.Series, y_data: pd.Series = None):
+def set_axis_limits(ax: plt.Axes, x_data: pd.Series, y_padding: float = 0.0, force_x_zero: bool = True):
     """Set axis limits without extra space.
 
     Args:
         ax: The matplotlib axes to modify
         x_data: The x-axis data
-        y_data: Optional y-axis data to set y-axis limits
+        y_padding: Additional padding to add to the top of the y-axis (as a fraction of the y-range)
+        force_x_zero: Whether to force x-axis to start at 0
     """
-    # Set x-axis limits without extra space
-    x_min, x_max = x_data.min(), x_data.max()
-    ax.set_xlim(x_min - 0.5, x_max + 0.5)
+    # Set x-axis limits
+    if force_x_zero:
+        ax.set_xlim(0, x_data.max())
+    else:
+        x_min, x_max = x_data.min(), x_data.max()
+        x_range = x_max - x_min
+        x_margin = x_range * 0.05  # 5% margin
+        ax.set_xlim(x_min - x_margin, x_max + x_margin)
 
-    # Set y-axis limits if y_data is provided
-    if y_data is not None:
-        y_min, y_max = y_data.min(), y_data.max()
+    # Set y-axis to start at 0 with optional padding
+    y_min, y_max = ax.get_ylim()
+    if y_padding > 0:
         y_range = y_max - y_min
-        y_margin = y_range * 0.05  # 5% margin
-        ax.set_ylim(y_min - y_margin, y_max + y_margin)
+        y_max = y_max + (y_range * y_padding)
+    ax.set_ylim(0, y_max)
+
+    # Ensure 0 is shown as first tick and no rotation
+    yticks = ax.get_yticks()
+    if yticks[0] != 0:
+        yticks = [0] + list(yticks)
+        ax.set_yticks(yticks)
+
+    # Ensure y-axis tick labels are not rotated
+    ax.tick_params(axis='y', rotation=0)
 
 def create_combined_plot(plot_files: List[str],
                      scenario: str,

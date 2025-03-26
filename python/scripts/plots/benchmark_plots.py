@@ -37,9 +37,7 @@ def plot_benchmark_metrics(df: pd.DataFrame,
             lower_bound, upper_bound = calculate_error_bounds(
                 df,
                 f'mean_{metric}',
-                std_col=f'stddev_{metric}',
-                min_col=f'min_{metric}',
-                max_col=f'max_{metric}'
+                std_col=f'stddev_{metric}'
             )
         except ValueError as e:
             print(f"Warning: Could not calculate error bounds for {filename}: {str(e)}")
@@ -105,9 +103,7 @@ def plot_benchmark_comparison(dfs: Dict[str, pd.DataFrame],
                 lower_bound, upper_bound = calculate_error_bounds(
                     df,
                     f'mean_{metric}',
-                    std_col=f'stddev_{metric}',
-                    min_col=f'min_{metric}',
-                    max_col=f'max_{metric}'
+                    std_col=f'stddev_{metric}'
                 )
 
                 plot_with_error_bounds(

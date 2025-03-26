@@ -9,47 +9,6 @@ import seaborn as sns
 from scripts.plots.plot_utils import (load_csv_data, calculate_error_bounds,
                         plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits)
 
-def plot_search_metrics(df: pd.DataFrame,
-                       metrics: List[str],
-                       title: str,
-                       save_dir: str,
-                       filename: str):
-    """Plot search metrics with error bounds."""
-    fig, ax = plt.subplots()
-    setup_plot_style()
-
-    colors = ['blue', 'green', 'red', 'purple', 'orange']
-
-    for metric, color in zip(metrics, colors):
-        lower_bound, upper_bound = calculate_error_bounds(
-            df,
-            f'mean_{metric}',
-            std_col=f'stddev_{metric}',
-            min_col=f'min_{metric}',
-            max_col=f'max_{metric}'
-        )
-
-        plot_with_error_bounds(
-            ax,
-            df['iteration'],
-            df[f'mean_{metric}'],
-            lower_bound,
-            upper_bound,
-            label=metric,
-            color=color
-        )
-
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Value')
-    ax.set_title(title)
-    ax.grid(True)
-    ax.legend()
-
-    # Set axis limits without extra space
-    set_axis_limits(ax, df['iteration'])
-
-    save_plot(fig, save_dir, filename)
-
 def plot_early_termination_analysis(
     df: pd.DataFrame,
     save_dir: str,
@@ -99,6 +58,14 @@ def plot_early_termination_analysis(
         # Set x-axis ticks with appropriate spacing
         ax.set_xticks(range(0, max_iter + 1, tick_spacing))
 
+        # Ensure y-axis starts at 0 and ticks are not rotated
+        ax.set_ylim(bottom=0)
+        yticks = ax.get_yticks()
+        if yticks[0] != 0:
+            yticks = [0] + list(yticks)
+            ax.set_yticks(yticks)
+        ax.tick_params(axis='y', rotation=0)
+
         # Rotate x-axis labels for better readability
         plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
         save_plot(fig, save_dir, f"{filename}_distribution")
@@ -115,28 +82,24 @@ def plot_early_termination_analysis(
             ax.set_xlabel('Iteration')
             ax.set_ylabel('Mean Recall')
 
-            # Let matplotlib automatically determine good x-axis limits
-            ax.margins(x=0.02)  # Add just a tiny bit of padding (2%)
+            # Set x-axis to start at 0 and end at max iteration
+            ax.set_xlim(0, max_iter)
 
             # Set x-axis ticks with appropriate spacing
-            ax.set_xticks(range(min_iter, max_iter + 1, tick_spacing))
+            ax.set_xticks(range(0, max_iter + 1, tick_spacing))
+
+            # Ensure y-axis starts at 0 and ticks are not rotated
+            ax.set_ylim(bottom=0)
+            yticks = ax.get_yticks()
+            if yticks[0] != 0:
+                yticks = [0] + list(yticks)
+                ax.set_yticks(yticks)
+            ax.tick_params(axis='y', rotation=0)
 
             # Rotate x-axis labels for better readability
             plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
             save_plot(fig, save_dir, f"{filename}_recall_by_iter")
         plt.close()
-
-    # 3. Correlation Analysis
-    # Select relevant columns for correlation
-    corr_cols = ['recall', 'computed_distances', 'visited_members']
-    if all(col in df.columns for col in corr_cols):
-        corr_matrix = df[corr_cols].corr()
-        if not corr_matrix.empty:
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, ax=ax)
-            ax.set_title('Correlation Analysis of Early Termination Factors')
-            save_plot(fig, save_dir, f"{filename}_correlations")
-            plt.close()
 
     # 4. Scatter plots for key relationships
     scatter_cols = ['computed_distances', 'visited_members', 'recall']
@@ -147,25 +110,51 @@ def plot_early_termination_analysis(
         # Computed distances vs Iteration
         if 'computed_distances' in df.columns:
             sns.scatterplot(data=df, x='iteration', y='computed_distances', ax=axes[0,0])
-            axes[0,0].margins(x=0.02)  # Add just a tiny bit of padding (2%)
-            axes[0,0].set_xticks(range(min(df['iteration']), max_iter + 1, tick_spacing))
+            axes[0,0].set_xlim(0, max_iter)
+            axes[0,0].set_ylim(bottom=0)
+            axes[0,0].set_xticks(range(0, max_iter + 1, tick_spacing))
+            yticks = axes[0,0].get_yticks()
+            if yticks[0] != 0:
+                yticks = [0] + list(yticks)
+                axes[0,0].set_yticks(yticks)
+            axes[0,0].tick_params(axis='y', rotation=0)
+            axes[0,0].set_ylabel('Euclidean Distance')
         axes[0,0].set_title('Computed Distances vs Iteration')
 
         # Visited members vs Iteration
         if 'visited_members' in df.columns:
             sns.scatterplot(data=df, x='iteration', y='visited_members', ax=axes[0,1])
-            axes[0,1].margins(x=0.02)  # Add just a tiny bit of padding (2%)
-            axes[0,1].set_xticks(range(min(df['iteration']), max_iter + 1, tick_spacing))
+            axes[0,1].set_xlim(0, max_iter)
+            axes[0,1].set_ylim(bottom=0)
+            axes[0,1].set_xticks(range(0, max_iter + 1, tick_spacing))
+            yticks = axes[0,1].get_yticks()
+            if yticks[0] != 0:
+                yticks = [0] + list(yticks)
+                axes[0,1].set_yticks(yticks)
+            axes[0,1].tick_params(axis='y', rotation=0)
         axes[0,1].set_title('Visited Members vs Iteration')
 
         # Recall vs Computed Distances
         if 'recall' in df.columns and 'computed_distances' in df.columns:
             sns.scatterplot(data=df, x='computed_distances', y='recall', ax=axes[1,0])
+            axes[1,0].set_ylim(bottom=0)
+            yticks = axes[1,0].get_yticks()
+            if yticks[0] != 0:
+                yticks = [0] + list(yticks)
+                axes[1,0].set_yticks(yticks)
+            axes[1,0].tick_params(axis='y', rotation=0)
+            axes[1,0].set_xlabel('Euclidean Distance')
         axes[1,0].set_title('Recall vs Computed Distances')
 
         # Recall vs Visited Members
         if 'recall' in df.columns and 'visited_members' in df.columns:
             sns.scatterplot(data=df, x='visited_members', y='recall', ax=axes[1,1])
+            axes[1,1].set_ylim(bottom=0)
+            yticks = axes[1,1].get_yticks()
+            if yticks[0] != 0:
+                yticks = [0] + list(yticks)
+                axes[1,1].set_yticks(yticks)
+            axes[1,1].tick_params(axis='y', rotation=0)
         axes[1,1].set_title('Recall vs Visited Members')
 
         # Rotate x-axis labels for all subplots
@@ -200,39 +189,77 @@ def plot_visited_vs_computed(df: pd.DataFrame,
     ax.set_title('Search Efficiency: Visited Members vs Computed Distances')
     ax.grid(True)
 
+    # Set axis limits without forcing x-axis to start at 0
+    set_axis_limits(ax, df['mean_visited_members'], force_x_zero=False, y_padding=0.2)
+
     # Adjust layout
     fig.set_constrained_layout(True)
     save_plot(fig, save_dir, f"{filename}_visited_vs_computed")
     plt.close()
 
-def plot_efficiency_distribution(df: pd.DataFrame,
-                      title: str,
-                      save_dir: str,
-                      filename: str):
-    """Plot the distribution of search efficiency metrics."""
-    setup_plot_style()
+def plot_search_metric_over_time(df: pd.DataFrame,
+                               metric: str,
+                               title: str,
+                               ylabel: str,
+                               save_dir: str,
+                               filename: str):
+    """Plot a single search metric over time with mean and median."""
+    try:
+        # Validate inputs
+        if df.empty:
+            print(f"Warning: Empty DataFrame for {filename}")
+            return
 
-    fig, ax = plt.subplots(figsize=(8, 6))
+        # Check if required columns exist
+        required_cols = ['iteration', f'mean_{metric}', f'median_{metric}']
+        if not all(col in df.columns for col in required_cols):
+            print(f"Warning: Missing required columns for {filename}")
+            return
 
-    # Box plot showing distribution of efficiency metrics
-    efficiency_data = pd.DataFrame({
-        'Metric': ['Visited Members'] * len(df) + ['Computed Distances'] * len(df),
-        'Value': pd.concat([df['mean_visited_members'], df['mean_computed_distances']])
-    })
+        fig, ax = plt.subplots(figsize=(10, 6))
+        setup_plot_style()
 
-    sns.boxplot(data=efficiency_data, x='Metric', y='Value', ax=ax)
-    ax.set_title('Distribution of Search Efficiency Metrics')
-    ax.set_ylabel('Count')
-    ax.grid(True)
+        # Plot mean with standard deviation error bounds if available
+        if f'stddev_{metric}' in df.columns:
+            lower_bound = df[f'mean_{metric}'] - df[f'stddev_{metric}']
+            upper_bound = df[f'mean_{metric}'] + df[f'stddev_{metric}']
+            ax.fill_between(df['iteration'], lower_bound, upper_bound,
+                          alpha=0.2, color='blue', label='±1 Std Dev')
 
-    # Adjust layout
-    fig.set_constrained_layout(True)
-    save_plot(fig, save_dir, f"{filename}_efficiency_distribution")
-    plt.close()
+        # Plot mean line
+        ax.plot(df['iteration'], df[f'mean_{metric}'],
+               label=f'Mean {metric}',
+               color='blue',
+               linewidth=2)
+
+        # Plot median line
+        ax.plot(df['iteration'], df[f'median_{metric}'],
+               label=f'Median {metric}',
+               color='red',
+               linestyle='--',
+               linewidth=2)
+
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Set y-axis to start at 0 and add padding at top if needed
+        if metric == 'recall':
+            ax.set_ylim(bottom=0, top=1.2)  # Set fixed y-axis range for recall plots
+        else:
+            # Add padding for other metrics but ensure bottom starts at 0
+            set_axis_limits(ax, df['iteration'], y_padding=0.2)
+            ax.set_ylim(bottom=0)
+
+        save_plot(fig, save_dir, filename)
+    except Exception as e:
+        print(f"Error plotting search metric {metric} for {filename}: {str(e)}")
 
 def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
     """Generate all search-related plots."""
-    search_metrics = ['recall', 'computed_distances', 'visited_members', 'results_count']
+    search_metrics = ['recall', 'computed_distances', 'visited_members']
 
     for scenario, paths in experiment_paths.items():
         for dataset_path in paths:
@@ -243,24 +270,20 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
             if os.path.exists(search_stats_path):
                 search_df = load_csv_data(search_stats_path)
 
-                plot_search_metrics(
-                    search_df,
-                    search_metrics,
-                    f'{scenario} - Search Metrics Over Time',
-                    save_dir,
-                    f'{scenario}_search_metrics'
-                )
+                # Generate individual metric plots
+                for metric in search_metrics:
+                    plot_search_metric_over_time(
+                        search_df,
+                        metric,
+                        f'{scenario} - Search {metric.replace("_", " ").title()}',
+                        metric.replace("_", " ").title(),
+                        save_dir,
+                        f'{scenario}_search_{metric}.png'
+                    )
 
                 plot_visited_vs_computed(
                     search_df,
                     f'{scenario} - Search Efficiency',
-                    save_dir,
-                    f'{scenario}_search_efficiency'
-                )
-
-                plot_efficiency_distribution(
-                    search_df,
-                    f'{scenario} - Search Efficiency Distribution',
                     save_dir,
                     f'{scenario}_search_efficiency'
                 )
