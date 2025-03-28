@@ -22,6 +22,10 @@ def plot_early_termination_analysis(
         print(f"Warning: No data available for {filename}")
         return
 
+
+    # Extract dataset name from the filename
+    dataset_name = df['dataset'].iloc[0]
+
     # Check if required columns exist
     required_cols = ['iteration']
     if not all(col in df.columns for col in required_cols):
@@ -48,7 +52,7 @@ def plot_early_termination_analysis(
                edgecolor='#4169E1',  # Royal blue for edge
                linewidth=0.5,  # Subtle border
                width=1.0)
-        ax.set_title('Distribution of Early Termination Iterations')
+        ax.set_title(f'Distribution of Early Termination Iterations - {filename.title()} ({dataset_name})')
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Number of Early Terminated Queries')
 
@@ -78,7 +82,7 @@ def plot_early_termination_analysis(
         recall_by_iter = df.groupby('iteration')['recall'].mean()
         if not recall_by_iter.empty:
             ax.plot(recall_by_iter.index, recall_by_iter.values, linewidth=2)
-            ax.set_title('Recall by Iteration')
+            ax.set_title(f'Recall by Iteration - {filename.title()} ({dataset_name})')
             ax.set_xlabel('Iteration')
             ax.set_ylabel('Mean Recall')
 
@@ -105,7 +109,7 @@ def plot_early_termination_analysis(
     scatter_cols = ['computed_distances', 'visited_members', 'recall']
     if any(col in df.columns for col in scatter_cols):
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-        fig.suptitle('Early Termination Analysis: Key Relationships')
+        fig.suptitle(f'Early Termination Analysis: Key Relationships - {filename.title()} ({dataset_name})')
 
         # Computed distances vs Iteration
         if 'computed_distances' in df.columns:
@@ -119,7 +123,7 @@ def plot_early_termination_analysis(
                 axes[0,0].set_yticks(yticks)
             axes[0,0].tick_params(axis='y', rotation=0)
             axes[0,0].set_ylabel('Euclidean Distance')
-        axes[0,0].set_title('Computed Distances vs Iteration')
+        axes[0,0].set_title(f'Computed Distances vs Iteration - {filename.title()} ({dataset_name})')
 
         # Visited members vs Iteration
         if 'visited_members' in df.columns:
@@ -132,7 +136,7 @@ def plot_early_termination_analysis(
                 yticks = [0] + list(yticks)
                 axes[0,1].set_yticks(yticks)
             axes[0,1].tick_params(axis='y', rotation=0)
-        axes[0,1].set_title('Visited Members vs Iteration')
+        axes[0,1].set_title(f'Visited Members vs Iteration - {filename.title()} ({dataset_name})')
 
         # Recall vs Computed Distances
         if 'recall' in df.columns and 'computed_distances' in df.columns:
@@ -144,7 +148,7 @@ def plot_early_termination_analysis(
                 axes[1,0].set_yticks(yticks)
             axes[1,0].tick_params(axis='y', rotation=0)
             axes[1,0].set_xlabel('Euclidean Distance')
-        axes[1,0].set_title('Recall vs Computed Distances')
+        axes[1,0].set_title(f'Recall vs Computed Distances - {filename.title()} ({dataset_name})')
 
         # Recall vs Visited Members
         if 'recall' in df.columns and 'visited_members' in df.columns:
@@ -155,7 +159,7 @@ def plot_early_termination_analysis(
                 yticks = [0] + list(yticks)
                 axes[1,1].set_yticks(yticks)
             axes[1,1].tick_params(axis='y', rotation=0)
-        axes[1,1].set_title('Recall vs Visited Members')
+        axes[1,1].set_title(f'Recall vs Visited Members - {filename.title()} ({dataset_name})')
 
         # Rotate x-axis labels for all subplots
         for ax in axes.flat:
@@ -165,11 +169,13 @@ def plot_early_termination_analysis(
         save_plot(fig, save_dir, f"{filename}_relationships")
 
 def plot_visited_vs_computed(df: pd.DataFrame,
-                      title: str,
                       save_dir: str,
                       filename: str):
     """Plot the relationship between visited members and computed distances."""
     setup_plot_style()
+
+    # Extract dataset name from the title
+    dataset_name = df['dataset'].iloc[0]
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -186,7 +192,7 @@ def plot_visited_vs_computed(df: pd.DataFrame,
 
     ax.set_xlabel('Mean Number of Visited Members')
     ax.set_ylabel('Mean Number of Computed Distances')
-    ax.set_title('Search Efficiency: Visited Members vs Computed Distances')
+    ax.set_title(f'Visited Members vs Computed Distances - {filename.split("_")[0].title()} ({dataset_name})')
     ax.grid(True)
 
     # Set axis limits without forcing x-axis to start at 0
@@ -269,13 +275,14 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
             search_stats_path = os.path.join(dataset_path, 'search_query_stats.csv')
             if os.path.exists(search_stats_path):
                 search_df = load_csv_data(search_stats_path)
+                dataset_name = search_df['dataset'].iloc[0]
 
                 # Generate individual metric plots
                 for metric in search_metrics:
                     plot_search_metric_over_time(
                         search_df,
                         metric,
-                        f'{scenario} - Search {metric.replace("_", " ").title()}',
+                        f'Search {metric.replace("_", " ").title()} - {scenario.title()} ({dataset_name})',
                         metric.replace("_", " ").title(),
                         save_dir,
                         f'{scenario}_search_{metric}.png'
@@ -283,7 +290,6 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
 
                 plot_visited_vs_computed(
                     search_df,
-                    f'{scenario} - Search Efficiency',
                     save_dir,
                     f'{scenario}_search_efficiency'
                 )

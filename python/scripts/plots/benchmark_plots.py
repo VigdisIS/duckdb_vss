@@ -74,66 +74,6 @@ def plot_benchmark_metrics(df: pd.DataFrame,
     except Exception as e:
         print(f"Error plotting benchmark metrics for {filename}: {str(e)}")
 
-def plot_benchmark_comparison(dfs: Dict[str, pd.DataFrame],
-                           metric: str,
-                           title: str,
-                           ylabel: str,
-                           save_dir: str,
-                           filename: str):
-    """Plot benchmark metrics comparison across different scenarios."""
-    try:
-        # Validate inputs
-        if not dfs:
-            print(f"Warning: No dataframes provided for {filename}")
-            return
-
-        # Check if all dataframes have required columns
-        required_cols = ['iteration', f'mean_{metric}']
-        for scenario, df in dfs.items():
-            if not all(col in df.columns for col in required_cols):
-                print(f"Warning: Missing required columns for {scenario} in {filename}")
-                return
-
-        fig, ax = plt.subplots()
-        setup_plot_style()
-
-        colors = ['blue', 'green', 'red']
-        for (scenario, df), color in zip(dfs.items(), colors):
-            try:
-                lower_bound, upper_bound = calculate_error_bounds(
-                    df,
-                    f'mean_{metric}',
-                    std_col=f'stddev_{metric}'
-                )
-
-                plot_with_error_bounds(
-                    ax,
-                    df['iteration'],
-                    df[f'mean_{metric}'],
-                    lower_bound,
-                    upper_bound,
-                    label=scenario,
-                    color=color
-                )
-            except ValueError as e:
-                print(f"Warning: Could not calculate error bounds for {scenario} in {filename}: {str(e)}")
-                continue
-
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel(ylabel)
-        ax.set_title(title)
-        ax.grid(True)
-        ax.legend()
-
-        # Set axis limits without extra space
-        # Use the maximum iteration across all dataframes
-        max_iter = max(df['iteration'].max() for df in dfs.values())
-        set_axis_limits(ax, pd.Series(range(max_iter + 1)))
-
-        save_plot(fig, save_dir, filename)
-    except Exception as e:
-        print(f"Error plotting benchmark comparison for {filename}: {str(e)}")
-
 def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
                              title: str,
                              save_dir: str,
@@ -167,7 +107,7 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
             if 'iteration' in df.columns and 'mean_time' in df.columns:
                 ax.plot(df['iteration'],
                        df['mean_time'],
-                       label=f'{operation.capitalize()} Mean',
+                       label=f'{operation.title()} Mean',
                        color=base_color,
                        linewidth=2)
 
@@ -175,7 +115,7 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
             if 'iteration' in df.columns and 'median_time' in df.columns:
                 ax.plot(df['iteration'],
                        df['median_time'],
-                       label=f'{operation.capitalize()} Median',
+                       label=f'{operation.title()} Median',
                        color=base_color,
                        linestyle='--',
                        linewidth=2)
@@ -195,33 +135,6 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
     except Exception as e:
         print(f"Error plotting benchmark correlations for {filename}: {str(e)}")
 
-def plot_search_correlations(df: pd.DataFrame,
-                        title: str,
-                        save_dir: str,
-                        filename: str):
-    """Plot correlations between different search benchmark metrics."""
-    setup_plot_style()
-
-    # Select relevant columns for correlation analysis
-    corr_cols = ['mean_time', 'median_time', 'stddev_time', 'min_time', 'max_time']
-
-    # Create correlation matrix
-    corr_matrix = df[corr_cols].corr()
-
-    # Create heatmap
-    fig, ax = plt.subplots(figsize=(10, 8))
-    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, ax=ax)
-
-    # Customize labels
-    labels = ['Mean Time', 'Median Time', 'Std Dev Time', 'Min Time', 'Max Time']
-    ax.set_xticklabels(labels, rotation=45, ha='right')
-    ax.set_yticklabels(labels)
-
-    ax.set_title(title)
-    plt.tight_layout()
-
-    save_plot(fig, save_dir, filename)
-
 def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
     """Generate all benchmark-related plots."""
     metrics = ['time']
@@ -230,6 +143,14 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
     for scenario, paths in experiment_paths.items():
         for dataset_path in paths:
             save_dir = os.path.join(dataset_path, 'images')
+
+            # Extract dataset name from the folder path
+            dataset_name = os.path.basename(dataset_path)
+            # Handle special case for fashion-mnist
+            if dataset_name.startswith("fashion_mnist"):
+                dataset_name = "fashion-mnist"
+            else:
+                dataset_name = dataset_name.split('_')[0]
 
             # Load benchmark data
             benchmark_dfs = {}
@@ -248,8 +169,8 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
                     plot_benchmark_metrics(
                         df,
                         metric,
-                        f'{scenario} - {bm_file.replace(".csv", "")} - {metric}',
-                        f'{metric.capitalize()} (seconds)',
+                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} - {scenario.title()} ({dataset_name})',
+                        f'{metric.title()} (seconds)',
                         save_dir,
                         f'{scenario}_{bm_file.replace(".csv", "")}_{metric}.png'
                     )
@@ -258,7 +179,7 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
             if benchmark_dfs:
                 plot_benchmark_correlations(
                     benchmark_dfs,
-                    f'{scenario} - Operation Times Comparison',
+                    f'Operation Times Comparison - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}_bm_times_comparison.png'
                 )
