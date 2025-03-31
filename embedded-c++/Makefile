@@ -1,6 +1,6 @@
 .PHONY: clean prepare-build duckdb-vss duckdb-vss-debug bm_performance recall recall-debug usearch_random usearch_full_coverage usearch_new_data
 
-all-hnswlib: hnswlib_full_coverage hnswlib_random hnswlib_new_data
+all-hnswlib: hnswlib_full_coverage hnswlib_random #hnswlib_new_data
 
 all-usearch: usearch_full_coverage usearch_random usearch_new_data
 
