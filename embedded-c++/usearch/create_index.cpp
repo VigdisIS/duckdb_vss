@@ -64,7 +64,7 @@ USearchIndexCreator(int threads) : db(nullptr), con(db), threads(threads) {
                                                 static_cast<unsigned int>(half_count));
             executor_default_t executor(executor_threads);
 
-            index.reserve(index_limits_t {NextPowerOfTwo(half_count), executor.size()});
+            index.reserve({static_cast<size_t>(half_count), static_cast<size_t>(executor.size())});
 
             std::vector<int> ids;
             std::vector<std::vector<float>> vectors;
@@ -80,17 +80,45 @@ USearchIndexCreator(int threads) : db(nullptr), con(db), threads(threads) {
                 }
             }
 
-            executor.fixed(half_count, [&](std::size_t thread, std::size_t task) {
+            // Progress status
+            std::atomic<bool> do_tasks{true};
+            std::atomic<std::size_t> processed{0};
+            
+            // Define a progress monitor function
+            auto progress_monitor = [&](std::size_t processed, std::size_t total) -> bool {
+                // Print progress or update a progress bar
+                std::cout << "\rProgress: " << processed << "/" << total 
+                        << " (" << (processed * 100 / total) << "%)" << std::flush;
+                return true; // Return false to stop processing
+            };
+
+            std::cout << "Creating first half of index for dataset: " << dataset.name << "..." << std::endl;
+            
+            auto batch_start = std::chrono::high_resolution_clock::now();
+            
+            executor.dynamic(half_count, [&](std::size_t thread, std::size_t vector_idx) {
                 try {
-                    int id = ids[task];
-                    auto& vec = vectors[task];
+                    int id = ids[vector_idx];
+                    auto& vec = vectors[vector_idx];
 
                     index.add(id, vec.data(), thread);
                 }
                 catch (const std::exception& e) {
-                    std::cerr << "Error adding vector " << task << ": " << e.what() << std::endl;
+                    std::cerr << "Error adding vector " << vector_idx << ": " << e.what() << std::endl;
                 }
+
+                // Update progress
+                ++processed;
+                if (thread == 0)
+                    do_tasks = progress_monitor(processed.load(), half_count);
+                return do_tasks.load();
             });
+            
+            std::cout << std::endl; // Finish the progress line
+            
+            auto batch_end = std::chrono::high_resolution_clock::now();
+            auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
+            std::cout << "Creation of first half of index completed in " << batch_duration << "s" << std::endl;
 
             // Save the index to disk
             std::string path_half = "usearch/indexes/" + dataset.name + "_index_half.usearch";
@@ -103,13 +131,11 @@ USearchIndexCreator(int threads) : db(nullptr), con(db), threads(threads) {
 
             std::cout << "Creating second half of index for dataset: " << dataset.name << "..." << std::endl;
 
-            index.reserve(index_limits_t {NextPowerOfTwo(dataset_cardinality), executor.size()});
+            index.reserve({static_cast<size_t>(dataset_cardinality), static_cast<size_t>(executor.size())});
 
             // Clear vectors and ids for second half
             ids.clear();
             vectors.clear();
-            ids.reserve(half_count);
-            vectors.reserve(half_count);
 
             // Add rest of vectors to index
             for (idx_t i = 10; i < 20; i++) {
@@ -120,17 +146,31 @@ USearchIndexCreator(int threads) : db(nullptr), con(db), threads(threads) {
                 }
             }
 
-            executor.fixed(half_count, [&](std::size_t thread, std::size_t task) {
+            batch_start = std::chrono::high_resolution_clock::now();
+
+            executor.dynamic(half_count, [&](std::size_t thread, std::size_t vector_idx) {
                 try {
-                    int id = ids[task];
-                    auto& vec = vectors[task];
+                    int id = ids[vector_idx];
+                    auto& vec = vectors[vector_idx];
 
                     index.add(id, vec.data(), thread);
                 }
                 catch (const std::exception& e) {
-                    std::cerr << "Error adding vector " << task << ": " << e.what() << std::endl;
+                    std::cerr << "Error adding vector " << vector_idx << ": " << e.what() << std::endl;
                 }
+
+                // Update progress
+                ++processed;
+                if (thread == 0)
+                    do_tasks = progress_monitor(processed.load(), dataset_cardinality);
+                return do_tasks.load();
             });
+
+            std::cout << std::endl; // Finish the progress line
+            
+            batch_end = std::chrono::high_resolution_clock::now();
+            batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
+            std::cout << "Creation of second half of index completed in " << batch_duration << "s" << std::endl;
 
             // Save the index to disk
             std::string path = "usearch/indexes/" + dataset.name + "_index.usearch";
@@ -152,18 +192,20 @@ int main() {
      * for all experiments.
      */
 
+    std::size_t executor_threads = (std::thread::hardware_concurrency());
+
     try {
         // fashion_mnist
-        USearchIndexCreator fm_creator(64);
+        USearchIndexCreator fm_creator(executor_threads);
         fm_creator.createIndexes(0);
         // mnist
-        USearchIndexCreator m_creator(64);
+        USearchIndexCreator m_creator(executor_threads);
         m_creator.createIndexes(1);
         // sift
-        USearchIndexCreator s_creator(64);
+        USearchIndexCreator s_creator(executor_threads);
         s_creator.createIndexes(2);
         // gist
-        USearchIndexCreator g_creator(64);
+        USearchIndexCreator g_creator(executor_threads);
         g_creator.createIndexes(3);
         std::cout << "All indexes created successfully." << std::endl;
 
