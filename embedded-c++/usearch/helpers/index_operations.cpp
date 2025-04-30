@@ -132,6 +132,91 @@ std::vector<size_t> ExtractSizeVector(const Value& value) {
 }
 
 /**
+ * Performs vector addition to the index
+ * 
+ * @param index The USearch index to add vectors to
+ * @param sample_vecs The result set containing vectors to add
+ * @param dataset_name The name of the dataset for benchmarking
+ * @param iteration The current iteration number
+ * @param add_bm_appender Appender for benchmarking results
+ * @return Number of vectors successfully added
+ */
+
+size_t IndexOperations::singleAdd(
+    index_dense_gt<row_t>& index,
+    const unique_ptr<MaterializedQueryResult>& sample_vecs,
+    const std::string& dataset_name,
+    int iteration,
+    Appender& add_bm_appender
+) {
+    std::cout << "🔵 ADDING SAMPLE VECTORS 🔵" << std::endl;
+    
+    size_t added_count = 0;
+    
+    try {
+        std::vector<int> ids;
+        std::vector<std::vector<float>> vectors;
+        ids.reserve(sample_vecs->RowCount());
+        vectors.reserve(sample_vecs->RowCount());
+        
+        for (idx_t i = 0; i < sample_vecs->RowCount(); i++) {
+            ids.push_back(sample_vecs->GetValue<int>(0, i));
+            vectors.push_back(ExtractFloatVector(sample_vecs->GetValue(1, i)));
+        }
+        
+        // Create result collection
+        std::vector<std::tuple<std::string, int, double>> benchmarks;
+        std::atomic<size_t> success_count(0);
+        std::atomic<size_t> error_count{0};
+        
+        std::cout << "Starting single-threaded add" << std::endl;
+        
+        auto batch_start = std::chrono::high_resolution_clock::now();
+
+        for (idx_t i = 0; i < sample_vecs->RowCount(); i++) {int id = ids[i];
+            auto& vec = vectors[i];
+            
+            auto start_time = std::chrono::high_resolution_clock::now();
+            auto result = index.add(id, vec.data());
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration<double>(end_time - start_time).count();
+
+            if (result) {
+                success_count++;
+                
+                benchmarks.push_back({dataset_name, iteration, duration});
+            } else {
+                error_count++;
+                
+                std::cerr << "Error adding vector with ID " << id 
+                        << ": " << (result.error.what() ? result.error.what() : "Unknown error")
+                        << std::endl;
+            }
+        }
+
+        auto batch_end = std::chrono::high_resolution_clock::now();
+        auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
+        std::cout << "Single-threaded add completed in " << batch_duration << "s" << std::endl;
+        
+        // Store benchmark data
+        for (const auto& bm : benchmarks) {
+            add_bm_appender.AppendRow(
+                Value(std::get<0>(bm)),
+                Value::INTEGER(std::get<1>(bm)),
+                Value::FLOAT(std::get<2>(bm))
+            );
+        }
+        
+        added_count = success_count;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error in single-threaded vector addition: " << e.what() << std::endl;
+    }
+    
+    return added_count;
+}
+
+/**
  * Performs parallel vector addition to the index
  * 
  * @param index The USearch index to add vectors to
@@ -176,16 +261,22 @@ size_t IndexOperations::parallelAdd(
         executor_default_t executor(executor_threads);
         
         std::cout << "Starting parallel add with " << executor_threads << " threads" << std::endl;
-
-        // Ensure enough capacity
-        auto size = index.size() + sample_vecs->RowCount();
-        if (size > index.capacity()) {
-            index.reserve(index_limits_t {NextPowerOfTwo(size), executor.size()});
-        }
         
         auto batch_start = std::chrono::high_resolution_clock::now();
         
-        executor.fixed(vectors.size(), [&](std::size_t thread, std::size_t task) {
+        // Progress status
+        std::atomic<bool> do_tasks{true};
+        std::atomic<std::size_t> processed{0};
+        
+        // Define a progress monitor function
+        auto progress_monitor = [&](std::size_t processed, std::size_t total) -> bool {
+            // Print progress or update a progress bar
+            std::cout << "\rProgress: " << processed << "/" << total 
+                      << " (" << (processed * 100 / total) << "%)" << std::flush;
+            return true; // Return false to stop processing
+        };
+        
+        executor.dynamic(vectors.size(), [&](std::size_t thread, std::size_t task) {
             int id = ids[task];
             auto& vec = vectors[task];
             
@@ -207,7 +298,16 @@ size_t IndexOperations::parallelAdd(
                         << ": " << (result.error.what() ? result.error.what() : "Unknown error")
                         << std::endl;
             }
+            
+            // Update progress
+            ++processed;
+            if (thread == 0)
+                do_tasks = progress_monitor(processed.load(), vectors.size());
+            
+            return do_tasks.load();
         });
+        
+        std::cout << std::endl; // Finish the progress line
         
         auto batch_end = std::chrono::high_resolution_clock::now();
         auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
@@ -436,14 +536,26 @@ void IndexOperations::parallelRunTestQueries(Connection& con, index_dense_gt<row
         executor_default_t executor(executor_threads);
         
         std::cout << "Starting parallel search with " << executor_threads << " threads" << std::endl;
+
+        // Progress status
+        std::atomic<bool> do_tasks{true};
+        std::atomic<std::size_t> processed{0};
+        
+        // Define a progress monitor function
+        auto progress_monitor = [&](std::size_t processed, std::size_t total) -> bool {
+            // Print progress or update a progress bar
+            std::cout << "\rProgress: " << processed << "/" << total 
+                      << " (" << (processed * 100 / total) << "%)" << std::flush;
+            return true; // Return false to stop processing
+        };
         
         auto batch_start = std::chrono::high_resolution_clock::now();
         
-        executor.fixed(test_vecs.size(), [&](std::size_t thread, std::size_t task) {
+        executor.dynamic(test_vecs.size(), [&](std::size_t thread, std::size_t vector_idx) {
             try {
-                auto& test_vec = test_vecs[task];
-                int test_query_vector_index_int = test_vector_indices[task];
-                const Value& neighbor_ids = neighbor_ids_values[task];
+                auto& test_vec = test_vecs[vector_idx];
+                int test_query_vector_index_int = test_vector_indices[vector_idx];
+                const Value& neighbor_ids = neighbor_ids_values[vector_idx];
 
                 auto start_time = std::chrono::high_resolution_clock::now();
                 auto results = index.search(test_vec.data(), 100, thread); 
@@ -548,9 +660,18 @@ void IndexOperations::parallelRunTestQueries(Connection& con, index_dense_gt<row
                 }
             } catch (const std::exception& e) {
                 std::lock_guard<std::mutex> lock(results_mutex);
-                std::cerr << "Error processing test vector " << task << ": " << e.what() << std::endl;
+                std::cerr << "Error processing test vector " << vector_idx << ": " << e.what() << std::endl;
             }
+
+            // Update progress
+            ++processed;
+            if (thread == 0)
+                do_tasks = progress_monitor(processed.load(), test_vecs.size());
+            
+            return do_tasks.load();
         });
+        
+        std::cout << std::endl; // Finish the progress line
         
         auto batch_end = std::chrono::high_resolution_clock::now();
         auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
