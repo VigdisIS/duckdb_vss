@@ -45,6 +45,14 @@ public:
         int iteration,
         Appender& del_bm_appender
     );
+
+    static size_t singleAdd(
+        index_dense_gt<row_t>& index,
+        const unique_ptr<MaterializedQueryResult>& sample_vecs,
+        const std::string& dataset_name,
+        int iteration,
+        Appender& add_bm_appender
+    );
     
     static size_t parallelRemove(
         index_dense_gt<row_t>& index,
