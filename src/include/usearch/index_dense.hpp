@@ -11,7 +11,6 @@
 #include <numeric>    // `std::iota`
 #include <thread>     // `std::thread`
 #include <vector>     // `std::vector`
-#include <iostream>   // `std::cerr`
 
 #include <usearch/index.hpp>
 #include <usearch/index_plugins.hpp>
@@ -1240,7 +1239,7 @@ class index_dense_gt {
         std::unique_lock<std::mutex> free_lock(free_keys_mutex_);
         if (!free_keys_.reserve(free_keys_.size() + batch_size))
             return result.failed("Can't allocate memory for a free-list");
-    
+
         // A removed entry would be:
         // - present in `free_keys_`
         // - missing in the `slot_lookup_`
@@ -1452,7 +1451,6 @@ class index_dense_gt {
         std::size_t index_mem_usage = typed_->memory_usage();
         std::size_t slot_lookup_size = slot_lookup_.size(); 
         std::size_t slot_lookup_capacity = slot_lookup_.capacity();
-        std::size_t slot_lookup_deleted_slots = slot_lookup_.deleted_size();
 
         // Append statistics to CSV
         std::ofstream csv_file("memory_stats.csv", std::ios::app);
@@ -1463,11 +1461,11 @@ class index_dense_gt {
         test_file.close();
         
         if (!file_exists_with_content)
-            csv_file << "index_size,index_capacity,index_mem_usage,slot_lookup_total_slots,slot_lookup_populated_slots,slot_lookup_deleted_slots" << std::endl;
+            csv_file << "index_size,index_capacity,index_mem_usage,slot_lookup_total_slots,slot_lookup_populated_slots" << std::endl;
         
         // Write the data row
         csv_file << index_size << "," << index_capacity << "," << index_mem_usage << "," 
-                << slot_lookup_capacity << "," << slot_lookup_size << "," << slot_lookup_deleted_slots << std::endl;
+                << slot_lookup_capacity << "," << slot_lookup_size << std::endl;
 
         csv_file.close();
     
