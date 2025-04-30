@@ -100,7 +100,7 @@ USearchFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
                                                             iteration, del_bm_appender);
                 
                 // Re-add vectors from this partition to the index
-                size_t added = IndexOperations::parallelAdd(index, partition, dataset.name, 
+                size_t added = IndexOperations::singleAdd(index, partition, dataset.name, 
                                                         iteration, add_bm_appender);
 
                 // Log index stats
