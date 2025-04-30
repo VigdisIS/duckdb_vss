@@ -65,12 +65,6 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
 
             auto dataset_cardinality = con.Query("SELECT COUNT(*) FROM " + dataset.name + "_train;")->GetValue<int64_t>(0, 0);
 
-            std::size_t executor_threads = std::min(std::thread::hardware_concurrency(),
-                                                static_cast<unsigned int>(dataset_cardinality));
-            executor_default_t executor(executor_threads);
-
-            index.reserve(index_limits_t {NextPowerOfTwo(dataset_cardinality), executor.size()});
-
             // Load index
             std::string path = "usearch/indexes/" + dataset.name + "_index.usearch";
             index.load(path.c_str());
@@ -149,8 +143,8 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
                 size_t removed = IndexOperations::singleRemove(index, sample_vecs, dataset.name,
                                                             iteration, del_bm_appender);
 
-                // Re-add sample vectors (multi-threaded)
-                size_t added = IndexOperations::parallelAdd(index, sample_vecs, dataset.name,
+                // Re-add sample vectors
+                size_t added = IndexOperations::singleAdd(index, sample_vecs, dataset.name,
                                                         iteration, add_bm_appender);
 
                 // Log index stats
