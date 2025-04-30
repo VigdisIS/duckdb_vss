@@ -83,7 +83,6 @@
 #include <stdexcept> // `std::runtime_exception`
 #include <thread>    // `std::thread`
 #include <utility>   // `std::pair`
-#include <iostream>
 #include <fstream>
 
 // Prefetching
@@ -968,22 +967,6 @@ class growing_hash_set_gt {
         capacity_ = new_capacity;
         count_ = new_count;
         return true;
-    }
-
-    // Get access to the internal array (for iteration)
-    element_t* data() const noexcept { return slots_; }
-    std::size_t capacity() const noexcept { return capacity_; }
-    
-    // Method to iterate through all values in the set
-    template <typename Callback>
-    void for_each(Callback&& callback) const {
-        if (!slots_) return;
-        
-        for (std::size_t i = 0; i < capacity_; ++i) {
-            if (slots_[i] != default_free_value<element_t>()) {
-                callback(slots_[i]);
-            }
-        }
     }
 };
 
@@ -2527,7 +2510,6 @@ class index_gt {
             search_exact_(query, metric, predicate, wanted, context);
         } else {
             next_candidates_t& next = context.next_candidates;
-            // How many candidates considered at each step of search (higher -> better recall but req increased computation, slower)
             std::size_t expansion = (std::max)(config.expansion, wanted);
             usearch_assert_m(expansion > 0, "Expansion factor can't be a zero!");
             if (!next.reserve(expansion))
@@ -3113,7 +3095,7 @@ class index_gt {
         tape_allocator_ = std::move(reordered_tape);
         entry_slot_ = old_slot_to_new[entry_slot_];
     }
-    
+
     /**
      *  @brief  Scans the whole collection, removing the links leading towards
      *          banned entries. This essentially isolates some nodes from the rest
@@ -3631,30 +3613,8 @@ class index_gt {
     };
 
     inline node_lock_t node_lock_(std::size_t slot) const noexcept {
-        // Try to acquire the lock with a timeout
-        int attempts = 0;
-        const int MAX_ATTEMPTS = 1000000; // Allow a significant number of attempts
-        
-        while (nodes_mutexes_.atomic_set(slot)) {
-            attempts++;
-            
-            // Use exponential backoff to reduce contention
-            if (attempts % 1000 == 0)
-                std::this_thread::yield();
-                
-            if (attempts % 10000 == 0)
-                std::this_thread::sleep_for(std::chrono::microseconds(10));
-                
-            if (attempts % 100000 == 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                
-            // If we've tried too many times, just continue without the lock
-            if (attempts >= MAX_ATTEMPTS) {
-                // Return a "no-op" lock that doesn't actually hold any resource
-                return {nodes_mutexes_, std::numeric_limits<std::size_t>::max()};
-            }
-        }
-        
+        while (nodes_mutexes_.atomic_set(slot))
+            ;
         return {nodes_mutexes_, slot};
     }
 
@@ -3715,52 +3675,35 @@ class index_gt {
         for (compressed_slot_t close_slot : new_neighbors) {
             if (close_slot == new_slot)
                 continue;
-            
-            // Use a loop to retry acquiring the lock
-            bool lock_acquired = false;
-            while (!lock_acquired) {
-                // Create a new lock object on each attempt
-                node_lock_t close_lock = node_lock_(close_slot);
-                
-                // Check if we actually acquired the lock or got a sentinel value
-                if (close_lock.slot == std::numeric_limits<std::size_t>::max()) {
-                    // Lock timeout occurred, yield and retry
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1 + std::rand() % 5));
-                    continue; // Try again
-                }
-                
-                // We have the lock - proceed with the neighbor reconnection
-                node_t close_node = node_at_(close_slot);
-                neighbors_ref_t close_header = neighbors_(close_node, level);
-                
-                usearch_assert_m(close_header.size() <= connectivity_max, "Possible corruption");
-                usearch_assert_m(close_slot != new_slot, "Self-loops are impossible");
-                usearch_assert_m(level <= close_node.level(), "Linking to missing level");
+            node_lock_t close_lock = node_lock_(close_slot);
+            node_t close_node = node_at_(close_slot);
 
-                // If node has capacity, add connection
-                if (close_header.size() < connectivity_max) {
-                    close_header.push_back(static_cast<compressed_slot_t>(new_slot));
-                    lock_acquired = true; // Exit the retry loop
-                    continue;
-                }
+            neighbors_ref_t close_header = neighbors_(close_node, level);
+            usearch_assert_m(close_header.size() <= connectivity_max, "Possible corruption");
+            usearch_assert_m(close_slot != new_slot, "Self-loops are impossible");
+            usearch_assert_m(level <= close_node.level(), "Linking to missing level");
 
-                // To fit a new connection we need to drop an existing one.
-                top.clear();
-                usearch_assert_m((top.reserve(close_header.size() + 1)), "The memory must have been reserved in `add`");
-                top.insert_reserved(
-                    {context.measure(value, citerator_at(close_slot), metric), static_cast<compressed_slot_t>(new_slot)});
-                for (compressed_slot_t successor_slot : close_header)
-                    top.insert_reserved(
-                        {context.measure(citerator_at(close_slot), citerator_at(successor_slot), metric), successor_slot});
-
-                // Export the results:
-                close_header.clear();
-                candidates_view_t top_view = refine_(metric, connectivity_max, top, context);
-                for (std::size_t idx = 0; idx != top_view.size(); idx++)
-                    close_header.push_back(top_view[idx].slot);
-                    
-                lock_acquired = true; // Exit the retry loop
+            // If `new_slot` is already present in the neighboring connections of `close_slot`
+            // then no need to modify any connections or run the heuristics.
+            if (close_header.size() < connectivity_max) {
+                close_header.push_back(static_cast<compressed_slot_t>(new_slot));
+                continue;
             }
+
+            // To fit a new connection we need to drop an existing one.
+            top.clear();
+            usearch_assert_m((top.reserve(close_header.size() + 1)), "The memory must have been reserved in `add`");
+            top.insert_reserved(
+                {context.measure(value, citerator_at(close_slot), metric), static_cast<compressed_slot_t>(new_slot)});
+            for (compressed_slot_t successor_slot : close_header)
+                top.insert_reserved(
+                    {context.measure(citerator_at(close_slot), citerator_at(successor_slot), metric), successor_slot});
+
+            // Export the results:
+            close_header.clear();
+            candidates_view_t top_view = refine_(metric, connectivity_max, top, context);
+            for (std::size_t idx = 0; idx != top_view.size(); idx++)
+                close_header.push_back(top_view[idx].slot);
         }
     }
 
@@ -3851,6 +3794,7 @@ class index_gt {
                 changed = false;
                 node_lock_t closest_lock = node_lock_(closest_slot);
                 neighbors_ref_t closest_neighbors = neighbors_non_base_(node_at_(closest_slot), level);
+
                 // Optional prefetching
                 if (!is_dummy<prefetch_at>()) {
                     candidates_range_t missing_candidates{*this, closest_neighbors, visits};
@@ -3986,7 +3930,6 @@ class index_gt {
         while (!next.empty()) {
 
             candidate_t candidate = next.top();
-            // Stop if the current candidate is further than the furthest neighbor found so far
             if ((-candidate.distance) > radius)
                 break;
 
@@ -4006,23 +3949,16 @@ class index_gt {
                 return false;
 
             for (compressed_slot_t successor_slot : candidate_neighbors) {
-                // Skip if node already visited
                 if (visits.set(successor_slot))
                     continue;
 
                 distance_t successor_dist = context.measure(query, citerator_at(successor_slot), metric);
-                // Successor inserted if either 
-                //      (1) the current result set hasn't reached its capacity limit yet (top.size() < top_limit), or 
-                //      (2) the successor is closer to the query than the current furthest result (successor_dist < radius).
                 if (top.size() < top_limit || successor_dist < radius) {
                     // This can substantially grow our priority queue:
-                    next.insert({-successor_dist, successor_slot}); // next queue with negated dist as priority --> controls which nodes to explore next (closest node to query first in priority) --> greedy best-first search
+                    next.insert({-successor_dist, successor_slot});
                     if (is_dummy<predicate_at>() ||
                         predicate(member_cref_t{node_at_(successor_slot).ckey(), successor_slot}))
-                        // Maintain K-nearest neighbors found so far
                         top.insert({successor_dist, successor_slot}, top_limit);
-                    // Update search radius to the furthest neighbor found so far
-                    // --> dynamically narrows search space as better candidates are found
                     radius = top.top().distance;
                 }
             }
