@@ -68,8 +68,6 @@ run-all-hnswlib-experiments: build
 # everything in order
 run-all: build
 	@echo "Running full setup and experiments..."
-	# generate ground truth to raw.db
-	./build/generate_ground_truth
 	# create usearch indexes
 	./build/usearch_create_indexes
 	# run usearch experiments
