@@ -112,7 +112,7 @@ USearchNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
                                                             iteration, del_bm_appender);
                 
                 // Add vectors from second half
-                size_t added = IndexOperations::parallelAdd(index, partitions_to_add, dataset.name, 
+                size_t added = IndexOperations::singleAdd(index, partitions_to_add, dataset.name, 
                                                         iteration, add_bm_appender);
 
                 // Log index stats

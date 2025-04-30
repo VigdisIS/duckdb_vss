@@ -106,8 +106,8 @@ USearchRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
                 size_t removed = IndexOperations::singleRemove(index, sample_vecs, dataset.name, 
                                                             iteration, del_bm_appender);
                 
-                // Re-add sample vectors (multi-threaded)
-                size_t added = IndexOperations::parallelAdd(index, sample_vecs, dataset.name, 
+                // Re-add sample vectors
+                size_t added = IndexOperations::singleAdd(index, sample_vecs, dataset.name, 
                                                         iteration, add_bm_appender);
 
                 // Log index stats
