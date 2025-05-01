@@ -103,7 +103,7 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
             Appender early_termination_appender(con, "early_terminated_queries");
 
             // Initial query run (multi-threaded)
-            IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality);
+            IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0);
 
             // Update available points
             auto results_single = index.search(test_vec_single_vector.data(), dataset_cardinality); 
@@ -153,7 +153,7 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
                 // Run test queries (multi-threaded)
                 IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender,
                                         search_bm_appender, early_termination_appender,
-                                        iteration, dataset_cardinality);
+                                        iteration);
             
                 // Update available points
                 found_points_set.clear();

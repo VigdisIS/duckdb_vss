@@ -93,7 +93,7 @@ USearchRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
             Appender early_termination_appender(con, "early_terminated_queries");
 
             // Initial query run (multi-threaded)
-            IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality);
+            IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0);
 
             // Run iterations
             for (int iteration = 1; iteration <= max_iterations; iteration++) {
@@ -116,7 +116,7 @@ USearchRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
                 // Run test queries (multi-threaded)
                 IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, 
                                         search_bm_appender, early_termination_appender, 
-                                        iteration, dataset_cardinality);
+                                        iteration);
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }

@@ -84,7 +84,7 @@ USearchFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
             Appender early_termination_appender(con, "early_terminated_queries");
 
             // Initial query run (multi-threaded)
-            IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality);
+            IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0);
 
             auto partitions = QueryRunner::partitionDataset(con, dataset.name, 100);
 
@@ -109,7 +109,7 @@ USearchFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
                 // Run test queries (multi-threaded)
                 IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, 
                                         search_bm_appender, early_termination_appender, 
-                                        iteration, dataset_cardinality);
+                                        iteration);
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }
