@@ -8,13 +8,11 @@
 #include <chrono>
 #include <mutex>
 #include <atomic>
+#include "usearch/helpers/index_operations.h"
+#include "util.h"
 
 using namespace duckdb;
 using namespace hnswlib;
-
-// Helper functions should be moved to a utilities header
-std::vector<float> ExtractFloatVector(const Value& value);
-std::vector<size_t> ExtractSizeVector(const Value& value);
 
 class HNSWLibIndexOperations {
 public: 

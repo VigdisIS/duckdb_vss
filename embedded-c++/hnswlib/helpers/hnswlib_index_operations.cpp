@@ -1,139 +1,6 @@
 #include "hnswlib_index_operations.h"
-#include "util.h"
-#include <hnswlib/hnswlib.h>
 
 using namespace hnswlib;
-
-std::vector<float> ExtractFloatVector(const Value& value) {
-
-    // Handle FLOAT[N] array types
-    if (value.type().id() == LogicalTypeId::ARRAY) {
-        const auto& array_children = ArrayValue::GetChildren(value);
-        std::vector<float> result;
-        result.reserve(array_children.size());
-
-        for (const auto& child : array_children) {
-            if (child.IsNull()) {
-                result.push_back(0.0f); // Handle NULL values as 0
-            } else {
-                // Convert various number types to float
-                switch (child.type().id()) {
-                case LogicalTypeId::FLOAT:
-                    result.push_back(child.GetValue<float>());
-                    break;
-                case LogicalTypeId::DOUBLE:
-                    result.push_back(static_cast<float>(child.GetValue<double>()));
-                    break;
-                case LogicalTypeId::INTEGER:
-                    result.push_back(static_cast<float>(child.GetValue<int32_t>()));
-                    break;
-                case LogicalTypeId::BIGINT:
-                    result.push_back(static_cast<float>(child.GetValue<int64_t>()));
-                    break;
-                default:
-                    throw ConversionException("Cannot convert element to float");
-                }
-            }
-        }
-        return result;
-    }
-
-    // Handle LIST types
-    if (value.type().id() == LogicalTypeId::LIST) {
-        const auto& list_children = ListValue::GetChildren(value);
-        std::vector<float> result;
-        result.reserve(list_children.size());
-
-        for (const auto& child : list_children) {
-            if (child.IsNull()) {
-                result.push_back(0.0f);
-            } else {
-                // Convert various number types to float
-                switch (child.type().id()) {
-                case LogicalTypeId::FLOAT:
-                    result.push_back(child.GetValue<float>());
-                    break;
-                case LogicalTypeId::DOUBLE:
-                    result.push_back(static_cast<float>(child.GetValue<double>()));
-                    break;
-                case LogicalTypeId::INTEGER:
-                    result.push_back(static_cast<float>(child.GetValue<int32_t>()));
-                    break;
-                case LogicalTypeId::BIGINT:
-                    result.push_back(static_cast<float>(child.GetValue<int64_t>()));
-                    break;
-                default:
-                    throw ConversionException("Cannot convert element to float");
-                }
-            }
-        }
-        return result;
-    }
-
-    throw ConversionException("Not a list or array type: " + value.type().ToString());
-}
-
-std::vector<size_t> ExtractSizeVector(const Value& value) {
-    // Handle ARRAY types (INTEGER[N])
-    if (value.type().id() == LogicalTypeId::ARRAY) {
-        const auto& array_children = ArrayValue::GetChildren(value);
-        std::vector<size_t> result;
-        result.reserve(array_children.size());
-
-        for (const auto& child : array_children) {
-            if (child.IsNull()) {
-                result.push_back(0);
-            } else {
-                // Convert various number types to size_t
-                switch (child.type().id()) {
-                case LogicalTypeId::INTEGER:
-                    result.push_back(static_cast<size_t>(child.GetValue<int32_t>()));
-                    break;
-                case LogicalTypeId::BIGINT:
-                    result.push_back(static_cast<size_t>(child.GetValue<int64_t>()));
-                    break;
-                case LogicalTypeId::UBIGINT:
-                    result.push_back(static_cast<size_t>(child.GetValue<uint64_t>()));
-                    break;
-                default:
-                    throw ConversionException("Cannot convert element to size_t");
-                }
-            }
-        }
-        return result;
-    }
-
-    // Handle LIST types
-    if (value.type().id() == LogicalTypeId::LIST) {
-        const auto& list_children = ListValue::GetChildren(value);
-        std::vector<size_t> result;
-        result.reserve(list_children.size());
-
-        for (const auto& child : list_children) {
-            if (child.IsNull()) {
-                result.push_back(0);
-            } else {
-                // Convert various number types to size_t
-                switch (child.type().id()) {
-                case LogicalTypeId::INTEGER:
-                    result.push_back(static_cast<size_t>(child.GetValue<int32_t>()));
-                    break;
-                case LogicalTypeId::BIGINT:
-                    result.push_back(static_cast<size_t>(child.GetValue<int64_t>()));
-                    break;
-                case LogicalTypeId::UBIGINT:
-                    result.push_back(static_cast<size_t>(child.GetValue<uint64_t>()));
-                    break;
-                default:
-                    throw ConversionException("Cannot convert element to size_t");
-                }
-            }
-        }
-        return result;
-    }
-
-    throw ConversionException("Not a list or array type: " + value.type().ToString());
-}
 
 /**
  * Performs parallel vector addition to the index
@@ -351,10 +218,7 @@ void HNSWLibIndexOperations::parallelRunTestQueries(Connection& con, Hierarchica
 
         for (idx_t i = 0; i < test_vectors->RowCount(); i++) { 
             // Extract neighbor IDs and filter to include only those present in the index
-            if(new_data) {
-                Value filtered_list_value = test_vectors->GetValue(2, i);
-            } else {
-                // Filter neighbors to only include IDs that exist in the index
+            if(!new_data) {
                 auto original_neighbors = ExtractSizeVector(test_vectors->GetValue(2, i));
                 std::vector<size_t> filtered_neighbors;
                 filtered_neighbors.reserve(original_neighbors.size());
@@ -378,11 +242,11 @@ void HNSWLibIndexOperations::parallelRunTestQueries(Connection& con, Hierarchica
 
                 Value filtered_list_value = Value::LIST(LogicalType::INTEGER, std::move(filtered_values));
             }
-            
+
             // Store the filtered neighbor IDs
             test_vecs.push_back(ExtractFloatVector(test_vectors->GetValue(1, i)));
             test_vector_indices.push_back(test_vectors->GetValue(0, i).GetValue<int>());
-            neighbor_ids_values.push_back(filtered_list_value);
+            neighbor_ids_values.push_back(test_vectors->GetValue(2, i));
         }
 
         // Thread-safe containers for results
@@ -407,6 +271,7 @@ void HNSWLibIndexOperations::parallelRunTestQueries(Connection& con, Hierarchica
         auto batch_end = std::chrono::high_resolution_clock::now();
         auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
         std::cout << "Parallel search completed in " << batch_duration << "s" << std::endl;
+
 
         // Bulk append all results
         for (const auto& result : search_results) {

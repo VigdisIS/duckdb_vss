@@ -28,7 +28,7 @@ class IndexOperations {
 public:
     static void parallelRunTestQueries(Connection& con, index_dense_gt<row_t>& index, const std::string& table_name,
         const unique_ptr<MaterializedQueryResult>& test_vectors, Appender& appender, Appender& search_appender, 
-        Appender& early_term_appender, int iteration, int dataset_size);
+        Appender& early_term_appender, int iteration);
     
     static size_t parallelAdd(
         index_dense_gt<row_t>& index,
@@ -61,4 +61,6 @@ public:
         int iteration,
         Appender& del_bm_appender
     );
+
+    static std::vector<std::tuple<int, std::vector<float>, std::vector<size_t>>> brute_force_knn(const std::vector<std::tuple<size_t, std::vector<float>>>& data, const std::vector<std::tuple<size_t, std::vector<float>>>& queries, int dim, int k);
 };

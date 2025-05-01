@@ -502,11 +502,10 @@ size_t IndexOperations::parallelRemove(
  * @param search_appender Appender for benchmarking search results
  * @param early_term_appender Appender for early termination results
  * @param iteration The current iteration number
- * @param dataset_size The size of the dataset
  */
 void IndexOperations::parallelRunTestQueries(Connection& con, index_dense_gt<row_t>& index, const std::string& table_name,
     const unique_ptr<MaterializedQueryResult>& test_vectors, Appender& appender, Appender& search_appender, 
-    Appender& early_term_appender, int iteration, int dataset_size) {
+    Appender& early_term_appender, int iteration) {
     std::cout << "🧪 RUNNING TEST QUERIES 🧪" << std::endl;
 
     try {
@@ -735,4 +734,66 @@ void IndexOperations::parallelRunTestQueries(Connection& con, index_dense_gt<row
     } catch (const std::exception& e) {
         std::cerr << "Error in parallel search: " << e.what() << std::endl;
     }
+}
+
+std::vector<std::tuple<int, std::vector<float>, std::vector<size_t>>> IndexOperations::brute_force_knn(const std::vector<std::tuple<size_t, std::vector<float>>>& data, const std::vector<std::tuple<size_t, std::vector<float>>>& queries, int dim, int k) {
+    size_t num_data = data.size();
+    size_t num_queries = queries.size();
+    std::vector<std::vector<size_t>> indices(num_queries, std::vector<size_t>(k));
+
+    std::cout << "Running brute force knn with " << num_queries << " queries and " << num_data << " data points" << std::endl;
+
+    auto batch_start = std::chrono::high_resolution_clock::now();
+
+    auto knn_thread = [&](size_t start_idx, size_t end_idx) {
+        for (size_t i = start_idx; i < end_idx; ++i) {
+            std::vector<std::pair<float, size_t>> distances(num_data);
+            for (size_t j = 0; j < num_data; ++j) {
+                float dist = 0;
+                for (int d = 0; d < dim; ++d) {
+                    float diff = std::get<1>(data[j])[d] - std::get<1>(queries[i])[d];
+                    dist += diff * diff;
+                }
+                distances[j] = { dist, j };
+            }
+            std::partial_sort(distances.begin(), distances.begin() + k, distances.end());
+            for (int n = 0; n < k; ++n) {
+                indices[i][n] = std::get<0>(data[distances[n].second]);
+            }
+        }
+    };
+
+    size_t num_threads = std::thread::hardware_concurrency();
+    size_t chunk_size = (num_queries + num_threads - 1) / num_threads;
+    std::vector<std::thread> threads;
+
+    for (size_t t = 0; t < num_threads; ++t) {
+        size_t start_idx = t * chunk_size;
+        size_t end_idx = std::min(start_idx + chunk_size, num_queries);
+        if (start_idx < end_idx) {
+            threads.emplace_back(knn_thread, start_idx, end_idx);
+        }
+    }
+
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    auto batch_end = std::chrono::high_resolution_clock::now();
+    auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
+    std::cout << "Brute force knn completed in " << batch_duration << "s" << std::endl;
+
+    // Convert to the required return format
+    std::vector<std::tuple<int, std::vector<float>, std::vector<size_t>>> results;
+    results.reserve(num_queries);
+    
+    for (size_t i = 0; i < num_queries; ++i) {
+        results.emplace_back(
+            static_cast<int>(std::get<0>(queries[i])),  // Query ID as int
+            std::get<1>(queries[i]),                    // Query vector
+            indices[i]                                  // Top-k neighbor IDs
+        );
+    }
+    
+    return results;
 }
