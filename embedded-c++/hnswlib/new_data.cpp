@@ -48,7 +48,6 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             DatabaseSetup::initializeBMTable(con, dataset.name + "_search");
             DatabaseSetup::intializeEarlyTermTable(con);
             DatabaseSetup::setupFullDataset(con, dataset);
-            DatabaseSetup::setupGroundTruthTable(con, dataset.name, dataset.dimensions);
 
             // Load the hnswlib index
             auto dataset_cardinality = con.Query("SELECT COUNT(*) FROM " + dataset.name + "_train;")->GetValue<int64_t>(0, 0);
@@ -82,22 +81,40 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             Appender search_bm_appender(con, dataset.name + "_search_bm");
             Appender early_termination_appender(con, "early_terminated_queries");
 
-            // Get current keys in index from partitions 1- 10
-            std::unordered_set<size_t> current_idx_keys_set;
-            current_idx_keys_set.reserve(dataset_cardinality/2);
-            for (int i = 0; i < 10; i++) {
-                for (idx_t j = 0; j < partitions[i]->RowCount(); j++) {
-                    current_idx_keys_set.insert(partitions[i]->GetValue<int>(0, j));
-                }
-            }
-            assert(current_idx_keys_set.size() == (dataset_cardinality/2));
-
-            // Get test vectors with ground truth neighbor ids (from brute force knn)
-            auto test_vectors = QueryRunner::getCurrentTopKNeighbors(con, dataset.name, current_idx_keys_set);
+            // Get test vectors
+            auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test order by id asc;");
             auto test_vectors_count = test_vectors->RowCount();
 
+            // Get test queries from test table
+            std::vector<std::tuple<size_t, std::vector<float>>> queries;
+            queries.reserve(test_vectors_count);
+            for (idx_t i = 0; i < test_vectors->RowCount(); i++) {
+                queries.push_back(std::make_tuple(test_vectors->GetValue<size_t>(0, i), ExtractFloatVector(test_vectors->GetValue(1, i))));
+            }
+
+            // Get current data in index from partitions 1- 10
+            std::vector<std::tuple<size_t, std::vector<float>>> data;
+            data.reserve(dataset_cardinality/2);
+            for (int i = 0; i < 10; i++) {
+                for (idx_t j = 0; j < partitions[i]->RowCount(); j++) {
+                    data.push_back(std::make_tuple(partitions[i]->GetValue<size_t>(0, j), ExtractFloatVector(partitions[i]->GetValue(1, j))));
+                }
+            }
+            assert(data.size() == (dataset_cardinality/2));
+
+            // Get ground truth neighbor ids (from brute force knn)
+            auto ground_truth_indices = IndexOperations::brute_force_knn(data, queries, dataset.dimensions, 100);
+
+            // Create appender for ground truth
+            Appender gt_appender(con, dataset.name + "_test");
+
+            // Update test dataset
+            QueryRunner::updateTestDataset(con, dataset, gt_appender, ground_truth_indices, test_vectors_count);
+
+            auto test_vectors_gt = con.Query("SELECT * FROM " + dataset.name + "_test order by id asc;");
+
             // Initial query run (multi-threaded)
-            HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality, index_map, true);
+            HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors_gt, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality, index_map, true);
 
             // Run iteration
             
@@ -134,22 +151,27 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
                 index.log_memory_stats();
                 index.log_connectivity_stats(&space);
 
-                // Remove vectors from current_idx_keys_set
-                for (int i = 0; i < partitions_to_remove->RowCount(); i++) {
-                    current_idx_keys_set.erase(partitions_to_remove->GetValue<int>(0, i));
+                // Get current data in index
+                data.clear();
+                std::cout << "Updating data with partitions " << iteration+1 << " to " << 10 + iteration << std::endl;
+                for (int i = iteration; i < (10 + iteration); i++) {
+                    for (idx_t j = 0; j < partitions[i]->RowCount(); j++) {
+                        data.push_back(std::make_tuple(partitions[i]->GetValue<size_t>(0, j), ExtractFloatVector(partitions[i]->GetValue(1, j))));
+                    }
                 }
-                // Add new indices to current_idx_keys_set
-                for (int i = 0; i < partitions_to_add->RowCount(); i++) {
-                    current_idx_keys_set.insert(partitions_to_add->GetValue<int>(0, i));
-                }
+                assert(data.size() == (dataset_cardinality/2));
 
-                assert(current_idx_keys_set.size() == (dataset_cardinality/2));
+                // Get ground truth neighbor ids (from brute force knn)
+                auto ground_truth_indices_it = IndexOperations::brute_force_knn(data, queries, dataset.dimensions, 100);
 
-                // Get current top 100 neighbors
-                auto current_top_100_neighbors = QueryRunner::getCurrentTopKNeighbors(con, dataset.name, current_idx_keys_set);
-           
+                // Update test dataset
+                QueryRunner::updateTestDataset(con, dataset, gt_appender, ground_truth_indices_it, test_vectors_count);
+
+                auto test_vectors_gt_it = con.Query("SELECT * FROM " + dataset.name + "_test order by id asc;");
+                assert(test_vectors_gt_it->RowCount() == test_vectors_count);
+
                 // Run test queries (multi-threaded)
-                HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, iteration, dataset_cardinality, index_map, true);
+                HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors_gt_it, appender, search_bm_appender, early_termination_appender, iteration, dataset_cardinality, index_map, true);
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }
@@ -159,6 +181,7 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             del_bm_appender.Close();
             add_bm_appender.Close();
             search_bm_appender.Close();
+            gt_appender.Close();
 
             // Calculate recall and aggregate stats
             QueryRunner::calculateRecall(con, dataset.name);

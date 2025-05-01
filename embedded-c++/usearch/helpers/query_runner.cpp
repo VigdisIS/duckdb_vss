@@ -1,5 +1,4 @@
 #include "query_runner.h"
-#include "index_operations.h"
 
 void QueryRunner::calculateRecall(Connection& con, const std::string& table_name) {
     std::cout << "🧮 CALCULATING RECALL 🧮" << std::endl;
@@ -128,35 +127,50 @@ std::vector<unique_ptr<MaterializedQueryResult>> QueryRunner::partitionDataset(
     return partitions;
 }
 
-unique_ptr<MaterializedQueryResult> QueryRunner::getCurrentTopKNeighbors(Connection& con, const std::string& table_name, std::unordered_set<size_t>& current_idx_keys_set) {
-    // Transform idx keys to string 
-    std::string idx_keys_str;
-    for (const auto& point : current_idx_keys_set) {
-        idx_keys_str += std::to_string(point) + ",";
+void QueryRunner::updateTestDataset(Connection& con, const DatasetConfig& dataset, Appender& test_appender, std::vector<std::tuple<int, std::vector<float>, std::vector<size_t>>>& ground_truth_indices, int test_vectors_count) {
+    // Truncate test table to remove old test vectors and replace w ground truth
+    con.Query("DELETE FROM " + dataset.name + "_test;");
+    auto test_res = con.Query("select * from " + dataset.name + "_test;");
+    assert(test_res->RowCount() == 0);
+
+    std::vector<Value> gt_neighbor_ids;
+    gt_neighbor_ids.reserve(std::get<2>(ground_truth_indices[0]).size());
+    std::vector<Value> query_vec_val;
+    query_vec_val.reserve(dataset.dimensions);
+
+    // Add ground truth results to test table
+    for (const auto& result : ground_truth_indices) {
+        try {
+            // Create result value
+            Value result_list_value;
+            std::vector<Value> id_values;
+            id_values.reserve(std::get<2>(result).size());
+            for (std::size_t j = 0; j < std::get<2>(result).size(); ++j) {
+                size_t key = static_cast<size_t>(std::get<2>(result)[j]);
+                id_values.push_back(Value::INTEGER(key));
+            }
+            result_list_value =  Value::LIST(LogicalType::INTEGER, std::move(id_values));
+            // Create vector value
+            Value vector_list_value;
+            std::vector<Value> vec_values;
+            vec_values.reserve(std::get<1>(result).size());
+            for (std::size_t j = 0; j < std::get<1>(result).size(); ++j) {
+                vec_values.push_back(Value::FLOAT(std::get<1>(result)[j]));
+            }
+            vector_list_value =  Value::LIST(LogicalType::FLOAT, std::move(vec_values));
+
+            test_appender.AppendRow(
+                Value(std::get<0>(result)),
+                vector_list_value,
+                result_list_value
+            );
+        } catch (const std::exception& e) {
+            std::cerr << "Error appending ground truth result to test table: " << e.what() << std::endl;
+        }
     }
-    idx_keys_str.pop_back(); // Remove the last comma
 
-    auto current_top_100_neighbors = con.Query(
-        "WITH ranked_neighbors AS ( "
-        "SELECT "
-        "query_id, "
-        "neighbor_id, "
-        "distance, "
-        "ROW_NUMBER() OVER (PARTITION BY query_id ORDER BY distance ASC) as rank "
-        "FROM " + table_name + "_ground_truth where neighbor_id in (" + idx_keys_str + ")"
-        ") "
-        "SELECT "
-        "n.query_id, "
-        "t.vec, "
-        "LIST(n.neighbor_id ORDER BY n.distance ASC) AS neighbor_ids "
-        "FROM ranked_neighbors n "
-        "JOIN " + table_name + "_test t ON n.query_id = t.id "
-        "WHERE n.rank <= 100 "
-        "GROUP BY n.query_id, t.vec;"
-    );
+    test_appender.Flush();
 
-    auto test_set = con.Query("select * from " + table_name + "_test");
-    assert(test_set->RowCount() == current_top_100_neighbors->RowCount());
-
-    return current_top_100_neighbors;
+    auto test_res_after = con.Query("select * from " + dataset.name + "_test;");
+    assert(test_res_after->RowCount() == test_vectors_count);
 }

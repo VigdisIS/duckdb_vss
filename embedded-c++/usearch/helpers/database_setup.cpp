@@ -1,5 +1,4 @@
 #include "database_setup.h"
-#include <iostream>
 
 std::vector<DatasetConfig> DatabaseSetup::getDatasetConfigs() {
     return {
@@ -34,23 +33,6 @@ void DatabaseSetup::setupTestTable(Connection& con, const std::string& table_nam
     if (test_res->RowCount() != 1) {
         throw std::runtime_error("Setup failed: Expected 1 row in test table");
     }
-}
-
-void DatabaseSetup::setupGroundTruthTable(Connection& con, const std::string& table_name, int vector_dimensionality) {
-    con.Query("ATTACH 'raw.db' AS raw (READ_ONLY);");
-
-    con.Query("CREATE OR REPLACE TABLE memory." + table_name + "_ground_truth" +
-              " (query_id INTEGER, neighbor_id INTEGER, distance FLOAT)");
-
-    con.Query("INSERT INTO memory." + table_name + "_ground_truth" +
-              " SELECT query_id, neighbor_id, distance FROM raw." + table_name + "_ground_truth order by query_id asc, distance asc;");
-
-    auto test_res = con.Query("SELECT * FROM memory." + table_name + "_ground_truth" + " LIMIT 1;");
-    if (test_res->RowCount() != 1) {
-        throw std::runtime_error("Setup failed: Expected 1 row in ground truth table");
-    }
-
-    con.Query("DETACH raw;");
 }
 
 void DatabaseSetup::setupFullDataset(Connection& con, const DatasetConfig& config) {
