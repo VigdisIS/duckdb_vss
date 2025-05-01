@@ -3,8 +3,6 @@
 //
 
 #include "util.h"
-#include <vector>
-#include <string>
 
 void util::query_hnsw(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vector<std::vector<float>>& queries, int k, int num_threads, std::vector<std::vector<size_t>>& results,  std::vector<std::tuple<std::string, int, int, Value, Value, Value, int, int, int>>& search_results,
     std::vector<std::tuple<std::string, int, int, Value, Value, Value, int, int, int>>& early_term_results,
