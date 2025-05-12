@@ -55,6 +55,9 @@ add_executable(hnswlib_unreachable_points_sampl_all hnswlib/unreachable_points_s
 add_executable(hnswlib_unreachable_points_sampl_reachable hnswlib/unreachable_points_sampl_reachable.cpp)
 add_executable(hnswlib_create_indexes hnswlib/create_index.cpp)
 
+# repl_cand_hnswlib executables
+add_executable(repl_cand_hnswlib_random repl_cand_hnswlib/random.cpp)
+
 # usearch link libraries
 target_link_libraries(usearch_random usearch_utils duckdb)
 target_link_libraries(usearch_full_coverage usearch_utils duckdb)
@@ -70,3 +73,6 @@ target_link_libraries(hnswlib_new_data hnswlib_utils usearch_utils duckdb)
 target_link_libraries(hnswlib_unreachable_points_sampl_all hnswlib_utils usearch_utils duckdb)
 target_link_libraries(hnswlib_unreachable_points_sampl_reachable hnswlib_utils usearch_utils duckdb)
 target_link_libraries(hnswlib_create_indexes hnswlib_utils usearch_utils duckdb)
+
+# repl_cand_hnswlib link libraries
+target_link_libraries(repl_cand_hnswlib_random hnswlib_utils usearch_utils duckdb)
