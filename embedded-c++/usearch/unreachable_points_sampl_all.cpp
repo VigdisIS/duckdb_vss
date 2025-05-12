@@ -11,8 +11,8 @@ using namespace unum::usearch;
 
 std::string experiment;
 
-// ==================== Main Random Unreachable Points USearch Runner ====================
-class USearchRandomUPRunner {
+// ==================== Main Inclusive Unreachable Points USearch Runner ====================
+class USearchInclusiveUPRunner {
 private:
     DuckDB db;
     Connection con;
@@ -21,7 +21,7 @@ private:
     int threads;
 
 public:
-USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
+USearchInclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
         con.Query("SET THREADS TO " + std::to_string(threads) + ";");
         datasets = DatabaseSetup::getDatasetConfigs();
     }
@@ -83,12 +83,6 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
             // Dataset vectors
             auto dataset_vectors = con.Query("SELECT * FROM " + dataset.name + "_train;");
 
-            std::unordered_set<size_t> available_points;
-            available_points.reserve(dataset_cardinality);
-            for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
-                available_points.insert(dataset_vectors->GetValue<int>(0, idx));
-            }
-
             // TODO: hardcoded value
             auto perc = 0.05;
             std::ostringstream perc_str;
@@ -103,41 +97,31 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
             Appender early_termination_appender(con, "early_terminated_queries");
 
             // Initial query run (multi-threaded)
+            config.expansion_search = 100;
             IndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0);
 
+            config.expansion_search = 1000000;
             // Update available points
-            auto results_single = index.search(test_vec_single_vector.data(), dataset_cardinality); 
+            auto results_single = index.search(test_vec_single_vector.data(), 1000000); 
+            config.expansion_search = 100;
 
-            std::unordered_set<size_t> found_points_set;
-            found_points_set.reserve(dataset_cardinality);
+            std::string iteration_number = std::to_string(0);
+            std::string unreachable_points_number = std::to_string(dataset_cardinality - results_single.size());
+            std::vector<std::vector <std::string>> result_data = {{iteration_number, unreachable_points_number}};
 
-            for (std::size_t j = 0; j < results_single.size(); ++j) {
-                size_t key = static_cast<size_t>(results_single[j].member.key);
-                found_points_set.insert(key);
-            }
-
-            // Determine available points (those found in the single query)
-            for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
-                int point_id = dataset_vectors->GetValue<int>(0, idx);
-                if (found_points_set.find(point_id) != found_points_set.end()) {
-                    available_points.insert(point_id);
-                }
-            }
-
-            // Calculate unreachable points
-            std::vector<std::pair<int, int>> unreachable_points;
-            unreachable_points.reserve(dataset_cardinality);
+            std::vector<std::pair<string, string>> unreachable_points;
+            unreachable_points.reserve(3000);
             
-            size_t unreachable_count = dataset_cardinality - found_points_set.size();
-            unreachable_points.push_back(std::make_pair(0, unreachable_count));
-            std::cout << "Unreachable points: " << unreachable_count << " out of " << dataset_cardinality << std::endl;
+            unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
+
+            std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
 
             // Run iterations
             for (int iteration = 1; iteration <= max_iterations; iteration++) {
                 std::cout << "▶️ ITERATION " << iteration << " ▶️" << std::endl;
 
                 // Get sample vectors to delete and re-add
-                auto sample_vecs = QueryRunner::getSampleReachableVectors(con, dataset.name, sample_size, available_points);
+                auto sample_vecs = QueryRunner::getSampleVectors(con, dataset.name, sample_size);
 
                 // Delete sample vectors
                 size_t removed = IndexOperations::singleRemove(index, sample_vecs, dataset.name,
@@ -155,29 +139,16 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
                                         search_bm_appender, early_termination_appender,
                                         iteration);
             
-                // Update available points
-                found_points_set.clear();
-                available_points.clear();
-
-                auto results_single = index.search(test_vec_single_vector.data(), dataset_cardinality); 
+                // Get unreachable points
+                config.expansion_search = 1000000;
+                results_single = index.search(test_vec_single_vector.data(), 1000000); 
+                config.expansion_search = 100;
                 
-                for (std::size_t j = 0; j < results_single.size(); ++j) {
-                    size_t key = static_cast<size_t>(results_single[j].member.key);
-                    found_points_set.insert(key);
-                }
+                iteration_number = std::to_string(iteration);
+                unreachable_points_number = std::to_string(dataset_cardinality - results_single.size());
+                unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
-                // Determine available points (those found in the single query)
-                for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
-                    int point_id = dataset_vectors->GetValue<int>(0, idx);
-                    if (found_points_set.find(point_id) != found_points_set.end()) {
-                        available_points.insert(point_id);
-                    }
-                }
-
-                // Calculate unreachable points
-                size_t unreachable_count = dataset_cardinality - found_points_set.size();
-                unreachable_points.push_back(std::make_pair(iteration, unreachable_count));
-                std::cout << "Unreachable points: " << unreachable_count << " out of " << dataset_cardinality << std::endl;
+                std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }
@@ -199,7 +170,7 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
 
             // Output experiment results to CSV
             // dir name: usearch/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{sample_fraction}r/
-            std::string output_dir = "usearch/results/unreachable_points/" + experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
+            std::string output_dir = "usearch/results/unreachable_points_inclusive/" + experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
             // Create the directory if it doesn't exist
             std::filesystem::create_directories(output_dir);
             FileOperations::cleanupOutputFiles(output_dir);
@@ -240,11 +211,12 @@ int main() {
 
     /**
      * UNREACHABLEPOINTS:
-     * 3000 iterations. Within each iteration, 5% of vectors that are NOT unreachable in
-     * the index are deleted and then reinserted to track the growth of unreachable
-     * points over iterations. Same experiment as Enhancing HNSW paper. 
-     * k = dataset_cardinality. Should prove that points already in the unreachable 
-     * points set will not be searched in future search processes.
+     * 3000 iterations. Within each iteration, a random 5% of the dataset vectors are 
+     * deleted and then reinserted regardless of whether they are reachable or not.
+     * ACTUALLY same experiment as Enhancing HNSW paper. They say they do 5% of 
+     * REACHABLE points, but they actually do 5% of ALL points.
+     * Should prove that points already in the unreachable points set will not be 
+     * searched in future search processes.
      */
 
     int max_iterations = 3000;
@@ -254,20 +226,20 @@ int main() {
     experiment = "usearch_";
 
     try {
-        // fashion_mnist
-        USearchRandomUPRunner fm_runner(max_iterations, executor_threads);
-        fm_runner.runTest(0);
+        // // fashion_mnist
+        // USearchInclusiveUPRunner fm_runner(max_iterations, executor_threads);
+        // fm_runner.runTest(0);
 
-        // mnist
-        USearchRandomUPRunner m_runner(max_iterations, executor_threads);
-        m_runner.runTest(1);
+        // // mnist
+        // USearchInclusiveUPRunner m_runner(max_iterations, executor_threads);
+        // m_runner.runTest(1);
 
         // sift
-        USearchRandomUPRunner s_runner(max_iterations, executor_threads);
+        USearchInclusiveUPRunner s_runner(max_iterations, executor_threads);
         s_runner.runTest(2);
 
         // gist
-        USearchRandomUPRunner g_runner(max_iterations, executor_threads);
+        USearchInclusiveUPRunner g_runner(max_iterations, executor_threads);
         g_runner.runTest(3);
 
         return 0;
