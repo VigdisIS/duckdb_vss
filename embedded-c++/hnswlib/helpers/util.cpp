@@ -131,6 +131,21 @@ void util::query_hnsw(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vect
     });
 }
 
+void util::query_hnsw_unreachable(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vector<std::vector<float>>& queries, int k, int num_threads, std::vector<std::vector<size_t>>& results) {
+    size_t num_queries = queries.size();
+    results.resize(num_queries, std::vector<size_t>(k));
+    ParallelFor(0, num_queries, num_threads, [&](size_t row, size_t threadId) {
+        std::priority_queue<std::pair<float, hnswlib::labeltype>> result = alg_hnsw.searchKnn(queries[row].data(), k);
+        std::vector<size_t> neighbors;
+        while (!result.empty()) {
+            neighbors.push_back(result.top().second);
+            result.pop();
+        }
+        std::reverse(neighbors.begin(), neighbors.end()); // reverse to get correct order
+        results[row] = neighbors;
+    });
+}
+
 void util::query_hnsw_single(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& queries, int dim, int k, std::vector<std::vector<size_t>>& labels, std::vector<double>& query_times) {
     size_t num_queries = queries.size();
     labels.resize(num_queries, std::vector<size_t>(k));

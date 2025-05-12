@@ -27,15 +27,18 @@ run-usearch-full-coverage: build
 	./build/usearch_full_coverage
 run-usearch-new-data: build
 	./build/usearch_new_data
-run-usearch-unreachable-points: build
-	./build/usearch_unreachable_points
+run-usearch-unreachable-points-sampl-all: build
+	./build/usearch_unreachable_points_sampl_all
+run-usearch-unreachable-points-sampl-reachable: build
+	./build/usearch_unreachable_points_sampl_reachable
 
 run-all-usearch-experiments: build
 	@echo "Running all usearch experiments..."
 	./build/usearch_random
 	./build/usearch_full_coverage
 	./build/usearch_new_data
-	./build/usearch_unreachable_points
+	./build/usearch_unreachable_points_sampl_all
+	./build/usearch_unreachable_points_sampl_reachable
 	@echo "All usearch experiments completed."
 	
 
@@ -50,27 +53,36 @@ run-hnswlib-full-coverage: build
 	./build/hnswlib_full_coverage
 run-hnswlib-new-data: build
 	./build/hnswlib_new_data
-run-hnswlib-unreachable-points: build
-	./build/hnswlib_unreachable_points
+run-hnswlib-unreachable-points-sampl-all: build
+	./build/hnswlib_unreachable_points_sampl_all
+run-hnswlib-unreachable-points-sampl-reachable: build
+	./build/hnswlib_unreachable_points_sampl_reachable
 
 run-all-hnswlib-experiments: build
 	@echo "Running all hnswlib experiments..."
 	./build/hnswlib_random
 	./build/hnswlib_full_coverage
 	./build/hnswlib_new_data
-	./build/hnswlib_unreachable_points
+	./build/hnswlib_unreachable_points_sampl_all
+	./build/hnswlib_unreachable_points_sampl_reachable
 	@echo "All hnswlib experiments completed."
 
 
 # only experiments in order (no setup)
 run-all-experiments: build
 	@echo "Running all experiments..."
+	@echo "Running USearch experiments..."
 	./build/usearch_random
 	./build/usearch_full_coverage
 	./build/usearch_new_data
-	./build/usearch_unreachable_points
+	./build/usearch_unreachable_points_sampl_all
+	./build/usearch_unreachable_points_sampl_reachable
+	@echo "USearch experiments completed."
+	@echo "Running HNSWLib experiments..."
 	./build/hnswlib_random
 	./build/hnswlib_full_coverage
 	./build/hnswlib_new_data
-	./build/hnswlib_unreachable_points
+	./build/hnswlib_unreachable_points_sampl_all
+	./build/hnswlib_unreachable_points_sampl_reachable
+	@echo "HNSWLib experiments completed."
 	@echo "All experiments completed."

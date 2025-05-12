@@ -35,6 +35,8 @@ public:
 
     static void query_hnsw_single(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& queries, int dim, int k, std::vector<std::vector<size_t>>& labels, std::vector<double>& query_times);
 
+    static void query_hnsw_unreachable(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vector<std::vector<float>>& queries, int k, int num_threads, std::vector<std::vector<size_t>>& results);
+
     template<class Function>
     inline static void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn) {
         static ThreadPool pool(numThreads > 0 ? numThreads : std::thread::hardware_concurrency());
