@@ -240,13 +240,16 @@ void HNSWLibIndexOperations::parallelRunTestQueries(Connection& con, Hierarchica
                     filtered_values.push_back(Value::INTEGER(idx));
                 }
 
-                Value filtered_list_value = Value::LIST(LogicalType::INTEGER, std::move(filtered_values));
+                filtered_list_value = Value::LIST(LogicalType::INTEGER, std::move(filtered_values));
+            }
+            else {
+                filtered_list_value = test_vectors->GetValue(2, i);
             }
 
             // Store the filtered neighbor IDs
             test_vecs.push_back(ExtractFloatVector(test_vectors->GetValue(1, i)));
             test_vector_indices.push_back(test_vectors->GetValue(0, i).GetValue<int>());
-            neighbor_ids_values.push_back(test_vectors->GetValue(2, i));
+            neighbor_ids_values.push_back(filtered_list_value);
         }
 
         // Thread-safe containers for results
