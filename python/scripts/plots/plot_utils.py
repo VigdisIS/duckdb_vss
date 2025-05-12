@@ -288,7 +288,7 @@ def save_plot(fig: plt.Figure,
 
 def get_experiment_paths(base_dir: str) -> Dict[str, List[str]]:
     """Get paths for all experiment data files."""
-    experiments = ['fullcoverage', 'newdata', 'random']
+    experiments = ['fullcoverage', 'newdata', 'random', 'unreachable_points_sampl_all', 'unreachable_points_sampl_reachable']
     paths = {}
 
     for exp in experiments:
