@@ -68,6 +68,12 @@ run-all-hnswlib-experiments: build
 	@echo "All hnswlib experiments completed."
 
 
+# repl_cand_hnswlib experiments
+
+run-repl-cand-hnswlib-random: build
+	./build/repl_cand_hnswlib_random
+
+
 # only experiments in order (no setup)
 run-all-experiments: build
 	@echo "Running all experiments..."

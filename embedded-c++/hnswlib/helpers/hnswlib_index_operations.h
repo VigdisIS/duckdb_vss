@@ -27,8 +27,19 @@ public:
         const std::string& dataset_name,
         int iteration,
         Appender& add_bm_appender,
-        int num_threads
+        int num_threads,
+        bool repl_cand = false
     );
+
+    // static size_t singleAdd(
+    //     HierarchicalNSW<float>& index,
+    //     const std::vector<float>& point,
+    //     const size_t& label,
+    //     const std::string& dataset_name,
+    //     int iteration,
+    //     Appender& add_bm_appender,
+    //     bool repl_cand = false
+    // );
     
     static size_t singleRemove(
         HierarchicalNSW<float>& index,

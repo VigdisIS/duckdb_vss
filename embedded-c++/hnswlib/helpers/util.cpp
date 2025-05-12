@@ -14,6 +14,7 @@ void util::query_hnsw(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vect
         try {
             int test_query_vector_index_int = test_vector_indices[row];
             const Value& neighbor_ids = neighbor_ids_values[row];
+            assert(neighbor_ids.type().id() == LogicalTypeId::LIST);
             auto start_time = std::chrono::high_resolution_clock::now();
             auto result = alg_hnsw.searchKnn(queries[row].data(), k);
             auto end_time = std::chrono::high_resolution_clock::now();
@@ -184,14 +185,20 @@ void util::markDeleteMultiThread(hnswlib::HierarchicalNSW<float>& index, const s
     });
 }
 
-void util::addPointsMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex) {
+void util::addPointsMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, bool repl_cand) {
     size_t num_points = points.size();
 
     ParallelFor(0, num_points, num_threads, [&](size_t i, size_t) {
         try {
-            auto start_time = std::chrono::high_resolution_clock::now();
-                    
-            index.addPoint(points[i].data(), labels[i], true);
+            std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+
+            if (repl_cand) {
+                start_time = std::chrono::high_resolution_clock::now();
+                index.addPointReplCand(points[i].data(), labels[i], true);
+            } else {
+                start_time = std::chrono::high_resolution_clock::now();
+                index.addPoint(points[i].data(), labels[i], true);
+            }
 
             auto end_time = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration<double>(end_time - start_time).count();
@@ -203,4 +210,31 @@ void util::addPointsMultiThread(hnswlib::HierarchicalNSW<float>& index, const st
             std::cerr << "Error adding vector " << i << ": " << e.what() << std::endl;
         }
     });
+}
+
+void util::addPointsSingleThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, bool repl_cand) {
+    size_t num_points = points.size();
+
+    for (size_t i = 0; i < num_points; ++i) {
+        try {
+            std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+
+            if (repl_cand) {
+                start_time = std::chrono::high_resolution_clock::now();
+                index.addPointReplCand(points[i].data(), labels[i], true);
+            } else {
+                start_time = std::chrono::high_resolution_clock::now();
+                index.addPoint(points[i].data(), labels[i], true);
+            }
+
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration<double>(end_time - start_time).count();
+            std::lock_guard<std::mutex> lock(bench_mutex);
+            benchmarks.push_back({dataset_name, iteration, duration});
+        }
+        catch (const std::exception& e) {
+            std::lock_guard<std::mutex> lock(bench_mutex);
+            std::cerr << "Error adding vector " << i << ": " << e.what() << std::endl;
+        }
+    }
 }

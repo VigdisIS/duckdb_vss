@@ -20,7 +20,8 @@ size_t HNSWLibIndexOperations::parallelAdd(
     const std::string& dataset_name,
     int iteration,
     Appender& add_bm_appender,
-    int num_threads
+    int num_threads,
+    bool repl_cand
 ) {
     std::cout << "🔵 ADDING SAMPLE VECTORS 🔵" << std::endl;
     
@@ -42,8 +43,13 @@ size_t HNSWLibIndexOperations::parallelAdd(
         
         // Convert ids to std::vector<std::size_t>
         
-        util::addPointsMultiThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex);
+        // util::addPointsMultiThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex, repl_cand);
 
+        if (repl_cand) {
+            util::addPointsSingleThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex, repl_cand);
+        } else {
+            util::addPointsMultiThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex);
+        }
 
         auto batch_end = std::chrono::high_resolution_clock::now();
         auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
@@ -275,6 +281,20 @@ void HNSWLibIndexOperations::parallelRunTestQueries(Connection& con, Hierarchica
         auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
         std::cout << "Parallel search completed in " << batch_duration << "s" << std::endl;
 
+        // output search results to csv
+        std::ofstream search_results_file("repl_cand_hnswlib/results/search_results.csv");
+        if (!search_results_file.is_open()) {
+            std::cerr << "Error opening search results file" << std::endl;
+            return;
+        }
+        // If the file is empty, write the header
+        if (search_results_file.tellp() == 0) {
+            search_results_file << "dataset,iteration,test_vector_id,neighbor_ids,result_vector_ids,recall,computed_distances,visited_members,count" << std::endl;
+        }
+        
+        for (const auto& result : search_results) {
+            search_results_file << std::get<0>(result) << "," << std::get<1>(result) << "," << std::get<2>(result) << "," << std::get<3>(result) << "," << std::get<4>(result) << "," << std::get<5>(result) << "," << std::get<6>(result) << "," << std::get<7>(result) << "," << std::get<8>(result) << std::endl;
+        }
 
         // Bulk append all results
         for (const auto& result : search_results) {
@@ -292,6 +312,9 @@ void HNSWLibIndexOperations::parallelRunTestQueries(Connection& con, Hierarchica
                 );
             } catch (const std::exception& e) {
                 std::cerr << "Error appending search result: " << e.what() << std::endl;
+                std::cerr << "Result: " << std::get<0>(result) << "," << std::get<1>(result) << "," << std::get<2>(result) << "," << std::get<3>(result) << "," << std::get<4>(result) << "," << std::get<5>(result) << "," << std::get<6>(result) << "," << std::get<7>(result) << "," << std::get<8>(result) << std::endl;
+                // Quit the program
+                exit(1);
             }
         }
         
