@@ -265,6 +265,46 @@ def plot_search_metric_over_time(df: pd.DataFrame,
     except Exception as e:
         print(f"Error plotting search metric {metric} for {filename}: {str(e)}")
 
+def plot_unreachable_points_over_time(df: pd.DataFrame,
+                               title: str,
+                               save_dir: str,
+                               filename: str):
+    """Plot amount of unreachable points over iterations."""
+    try:
+        # Validate inputs
+        if df.empty:
+            print(f"Warning: Empty DataFrame for {filename}")
+            return
+
+        # Check if required columns exist
+        required_cols = ['iteration', 'unreachable_points']
+        if not all(col in df.columns for col in required_cols):
+            print(f"Warning: Missing required columns for {filename}")
+            return
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        setup_plot_style()
+
+        # Plot unreachable points line
+        ax.plot(df['iteration'], df['unreachable_points'],
+               label='Unreachable Points',
+               color='blue',
+               linewidth=2)
+
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Unreachable Points')
+        ax.set_title(title)
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Set y-axis to start at 0 and add padding at top if needed
+        ax.set_ylim(bottom=0)
+        set_axis_limits(ax, df['iteration'], y_padding=0.2)
+
+        save_plot(fig, save_dir, filename)
+    except Exception as e:
+        print(f"Error plotting unreachable points for {filename}: {str(e)}")
+
 def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
     """Generate all search-related plots."""
     search_metrics = ['recall', 'computed_distances', 'visited_members']
@@ -305,6 +345,19 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                     f'{scenario}_search_efficiency'
                 )
 
+            # Unreachable points plots
+            unreachable_points_path = os.path.join(dataset_path, 'unreachable_points.csv')
+            print(f"Unreachable points path: {unreachable_points_path}")
+            print(f"Exists: {os.path.exists(unreachable_points_path)}")
+            if os.path.exists(unreachable_points_path):
+                unreachable_points_df = load_csv_data(unreachable_points_path)
+                plot_unreachable_points_over_time(
+                    unreachable_points_df,
+                    f'Unreachable Points ({dataset_name})',
+                    save_dir,
+                    f'{scenario}_unreachable_points'
+                )
+
             # Early termination analysis (raw data)
             early_termination_path = os.path.join(dataset_path, 'early_terminated_queries.csv')
             if os.path.exists(early_termination_path):
@@ -319,3 +372,4 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                     save_dir,
                     f'{scenario}_early_termination'
                 )
+
