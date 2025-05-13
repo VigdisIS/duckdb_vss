@@ -57,6 +57,8 @@ add_executable(hnswlib_create_indexes hnswlib/create_index.cpp)
 
 # repl_cand_hnswlib executables
 add_executable(repl_cand_hnswlib_random repl_cand_hnswlib/random.cpp)
+add_executable(repl_cand_hnswlib_new_data repl_cand_hnswlib/new_data.cpp)
+add_executable(repl_cand_hnswlib_full_coverage repl_cand_hnswlib/full_coverage.cpp)
 
 # usearch link libraries
 target_link_libraries(usearch_random usearch_utils duckdb)
@@ -76,3 +78,5 @@ target_link_libraries(hnswlib_create_indexes hnswlib_utils usearch_utils duckdb)
 
 # repl_cand_hnswlib link libraries
 target_link_libraries(repl_cand_hnswlib_random hnswlib_utils usearch_utils duckdb)
+target_link_libraries(repl_cand_hnswlib_full_coverage hnswlib_utils usearch_utils duckdb)
+target_link_libraries(repl_cand_hnswlib_new_data hnswlib_utils usearch_utils duckdb)
