@@ -11,8 +11,8 @@ using namespace hnswlib;
 
 std::string experiment;
 
-// ==================== Main Random USearch Runner ====================
-class HNSWLibRandomRunner {
+// ==================== Main Full Coverage USearch Runner ====================
+class HNSWLibFullCoverageRunner {
 private:
     DuckDB db;
     Connection con;
@@ -21,7 +21,7 @@ private:
     int threads;
 
 public:
-HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
+HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
         con.Query("SET THREADS TO " + std::to_string(threads) + ";");
         datasets = DatabaseSetup::getDatasetConfigs();
     }
@@ -65,25 +65,13 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
                 index_map[key] = value;
             }
             index_map_file.close();
-            index.resizeIndex(ceil2(dataset_cardinality));
-
-            // Log initial index stats
-            index.log_memory_stats();
-            index.log_connectivity_stats(&space);
-           
-
+            
             // Get test vectors
             auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test;");
             auto test_vectors_count = test_vectors->RowCount();
 
             // Dataset vectors
             auto dataset_vectors = con.Query("SELECT * FROM " + dataset.name + "_train;");
-
-            // TODO: hardcoded value
-            auto perc = 0.01;
-            std::ostringstream perc_str;
-            perc_str << std::fixed << std::setprecision(2) << perc;
-            auto sample_size = (int) (perc * dataset_cardinality);
 
             // Create appender for results
             Appender appender(con, dataset.name + "_results");
@@ -95,39 +83,44 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
             // Initial query run (multi-threaded)
             HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality, index_map);
 
+            auto partitions = QueryRunner::partitionDataset(con, dataset.name, 100);
+
+            // Log initial index stats
+            index.log_memory_stats();
+            index.log_connectivity_stats(&space);
+            
+
             // Run iterations
             size_t last_idx = 0;
-            for (int iteration = 1; iteration <= max_iterations; iteration++) {
+            for (int iteration = 1; iteration <= partitions.size(); iteration++) {
                 std::cout << "▶️ ITERATION " << iteration << " ▶️" << std::endl;
 
-
-                // Get sample vectors to delete and re-add
-                auto sample_vecs = QueryRunner::getSampleVectors(con, dataset.name, sample_size);
-
+                // Get vectors from partition
+                auto& partition = partitions[iteration-1];
 
 
                 std::unordered_set<size_t> delete_indices_set;
 
+                size_t start_idx = last_idx;
+                auto num_to_delete = partition->RowCount();
+                last_idx = start_idx+num_to_delete;
                 
-                auto num_to_delete = sample_vecs->RowCount();
-                
-                
-                for (size_t idx = 0; idx < sample_vecs->RowCount(); ++idx) {
-                    delete_indices_set.insert(sample_vecs->GetValue<int>(0, idx));
+                for (size_t idx = start_idx; idx < start_idx+num_to_delete; ++idx) {
+                    delete_indices_set.insert(idx);
                 }
 
                 std::vector<size_t> delete_indices(delete_indices_set.begin(), delete_indices_set.end());
 
+                // save the vectors being deleted before deleting them
                 std::vector<std::vector<float>> deleted_vectors(delete_indices.size(), std::vector<float>(dataset.dimensions));
-
                 for (size_t i = 0; i < delete_indices.size(); ++i) {
                     size_t idx = delete_indices[i];
                     deleted_vectors[i] = ExtractFloatVector(dataset_vectors->GetValue(1, idx));
                 }
 
-                // Delete sample vectors (multi-threaded)
+                // Delete vectors from this partition to the index
                 size_t removed = HNSWLibIndexOperations::singleRemove(index, delete_indices, index_map, dataset.name, 
-                    iteration, del_bm_appender);
+                                                            iteration, del_bm_appender);
 
                 // Re-add the deleted vectors with their original labels
                 std::vector<size_t> new_indices(delete_indices.size());
@@ -140,20 +133,19 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
                 
                 // Re-add vectors from this partition to the index
                 size_t added = HNSWLibIndexOperations::parallelAdd(index, deleted_vectors, new_indices,  dataset.name, 
-                    iteration, add_bm_appender, threads, true);                       
+                                                        iteration, add_bm_appender, threads, true);
 
                 // Log index stats
                 index.log_memory_stats();
                 index.log_connectivity_stats(&space);
-
+           
                 // Run test queries (multi-threaded)
-                HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, 
-                                        search_bm_appender, early_termination_appender, 
-                                        iteration, dataset_cardinality, index_map);
+                HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, iteration, dataset_cardinality, index_map);
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
-            }
 
+            }
+        
             appender.Close();
             early_termination_appender.Close();
             del_bm_appender.Close();
@@ -165,13 +157,13 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
             QueryRunner::aggregateRecallStats(con, dataset.name);
 
             // Aggregate bm stats
-            QueryRunner::aggregateBMStats(con, dataset.name + "_del", test_vectors_count, sample_size);
-            QueryRunner::aggregateBMStats(con, dataset.name + "_add", test_vectors_count, sample_size);
-            QueryRunner::aggregateBMStats(con, dataset.name + "_search", test_vectors_count, sample_size);
+            QueryRunner::aggregateBMStats(con, dataset.name + "_del", test_vectors_count, (dataset_cardinality/partitions.size()));
+            QueryRunner::aggregateBMStats(con, dataset.name + "_add", test_vectors_count, (dataset_cardinality/partitions.size()));
+            QueryRunner::aggregateBMStats(con, dataset.name + "_search", test_vectors_count, (dataset_cardinality/partitions.size()));
 
             // Output experiment results to CSV
-            // dir name: usearch/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{sample_fraction}s/
-            std::string output_dir = "repl_cand_hnswlib/results/random/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
+            // dir name: usearch/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{partition_size}p/
+            std::string output_dir = "repl_cand_hnswlib/results/fullcoverage/" + experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string((int) (dataset_cardinality/partitions.size())) + "r/";
             // Create the directory if it doesn't exist
             std::filesystem::create_directories(output_dir);
             FileOperations::cleanupOutputFiles(output_dir);
@@ -185,9 +177,9 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
             FileOperations::copyFileTo("replace_method_distribution.csv", output_dir + "replace_method_distribution.csv");
-
+            
             // Save the final index
-            std::string s_path = output_dir + "random_" + dataset.name + "_index.bin";
+            std::string s_path = output_dir + "full_coverage_" + dataset.name + "_index.bin";
             index.saveIndex(s_path);
             std::cout << "Index saved to: " << s_path << std::endl;
 
@@ -204,34 +196,34 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
 int main() {
 
     /**
-     * RANDOM: 
-     * 200 iterations. Within each iteration, 1% of the vectors are randomly 
-     * generated for deletion and reinsertion, facilitating the evaluation of 
-     * method performance and robustness in the face of random data 
-     * manipulations.
+     * FULLCOVERAGE: 
+     * 100 iterations where each dataset is segmented into 100 parts. Every
+     * iteration involves the deletion and reinsertion of a portion, enabling 
+     * the assessment of the impact of complete coverage on the index structure 
+     * and performance.
      */
     
-    int max_iterations = 200;
+    int max_iterations = 100;
     std::size_t executor_threads = (std::thread::hardware_concurrency());
 
-    experiment = "hnswlib_repl_cand_";
+    experiment = "repl_cand_hnswlib_";
 
     try {
         // fashion_mnist
-        HNSWLibRandomRunner fm_runner(max_iterations, 1);
+        HNSWLibFullCoverageRunner fm_runner(max_iterations, executor_threads);
         fm_runner.runTest(0);
 
         // mnist
-        HNSWLibRandomRunner m_runner(max_iterations, 1);
-        m_runner.runTest(1);
+        HNSWLibFullCoverageRunner m_runner(max_iterations, executor_threads);
+        fm_runner.runTest(1);
 
-        // sift
-        HNSWLibRandomRunner s_runner(max_iterations, 1);
-        s_runner.runTest(2);
+          // sift
+        HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
+        fm_runner.runTest(2);
 
         // gist
-        HNSWLibRandomRunner g_runner(max_iterations, 1);
-        g_runner.runTest(3);
+        HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
+        fm_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {

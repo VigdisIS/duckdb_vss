@@ -72,6 +72,17 @@ run-all-hnswlib-experiments: build
 
 run-repl-cand-hnswlib-random: build
 	./build/repl_cand_hnswlib_random
+run-repl-cand-hnswlib-full-coverage: build
+	./build/repl_cand_hnswlib_full_coverage
+run-repl-cand-hnswlib-new-data: build
+	./build/repl_cand_hnswlib_new_data
+
+run-all-repl-cand-hnswlib-experiments: build
+	@echo "Running all repl_cand_hnswlib experiments..."
+	./build/repl_cand_hnswlib_random
+	./build/repl_cand_hnswlib_full_coverage
+	./build/repl_cand_hnswlib_new_data
+	@echo "All repl_cand_hnswlib experiments completed."
 
 
 # only experiments in order (no setup)
