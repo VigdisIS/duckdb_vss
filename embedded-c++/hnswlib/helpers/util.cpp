@@ -14,7 +14,6 @@ void util::query_hnsw(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vect
         try {
             int test_query_vector_index_int = test_vector_indices[row];
             const Value& neighbor_ids = neighbor_ids_values[row];
-            assert(neighbor_ids.type().id() == LogicalTypeId::LIST);
             auto start_time = std::chrono::high_resolution_clock::now();
             auto result = alg_hnsw.searchKnn(queries[row].data(), k);
             auto end_time = std::chrono::high_resolution_clock::now();
@@ -219,9 +218,11 @@ void util::addPointsSingleThread(hnswlib::HierarchicalNSW<float>& index, const s
         try {
             std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
 
+            int used_repl_cand = 0;
+
             if (repl_cand) {
                 start_time = std::chrono::high_resolution_clock::now();
-                index.addPointReplCand(points[i].data(), labels[i], true);
+                used_repl_cand = index.addPointReplCand(points[i].data(), labels[i], true);
             } else {
                 start_time = std::chrono::high_resolution_clock::now();
                 index.addPoint(points[i].data(), labels[i], true);
@@ -229,6 +230,17 @@ void util::addPointsSingleThread(hnswlib::HierarchicalNSW<float>& index, const s
 
             auto end_time = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration<double>(end_time - start_time).count();
+            
+            // output distribution of replace method if repl_cand is true to csv
+            if (repl_cand) {
+                std::ofstream file("replace_method_distribution.csv", std::ios::app);
+                // if file is empty, write header
+                if (file.tellp() == 0) {
+                    file << "dataset,iteration,i,found_tombstoned_cand,duration" << std::endl;
+                }
+                file << dataset_name << "," << iteration << "," << i << "," << used_repl_cand << "," << duration << std::endl;
+            }
+
             std::lock_guard<std::mutex> lock(bench_mutex);
             benchmarks.push_back({dataset_name, iteration, duration});
         }
