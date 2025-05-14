@@ -12,8 +12,8 @@ using namespace hnswlib;
 std::string experiment;
 std::string alg_config;
 
-// ==================== Main Random USearch Runner ====================
-class HNSWLibRandomRunner {
+// ==================== Main Inclusive Unreachable Points USearch Runner ====================
+class HNSWLibInclusiveUPRunner {
 private:
     DuckDB db;
     Connection con;
@@ -24,7 +24,7 @@ private:
     bool include_tombstones;
 
 public:
-HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool include_tombstones) : db(nullptr), con(db), max_iterations(iterations), threads(threads), use_neigh_update(use_neigh_update), include_tombstones(include_tombstones) {
+HNSWLibInclusiveUPRunner(int iterations, int threads, bool use_neigh_update, bool include_tombstones) : db(nullptr), con(db), max_iterations(iterations), threads(threads), use_neigh_update(use_neigh_update), include_tombstones(include_tombstones) {
         con.Query("SET THREADS TO " + std::to_string(threads) + ";");
         datasets = DatabaseSetup::getDatasetConfigs();
     }
@@ -74,16 +74,26 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
             index.log_memory_stats();
             index.log_connectivity_stats(&space);
            
-
             // Get test vectors
             auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test;");
             auto test_vectors_count = test_vectors->RowCount();
+
+            // Get first 5 test queries to run unreachable points search
+            std::vector<std::vector<float>> queries;
+            std::vector<int> query_indices;
+            queries.reserve(5);
+            query_indices.reserve(5);
+            for (idx_t i = 0; i < 5; i++) {
+                query_indices.push_back(test_vectors->GetValue(0, i).GetValue<int>());
+                queries.push_back(ExtractFloatVector(test_vectors->GetValue(1, i)));
+            }
+            int num_queries = queries.size();
 
             // Dataset vectors
             auto dataset_vectors = con.Query("SELECT * FROM " + dataset.name + "_train;");
 
             // TODO: hardcoded value
-            auto perc = 0.01;
+            auto perc = 0.05;
             std::ostringstream perc_str;
             perc_str << std::fixed << std::setprecision(2) << perc;
             auto sample_size = (int) (perc * dataset_cardinality);
@@ -96,23 +106,42 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
             Appender early_termination_appender(con, "early_terminated_queries");
             Appender repl_method_dist_appender(con, dataset.name + "_repl_method_dist");
 
+            std::size_t executor_threads = (std::thread::hardware_concurrency());
+            std::cout << "Threads: " << executor_threads << std::endl;
+
+            index.setEf(100);
             // Initial query run (multi-threaded)
             HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, search_bm_appender, early_termination_appender, 0, dataset_cardinality, index_map);
+
+            // Get unreachable points
+            std::vector<std::vector<float>> queries_tmp(queries.begin(),queries.begin()+num_queries);
+            index.setEf(1000000);
+            std::vector<std::vector<size_t>> results = {std::vector<size_t>(query_indices.begin(), query_indices.end())};
+            util::query_hnsw_unreachable(index, queries_tmp, 1000000, executor_threads, results);
+            for (size_t j = 0; j < queries_tmp.size(); ++j) {
+                std::cout << "Query " << j << ":" << std::endl;
+                std::cout << "Only found " << results[j].size() << " points" << std::endl;
+            }
+            index.setEf(100);
+            std::string iteration_number = std::to_string(0);
+            std::string unreachable_points_number = std::to_string(dataset_cardinality - results.front().size());
+            std::vector<std::vector <std::string>> result_data = {{iteration_number, unreachable_points_number}};
+
+            std::vector<std::pair<string, string>> unreachable_points;
+            unreachable_points.reserve(3000);
+            
+            unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
             // Run iterations
             size_t last_idx = 0;
             for (int iteration = 1; iteration <= max_iterations; iteration++) {
                 std::cout << "▶️ ITERATION " << iteration << " ▶️" << std::endl;
 
-
-                // Get sample vectors to delete and re-add
+                // Get sample vectors to delete and re-add (from WHOLE dataset)
                 auto sample_vecs = QueryRunner::getSampleVectors(con, dataset.name, sample_size);
-
-
 
                 std::unordered_set<size_t> delete_indices_set;
 
-                
                 auto num_to_delete = sample_vecs->RowCount();
                 
                 
@@ -144,7 +173,7 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
                 
                 // Re-add vectors from this partition to the index
                 size_t added = HNSWLibIndexOperations::parallelAddReplCand(index, deleted_vectors, new_indices,  dataset.name, 
-                    iteration, add_bm_appender, repl_method_dist_appender, threads, use_neigh_update, include_tombstones);                       
+                    iteration, add_bm_appender, repl_method_dist_appender, executor_threads, use_neigh_update, include_tombstones);                       
 
                 // Log index stats
                 index.log_memory_stats();
@@ -154,6 +183,19 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
                 HNSWLibIndexOperations::parallelRunTestQueries(con, index, dataset.name, test_vectors, appender, 
                                         search_bm_appender, early_termination_appender, 
                                         iteration, dataset_cardinality, index_map);
+
+                // Get unreachable points
+                index.setEf(1000000);
+                util::query_hnsw_unreachable(index, queries_tmp, 1000000, executor_threads, results);
+                for (size_t j = 0; j < queries_tmp.size(); ++j) {
+                    std::cout << "Query " << j << ":" << std::endl;
+                    std::cout << "Only found " << results[j].size() << " points" << std::endl;
+                }
+                index.setEf(100);
+
+                iteration_number = std::to_string(iteration);
+                unreachable_points_number = std::to_string(dataset_cardinality - results.front().size());
+                unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }
@@ -176,7 +218,7 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
 
             // Output experiment results to CSV
             // dir name: repl_cand_hnswlib/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{sample_fraction}s/
-            std::string output_dir = "repl_cand_hnswlib/results/" + alg_config + "/random/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
+            std::string output_dir = "repl_cand_hnswlib/results/" + alg_config + "/unreachable_points_inclusive/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
             // Create the directory if it doesn't exist
             std::filesystem::create_directories(output_dir);
             FileOperations::cleanupOutputFiles(output_dir);
@@ -185,7 +227,15 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
             QueryRunner::outputTableAsCSV(con, dataset.name + "_del_bm_stats", output_dir + "bm_delete.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_add_bm_stats", output_dir + "bm_add.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_search_bm_stats", output_dir + "bm_search.csv");
-            QueryRunner::outputTableAsCSV(con, dataset.name + "_repl_method_dist", output_dir + "replace_method_distribution.csv");
+            QueryRunner::outputTableAsCSV(con, dataset.name + "_repl_method_dist_stats", output_dir + "repl_method_dist.csv");
+            
+            // Output unreachable points as csv
+            std::ofstream unreachable_points_file(output_dir + "unreachable_points.csv");
+            unreachable_points_file << "iteration,unreachable_points" << std::endl;
+            for (const auto& point : unreachable_points) {
+                unreachable_points_file << point.first << "," << point.second << std::endl;
+            }
+            unreachable_points_file.close();
 
             // Move lib output files to output dir
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
@@ -209,14 +259,15 @@ HNSWLibRandomRunner(int iterations, int threads, bool use_neigh_update, bool inc
 int main() {
 
     /**
-     * RANDOM: 
-     * 200 iterations. Within each iteration, 1% of the vectors are randomly 
-     * generated for deletion and reinsertion, facilitating the evaluation of 
-     * method performance and robustness in the face of random data 
-     * manipulations.
+     * UNREACHABLEPOINTS:
+     * 3000 iterations. Within each iteration, 5% of vectors that are NOT unreachable in
+     * the index are deleted and then reinserted to track the growth of unreachable
+     * points over iterations. Same experiment as Enhancing HNSW paper. 
+     * k = dataset_cardinality. Should prove that points already in the unreachable 
+     * points set will not be searched in future search processes.
      */
     
-    int max_iterations = 200;
+    int max_iterations = 3000;
     std::size_t executor_threads = (std::thread::hardware_concurrency());
 
     experiment = "hnswlib_repl_cand_";
@@ -224,58 +275,58 @@ int main() {
     try {
         alg_config = "00";
         // fashion_mnist
-        HNSWLibRandomRunner fm_00_runner(max_iterations, executor_threads, false, false);
+        HNSWLibInclusiveUPRunner fm_00_runner(max_iterations, executor_threads, false, false);
         fm_00_runner.runTest(0);
         // mnist
-        HNSWLibRandomRunner m_00_runner(max_iterations, executor_threads, false, false);
+        HNSWLibInclusiveUPRunner m_00_runner(max_iterations, executor_threads, false, false);
         m_00_runner.runTest(1);
         // sift
-        HNSWLibRandomRunner s_00_runner(max_iterations, executor_threads, false, false);
+        HNSWLibInclusiveUPRunner s_00_runner(max_iterations, executor_threads, false, false);
         s_00_runner.runTest(2);
         // gist
-        HNSWLibRandomRunner g_00_runner(max_iterations, executor_threads, false, false);
+        HNSWLibInclusiveUPRunner g_00_runner(max_iterations, executor_threads, false, false);
         g_00_runner.runTest(3);
 
         alg_config = "01";
         // fashion_mnist
-        HNSWLibRandomRunner fm_01_runner(max_iterations, executor_threads, false, true);
+        HNSWLibInclusiveUPRunner fm_01_runner(max_iterations, executor_threads, false, true);
         fm_01_runner.runTest(0);
         // mnist
-        HNSWLibRandomRunner m_01_runner(max_iterations, executor_threads, false, true);
+        HNSWLibInclusiveUPRunner m_01_runner(max_iterations, executor_threads, false, true);
         m_01_runner.runTest(1);
         // sift
-        HNSWLibRandomRunner s_01_runner(max_iterations, executor_threads, false, true);
+        HNSWLibInclusiveUPRunner s_01_runner(max_iterations, executor_threads, false, true);
         s_01_runner.runTest(2);
         // gist
-        HNSWLibRandomRunner g_01_runner(max_iterations, executor_threads, false, true);
+        HNSWLibInclusiveUPRunner g_01_runner(max_iterations, executor_threads, false, true);
         g_01_runner.runTest(3);
 
         alg_config = "10";
         // fashion_mnist
-        HNSWLibRandomRunner fm_10_runner(max_iterations, executor_threads, true, false);
+        HNSWLibInclusiveUPRunner fm_10_runner(max_iterations, executor_threads, true, false);
         fm_10_runner.runTest(0);
         // mnist
-        HNSWLibRandomRunner m_10_runner(max_iterations, executor_threads, true, false);
+        HNSWLibInclusiveUPRunner m_10_runner(max_iterations, executor_threads, true, false);
         m_10_runner.runTest(1);
         // sift
-        HNSWLibRandomRunner s_10_runner(max_iterations, executor_threads, true, false);
+        HNSWLibInclusiveUPRunner s_10_runner(max_iterations, executor_threads, true, false);
         s_10_runner.runTest(2);
         // gist
-        HNSWLibRandomRunner g_10_runner(max_iterations, executor_threads, true, false);
+        HNSWLibInclusiveUPRunner g_10_runner(max_iterations, executor_threads, true, false);
         g_10_runner.runTest(3);
 
         alg_config = "11";
         // fashion_mnist
-        HNSWLibRandomRunner fm_11_runner(max_iterations, executor_threads, true, true);
+        HNSWLibInclusiveUPRunner fm_11_runner(max_iterations, executor_threads, true, true);
         fm_11_runner.runTest(0);
         // mnist
-        HNSWLibRandomRunner m_11_runner(max_iterations, executor_threads, true, true);
+        HNSWLibInclusiveUPRunner m_11_runner(max_iterations, executor_threads, true, true);
         m_11_runner.runTest(1);
         // sift
-        HNSWLibRandomRunner s_11_runner(max_iterations, executor_threads, true, true);
+        HNSWLibInclusiveUPRunner s_11_runner(max_iterations, executor_threads, true, true);
         s_11_runner.runTest(2);
         // gist
-        HNSWLibRandomRunner g_11_runner(max_iterations, executor_threads, true, true);
+        HNSWLibInclusiveUPRunner g_11_runner(max_iterations, executor_threads, true, true);
         g_11_runner.runTest(3);
 
         return 0;
