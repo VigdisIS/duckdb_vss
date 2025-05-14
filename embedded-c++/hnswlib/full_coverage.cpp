@@ -214,15 +214,15 @@ int main() {
 
         // mnist
         HNSWLibFullCoverageRunner m_runner(max_iterations, executor_threads);
-        fm_runner.runTest(1);
+        m_runner.runTest(1);
 
-          // sift
+        // sift
         HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
-        fm_runner.runTest(2);
+        s_runner.runTest(2);
 
         // gist
         HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
-        fm_runner.runTest(3);
+        g_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {
