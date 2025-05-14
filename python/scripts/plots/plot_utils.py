@@ -221,6 +221,456 @@ def combine_scenario_plots(experiment_paths: Dict[str, List[str]]):
             if plot_files:
                 create_combined_plot(plot_files, scenario, plot_type, scenario_images_dir)
 
+def generate_comparison_plots(base_dir: str, output_dir: str):
+    """Generate comparison plots between hnswlib and repl_cand_hnswlib for key metrics.
+
+    Args:
+        base_dir: Base directory containing both implementations
+        output_dir: Directory to save comparison plots
+    """
+    # Define the two implementations to compare
+    implementations = ['hnswlib', 'repl_cand_hnswlib']
+
+    # Define experiment types to compare
+    experiments = ['fullcoverage', 'newdata', 'random']
+
+    # Create output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+
+    # For each experiment type
+    for experiment in experiments:
+        # Create experiment subdirectory
+        experiment_dir = os.path.join(output_dir, experiment)
+        os.makedirs(experiment_dir, exist_ok=True)
+
+        # Get all unique dataset suffixes
+        dataset_suffixes = {}  # Maps normalized suffix to original suffix
+        impl_dataset_map = {}  # Maps dataset suffixes to full dataset names per implementation
+
+        # Get all dataset folders from both implementations
+        all_folders = []
+
+        for impl in implementations:
+            impl_dir = os.path.join(base_dir, impl, 'results', experiment)
+            if not os.path.exists(impl_dir):
+                print(f"Warning: Directory {impl_dir} does not exist")
+                continue
+
+            impl_dataset_map[impl] = {}
+
+            for folder in os.listdir(impl_dir):
+                folder_path = os.path.join(impl_dir, folder)
+                if os.path.isdir(folder_path) and not folder == 'images':
+                    all_folders.append((impl, folder))
+
+        # Function to extract core dataset name from any folder name
+        def extract_dataset_suffix(folder_name):
+            # Remove known prefixes
+            cleaned_name = folder_name
+            for prefix in ['hnswlib_', 'repl_cand_', 'hnswlib_repl_cand_', 'repl_cand_hnswlib_']:
+                if cleaned_name.startswith(prefix):
+                    cleaned_name = cleaned_name[len(prefix):]
+            return cleaned_name
+
+        # Function to normalize dataset suffix to a unique identifier
+        def normalize_suffix(suffix):
+            # Remove any remaining prefix-like parts
+            for prefix in ['hnswlib_', 'repl_cand_', 'hnswlib_repl_cand_', 'repl_cand_hnswlib_']:
+                if suffix.startswith(prefix):
+                    suffix = suffix[len(prefix):]
+            return suffix
+
+        # Build mapping of dataset suffixes to full folder names
+        for impl, folder in all_folders:
+            suffix = extract_dataset_suffix(folder)
+            normalized_suffix = normalize_suffix(suffix)
+
+            # Store the normalized suffix
+            dataset_suffixes[normalized_suffix] = suffix
+
+            # Map implementation and suffix to folder
+            if impl not in impl_dataset_map:
+                impl_dataset_map[impl] = {}
+            impl_dataset_map[impl][normalized_suffix] = folder
+
+        # For each unique normalized dataset suffix
+        for normalized_suffix in dataset_suffixes:
+            dataset_dir = os.path.join(experiment_dir, normalized_suffix)
+            os.makedirs(dataset_dir, exist_ok=True)
+            print(f"Creating plots for {normalized_suffix} in {experiment}")
+
+            # Now we pass the normalized suffix to ensure consistent lookup
+            plot_comparison_metrics(base_dir, implementations, experiment, normalized_suffix, impl_dataset_map, dataset_dir)
+
+def plot_comparison_metrics(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Plot all comparison metrics for a given dataset suffix."""
+    # Plot recall comparison
+    plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir)
+
+    # Plot unreachable points comparison
+    plot_unreachable_points_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir)
+
+    # Plot avg node connectivity comparison
+    plot_avg_connectivity_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir)
+
+    # Plot benchmark comparisons
+    plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir)
+    plot_search_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir)
+    plot_delete_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir)
+
+def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Create plot comparing recall between implementations."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    setup_plot_style()
+
+    has_data = False
+
+    for i, impl in enumerate(implementations):
+        # Skip if implementation doesn't have this dataset
+        if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
+            continue
+
+        # Get the actual dataset folder name for this implementation
+        dataset_folder = impl_dataset_map[impl][dataset_suffix]
+
+        # Path to the search_query_stats.csv file
+        search_stats_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'search_query_stats.csv')
+
+        if not os.path.exists(search_stats_path):
+            print(f"Warning: File {search_stats_path} does not exist")
+            continue
+
+        # Load CSV data
+        df = load_csv_data(search_stats_path)
+
+        if 'mean_recall' in df.columns:
+            has_data = True
+            # Plot with different colors and markers for different implementations
+            marker = 'o' if i == 0 else 's'
+            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+            ax.plot(df['iteration'], df['mean_recall'],
+                   label=f"{impl}",
+                   color=color,
+                   marker=marker,
+                   markersize=6,
+                   markevery=max(1, len(df)//10),
+                   linewidth=2)
+
+    if has_data:
+        # Set plot labels and title
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Mean Recall')
+        ax.set_title(f'Recall Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Set y-axis range for recall to 0-1
+        ax.set_ylim(0, 1.05)
+
+        # Save plot
+        save_plot(fig, output_dir, f"recall_comparison")
+    else:
+        print(f"No recall data to plot for {dataset_suffix} in {experiment}")
+
+    plt.close()
+
+def plot_unreachable_points_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Create plot comparing unreachable points between implementations."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    setup_plot_style()
+
+    has_data = False
+
+    for i, impl in enumerate(implementations):
+        # Skip if implementation doesn't have this dataset
+        if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
+            continue
+
+        # Get the actual dataset folder name for this implementation
+        dataset_folder = impl_dataset_map[impl][dataset_suffix]
+
+        # Try both node_connectivity.csv and unreachable_points.csv
+        connectivity_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'node_connectivity.csv')
+        unreachable_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'unreachable_points.csv')
+
+        # First try connectivity file
+        if os.path.exists(connectivity_path):
+            df = load_csv_data(connectivity_path)
+            if 'unreachable_count' in df.columns:
+                has_data = True
+                # Plot with different colors and markers for different implementations
+                marker = 'o' if i == 0 else 's'
+                color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+                ax.plot(df['iteration'], df['unreachable_count'],
+                       label=f"{impl}",
+                       color=color,
+                       marker=marker,
+                       markersize=6,
+                       markevery=max(1, len(df)//10),
+                       linewidth=2)
+                continue
+
+        # If not found, try dedicated unreachable_points file
+        if os.path.exists(unreachable_path):
+            df = load_csv_data(unreachable_path)
+            if 'unreachable_points' in df.columns:
+                has_data = True
+                # Plot with different colors and markers for different implementations
+                marker = 'o' if i == 0 else 's'
+                color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+                ax.plot(df['iteration'], df['unreachable_points'],
+                       label=f"{impl}",
+                       color=color,
+                       marker=marker,
+                       markersize=6,
+                       markevery=max(1, len(df)//10),
+                       linewidth=2)
+                continue
+
+        print(f"Warning: No unreachable points data found for {impl} in {dataset_suffix}")
+
+    if has_data:
+        # Set plot labels and title
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Unreachable Points')
+        ax.set_title(f'Unreachable Points Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Ensure y-axis starts at 0
+        ax.set_ylim(bottom=0)
+
+        # Save plot
+        save_plot(fig, output_dir, f"unreachable_points_comparison")
+    else:
+        print(f"No unreachable points data to plot for {dataset_suffix} in {experiment}")
+
+    plt.close()
+
+def plot_avg_connectivity_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Create plot comparing average node connectivity between implementations."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    setup_plot_style()
+
+    has_data = False
+
+    for i, impl in enumerate(implementations):
+        # Skip if implementation doesn't have this dataset
+        if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
+            continue
+
+        # Get the actual dataset folder name for this implementation
+        dataset_folder = impl_dataset_map[impl][dataset_suffix]
+
+        # Path to the node_connectivity.csv file
+        connectivity_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'node_connectivity.csv')
+
+        if not os.path.exists(connectivity_path):
+            print(f"Warning: File {connectivity_path} does not exist")
+            continue
+
+        # Load CSV data
+        df = load_csv_data(connectivity_path)
+
+        if 'avg_connections' in df.columns:
+            has_data = True
+            # Plot with different colors and markers for different implementations
+            marker = 'o' if i == 0 else 's'
+            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+            ax.plot(df['iteration'], df['avg_connections'],
+                   label=f"{impl}",
+                   color=color,
+                   marker=marker,
+                   markersize=6,
+                   markevery=max(1, len(df)//10),
+                   linewidth=2)
+
+    if has_data:
+        # Set plot labels and title
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Average Node Connectivity')
+        ax.set_title(f'Node Connectivity Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Ensure y-axis starts at 0
+        ax.set_ylim(bottom=0)
+
+        # Save plot
+        save_plot(fig, output_dir, f"avg_connectivity_comparison")
+    else:
+        print(f"No connectivity data to plot for {dataset_suffix} in {experiment}")
+
+    plt.close()
+
+def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Create plot comparing add operation benchmark between implementations."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    setup_plot_style()
+
+    has_data = False
+
+    for i, impl in enumerate(implementations):
+        # Skip if implementation doesn't have this dataset
+        if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
+            continue
+
+        # Get the actual dataset folder name for this implementation
+        dataset_folder = impl_dataset_map[impl][dataset_suffix]
+
+        # Path to the bm_add.csv file
+        benchmark_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'bm_add.csv')
+
+        if not os.path.exists(benchmark_path):
+            print(f"Warning: File {benchmark_path} does not exist")
+            continue
+
+        # Load CSV data
+        df = load_csv_data(benchmark_path)
+
+        if 'mean_time' in df.columns:
+            has_data = True
+            # Plot with different colors and markers for different implementations
+            marker = 'o' if i == 0 else 's'
+            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+            ax.plot(df['iteration'], df['mean_time'],
+                   label=f"{impl}",
+                   color=color,
+                   marker=marker,
+                   markersize=6,
+                   markevery=max(1, len(df)//10),
+                   linewidth=2)
+
+    if has_data:
+        # Set plot labels and title
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Time (seconds)')
+        ax.set_title(f'Add Operation Time Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Ensure y-axis starts at 0
+        ax.set_ylim(bottom=0)
+
+        # Save plot
+        save_plot(fig, output_dir, f"add_benchmark_comparison")
+    else:
+        print(f"No add benchmark data to plot for {dataset_suffix} in {experiment}")
+
+    plt.close()
+
+def plot_search_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Create plot comparing search operation benchmark between implementations."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    setup_plot_style()
+
+    has_data = False
+
+    for i, impl in enumerate(implementations):
+        # Skip if implementation doesn't have this dataset
+        if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
+            continue
+
+        # Get the actual dataset folder name for this implementation
+        dataset_folder = impl_dataset_map[impl][dataset_suffix]
+
+        # Path to the bm_search.csv file
+        benchmark_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'bm_search.csv')
+
+        if not os.path.exists(benchmark_path):
+            print(f"Warning: File {benchmark_path} does not exist")
+            continue
+
+        # Load CSV data
+        df = load_csv_data(benchmark_path)
+
+        if 'mean_time' in df.columns:
+            has_data = True
+            # Plot with different colors and markers for different implementations
+            marker = 'o' if i == 0 else 's'
+            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+            ax.plot(df['iteration'], df['mean_time'],
+                   label=f"{impl}",
+                   color=color,
+                   marker=marker,
+                   markersize=6,
+                   markevery=max(1, len(df)//10),
+                   linewidth=2)
+
+    if has_data:
+        # Set plot labels and title
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Time (seconds)')
+        ax.set_title(f'Search Operation Time Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Ensure y-axis starts at 0
+        ax.set_ylim(bottom=0)
+
+        # Save plot
+        save_plot(fig, output_dir, f"search_benchmark_comparison")
+    else:
+        print(f"No search benchmark data to plot for {dataset_suffix} in {experiment}")
+
+    plt.close()
+
+def plot_delete_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
+    """Create plot comparing delete operation benchmark between implementations."""
+    fig, ax = plt.subplots(figsize=(12, 7))
+    setup_plot_style()
+
+    has_data = False
+
+    for i, impl in enumerate(implementations):
+        # Skip if implementation doesn't have this dataset
+        if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
+            continue
+
+        # Get the actual dataset folder name for this implementation
+        dataset_folder = impl_dataset_map[impl][dataset_suffix]
+
+        # Path to the bm_delete.csv file
+        benchmark_path = os.path.join(base_dir, impl, 'results', experiment, dataset_folder, 'bm_delete.csv')
+
+        if not os.path.exists(benchmark_path):
+            print(f"Warning: File {benchmark_path} does not exist")
+            continue
+
+        # Load CSV data
+        df = load_csv_data(benchmark_path)
+
+        if 'mean_time' in df.columns:
+            has_data = True
+            # Plot with different colors and markers for different implementations
+            marker = 'o' if i == 0 else 's'
+            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
+            ax.plot(df['iteration'], df['mean_time'],
+                   label=f"{impl}",
+                   color=color,
+                   marker=marker,
+                   markersize=6,
+                   markevery=max(1, len(df)//10),
+                   linewidth=2)
+
+    if has_data:
+        # Set plot labels and title
+        ax.set_xlabel('Iteration')
+        ax.set_ylabel('Time (seconds)')
+        ax.set_title(f'Delete Operation Time Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+        # Ensure y-axis starts at 0
+        ax.set_ylim(bottom=0)
+
+        # Save plot
+        save_plot(fig, output_dir, f"delete_benchmark_comparison")
+    else:
+        print(f"No delete benchmark data to plot for {dataset_suffix} in {experiment}")
+
+    plt.close()
+
 def save_plot(fig: plt.Figure,
              save_dir: str,
              filename: str,
