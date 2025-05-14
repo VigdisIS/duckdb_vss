@@ -226,13 +226,13 @@ int main() {
     experiment = "usearch_";
 
     try {
-        // // fashion_mnist
-        // USearchInclusiveUPRunner fm_runner(max_iterations, executor_threads);
-        // fm_runner.runTest(0);
+        // fashion_mnist
+        USearchInclusiveUPRunner fm_runner(max_iterations, executor_threads);
+        fm_runner.runTest(0);
 
-        // // mnist
-        // USearchInclusiveUPRunner m_runner(max_iterations, executor_threads);
-        // m_runner.runTest(1);
+        // mnist
+        USearchInclusiveUPRunner m_runner(max_iterations, executor_threads);
+        m_runner.runTest(1);
 
         // sift
         USearchInclusiveUPRunner s_runner(max_iterations, executor_threads);

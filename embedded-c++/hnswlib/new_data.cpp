@@ -246,7 +246,7 @@ int main() {
 
         // mnist
         HNSWLibNewDataRunner m_runner(max_iterations, executor_threads);
-        fm_runner.runTest(1);
+        m_runner.runTest(1);
 
         // sift
         HNSWLibNewDataRunner s_runner(max_iterations, executor_threads);
@@ -254,7 +254,7 @@ int main() {
 
         // gist
         HNSWLibNewDataRunner g_runner(max_iterations, executor_threads);
-        fm_runner.runTest(3);
+        g_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {

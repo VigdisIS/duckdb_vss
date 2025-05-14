@@ -100,7 +100,6 @@ HNSWLibInclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), ma
             Appender add_bm_appender(con, dataset.name + "_add_bm");
             Appender search_bm_appender(con, dataset.name + "_search_bm");
             Appender early_termination_appender(con, "early_terminated_queries");
-
             std::size_t executor_threads = (std::thread::hardware_concurrency());
             std::cout << "Threads: " << executor_threads << std::endl;
 
@@ -265,13 +264,13 @@ int main() {
     experiment = "hnswlib_";
 
     try {
-        // // fashion_mnist
-        // HNSWLibInclusiveUPRunner fm_runner(max_iterations, executor_threads);
-        // fm_runner.runTest(0);
+        // fashion_mnist
+        HNSWLibInclusiveUPRunner fm_runner(max_iterations, executor_threads);
+        fm_runner.runTest(0);
 
-        // // mnist
-        // HNSWLibUnreachablePointsRunner m_runner(max_iterations, executor_threads);
-        // m_runner.runTest(1);
+        // mnist
+        HNSWLibInclusiveUPRunner m_runner(max_iterations, executor_threads);
+        m_runner.runTest(1);
 
         // sift
         HNSWLibInclusiveUPRunner s_runner(max_iterations, executor_threads);
