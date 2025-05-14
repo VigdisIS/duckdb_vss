@@ -83,10 +83,10 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
             // Dataset vectors
             auto dataset_vectors = con.Query("SELECT * FROM " + dataset.name + "_train;");
 
-            std::unordered_set<size_t> available_points;
+            std::vector<size_t> available_points;
             available_points.reserve(dataset_cardinality);
             for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
-                available_points.insert(dataset_vectors->GetValue<int>(0, idx));
+                available_points.push_back(dataset_vectors->GetValue<int>(0, idx));
             }
 
             // TODO: hardcoded value
@@ -120,7 +120,7 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
             for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
                 int point_id = dataset_vectors->GetValue<int>(0, idx);
                 if (found_points_set.find(point_id) != found_points_set.end()) {
-                    available_points.insert(point_id);
+                    available_points.push_back(point_id);
                 }
             }
 
@@ -170,7 +170,7 @@ USearchRandomUPRunner(int iterations, int threads) : db(nullptr), con(db), max_i
                 for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
                     int point_id = dataset_vectors->GetValue<int>(0, idx);
                     if (found_points_set.find(point_id) != found_points_set.end()) {
-                        available_points.insert(point_id);
+                        available_points.push_back(point_id);  
                     }
                 }
 
@@ -254,13 +254,13 @@ int main() {
     experiment = "usearch_";
 
     try {
-        // // fashion_mnist
-        // USearchRandomUPRunner fm_runner(max_iterations, executor_threads);
-        // fm_runner.runTest(0);
+        // fashion_mnist
+        USearchRandomUPRunner fm_runner(max_iterations, executor_threads);
+        fm_runner.runTest(0);
 
-        // // mnist
-        // USearchRandomUPRunner m_runner(max_iterations, executor_threads);
-        // m_runner.runTest(1);
+        // mnist
+        USearchRandomUPRunner m_runner(max_iterations, executor_threads);
+        m_runner.runTest(1);
 
         // sift
         USearchRandomUPRunner s_runner(max_iterations, executor_threads);
