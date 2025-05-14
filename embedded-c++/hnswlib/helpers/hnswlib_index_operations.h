@@ -27,19 +27,21 @@ public:
         const std::string& dataset_name,
         int iteration,
         Appender& add_bm_appender,
-        int num_threads,
-        bool repl_cand = false
+        int num_threads
     );
 
-    // static size_t singleAdd(
-    //     HierarchicalNSW<float>& index,
-    //     const std::vector<float>& point,
-    //     const size_t& label,
-    //     const std::string& dataset_name,
-    //     int iteration,
-    //     Appender& add_bm_appender,
-    //     bool repl_cand = false
-    // );
+    static size_t parallelAddReplCand(
+        HierarchicalNSW<float>& index,
+        const std::vector<std::vector<float>>& points, 
+        const std::vector<size_t>& labels,
+        const std::string& dataset_name,
+        int iteration,
+        Appender& add_bm_appender,
+        Appender& repl_method_dist_appender,
+        int num_threads,
+        bool use_neigh_update = false,
+        bool include_tombstones = true
+    );
     
     static size_t singleRemove(
         HierarchicalNSW<float>& index,
