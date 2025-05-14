@@ -308,87 +308,6 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         return top_candidates;
     }
 
-    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst>
-    searchBaseLayerIncludeTombstones(tableint ep_id, const void *data_point, int layer) {
-        VisitedList *vl = visited_list_pool_->getFreeVisitedList();
-        vl_type *visited_array = vl->mass;
-        vl_type visited_array_tag = vl->curV;
-
-        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
-        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidateSet;
-
-        dist_t lowerBound;
-        if (!isMarkedDeleted(ep_id)) {
-            dist_t dist = fstdistfunc_(data_point, getDataByInternalId(ep_id), dist_func_param_);
-            top_candidates.emplace(dist, ep_id);
-            lowerBound = dist;
-            candidateSet.emplace(-dist, ep_id);
-        } else {
-            lowerBound = std::numeric_limits<dist_t>::max();
-            candidateSet.emplace(-lowerBound, ep_id);
-        }
-        visited_array[ep_id] = visited_array_tag;
-
-        while (!candidateSet.empty()) {
-            std::pair<dist_t, tableint> curr_el_pair = candidateSet.top();
-            if ((-curr_el_pair.first) > lowerBound && top_candidates.size() == ef_construction_) {
-                break;
-            }
-            candidateSet.pop();
-
-            tableint curNodeNum = curr_el_pair.second;
-
-            std::unique_lock <std::mutex> lock(link_list_locks_[curNodeNum]);
-
-            int *data;  // = (int *)(linkList0_ + curNodeNum * size_links_per_element0_);
-            if (layer == 0) {
-                data = (int*)get_linklist0(curNodeNum);
-            } else {
-                data = (int*)get_linklist(curNodeNum, layer);
-//                    data = (int *) (linkLists_[curNodeNum] + (layer - 1) * size_links_per_element_);
-            }
-            size_t size = getListCount((linklistsizeint*)data);
-            tableint *datal = (tableint *) (data + 1);
-#ifdef USE_SSE
-            _mm_prefetch((char *) (visited_array + *(data + 1)), _MM_HINT_T0);
-            _mm_prefetch((char *) (visited_array + *(data + 1) + 64), _MM_HINT_T0);
-            _mm_prefetch(getDataByInternalId(*datal), _MM_HINT_T0);
-            _mm_prefetch(getDataByInternalId(*(datal + 1)), _MM_HINT_T0);
-#endif
-
-            for (size_t j = 0; j < size; j++) {
-                tableint candidate_id = *(datal + j);
-//                    if (candidate_id == 0) continue;
-#ifdef USE_SSE
-                _mm_prefetch((char *) (visited_array + *(datal + j + 1)), _MM_HINT_T0);
-                _mm_prefetch(getDataByInternalId(*(datal + j + 1)), _MM_HINT_T0);
-#endif
-                if (visited_array[candidate_id] == visited_array_tag) continue;
-                visited_array[candidate_id] = visited_array_tag;
-                char *currObj1 = (getDataByInternalId(candidate_id));
-
-                dist_t dist1 = fstdistfunc_(data_point, currObj1, dist_func_param_);
-                if (top_candidates.size() < ef_construction_ || lowerBound > dist1) {
-                    candidateSet.emplace(-dist1, candidate_id);
-#ifdef USE_SSE
-                    _mm_prefetch(getDataByInternalId(candidateSet.top().second), _MM_HINT_T0);
-#endif
-
-                    top_candidates.emplace(dist1, candidate_id);
-                        
-                    if (top_candidates.size() > ef_construction_)
-                        top_candidates.pop();
-
-                    if (!top_candidates.empty())
-                        lowerBound = top_candidates.top().first;
-                }
-            }
-        }
-        visited_list_pool_->releaseVisitedList(vl);
-
-        return top_candidates;
-    }
-
 
     // bare_bone_search means there is no check for deletions and stop condition is ignored in return of extra performance
 
@@ -581,44 +500,6 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
         for (std::pair<dist_t, tableint> curent_pair : return_list) {
             top_candidates.emplace(-curent_pair.first, curent_pair.second);
-        }
-    }
-
-    void getNeighborsByHeuristic2AlreadySorted(
-        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
-        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &neighbors,
-        const size_t M) {
-        if (top_candidates.size() < M) {
-            return;
-        }
-
-        std::vector<std::pair<dist_t, tableint>> return_list;
-
-        while (top_candidates.size()) {
-            if (return_list.size() >= M)
-                break;
-            std::pair<dist_t, tableint> curent_pair = top_candidates.top();
-            dist_t dist_to_query = -curent_pair.first;
-            top_candidates.pop();
-            bool good = true;
-
-            for (std::pair<dist_t, tableint> second_pair : return_list) {
-                dist_t curdist =
-                        fstdistfunc_(getDataByInternalId(second_pair.second),
-                                        getDataByInternalId(curent_pair.second),
-                                        dist_func_param_);
-                if (curdist < dist_to_query) {
-                    good = false;
-                    break;
-                }
-            }
-            if (good) {
-                return_list.push_back(curent_pair);
-            }
-        }
-
-        for (std::pair<dist_t, tableint> curent_pair : return_list) {
-            neighbors.emplace(-curent_pair.first, curent_pair.second);
         }
     }
 
@@ -1132,7 +1013,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
     }
 
 
-    void updatePoint(const void *dataPoint, tableint internalId, float updateNeighborProbability, bool include_tombstones_search_layer = false) {
+    void updatePoint(const void *dataPoint, tableint internalId, float updateNeighborProbability) {
         // update the feature vector associated with existing point with new vector
         memcpy(getDataByInternalId(internalId), dataPoint, data_size_);
 
@@ -1207,183 +1088,16 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             }
         }
 
-        repairConnectionsForUpdate(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy, include_tombstones_search_layer);
+        repairConnectionsForUpdate(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy);
     }
 
-    void updatePointReplCand(const void *dataPoint, tableint internalId, bool include_tombstones_search_layer = false) {
-        // update the feature vector associated with existing point with new vector
-        memcpy(getDataByInternalId(internalId), dataPoint, data_size_);
-
-        int maxLevelCopy = maxlevel_;
-        tableint entryPointCopy = enterpoint_node_;
-
-        int elemLevel = element_levels_[internalId];
-
-        repairConnectionsForUpdateReplCand(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy, include_tombstones_search_layer);
-    }
-
-    /*
-    * Adds point. Updates the point if it is already in the index.
-    * If replacement of deleted elements is enabled and the delete list is not empty, 
-    * run addPointReplCand which attempts to replace the point with a candidate neighbor
-    */
-    int addPointReplCand(const void *data_point, labeltype label, bool replace_deleted = true, bool use_neigh_update = false, bool include_tombstones_search_layer = true) {
-        int used_repl_cand = 0;
-
-        if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
-            throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
-        }
-
-        // lock all operations with element by label
-        std::unique_lock <std::mutex> lock_label(getLabelOpMutex(label));
-        if (!replace_deleted) {
-            addPoint(data_point, label, -1);
-            return used_repl_cand;
-        }
-        // check if there is vacant place
-        // TODO: lock is only here and no element popped, thus when actually running replace due to 
-        // this part returning there is a vacant place, there may not be one when the lock is released
-        // thus rerun this check later IF actually popping element where findTombstonedCand returns -1
-        std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
-        bool is_vacant_place = !deleted_elements.empty();
-        lock_deleted_elements.unlock();
-
-        // if there is no vacant place then add or update point
-        // else add point to vacant place
-        if (!is_vacant_place) {
-            addPoint(data_point, label, -1);
-        } else {
-            tableint internal_id_replaced;
-            std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
-            auto result = findCandToReplace(data_point, label, -1);
-            if (result.candidate_id == -1) {
-                internal_id_replaced = *deleted_elements.begin();
-            } else {
-                internal_id_replaced = result.candidate_id;
-                used_repl_cand = 1;
-            }
-    
-            deleted_elements.erase(internal_id_replaced);
-            lock_deleted_elements.unlock();
-
-            // we assume that there are no concurrent operations on deleted element
-            labeltype label_replaced = getExternalLabel(internal_id_replaced);
-            setExternalLabel(internal_id_replaced, label);
-
-            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
-            label_lookup_.erase(label_replaced);
-            label_lookup_[label] = internal_id_replaced;
-            lock_table.unlock();
-
-            unmarkDeletedInternal(internal_id_replaced);
-
-            // std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> neighbors;
-
-            // getNeighborsByHeuristic2AlreadySorted(result.top_candidates, neighbors, maxM0_);
-
-            // Get neighbors getNeighborsByHeuristic2AlreadySorted
-            // if use updateNeighbors, first update neighbors of tombstoned node at base layer
-            // then update links of tombstoned node at base layer
-            // if replaced node max level > 0, run updatePoint until base + 1 layer, else run updatePointReplCand until base + 1 layer
-
-            // we have already done neighbors in base.
-
-            // mutuallyConnectNewElement(data_point, internal_id_replaced, result.top_candidates, 0, true);
-
-            if(use_neigh_update && used_repl_cand == 0) {
-                updatePoint(data_point, internal_id_replaced, 1.0, include_tombstones_search_layer);
-                return used_repl_cand;
-            }
-
-            updatePointReplCand(data_point, internal_id_replaced, include_tombstones_search_layer);
-           
-            // std::cout << "Running addPointReplCand" << std::endl;
-            // addPointReplCand(data_point, label, -1);
-        }
-        return used_repl_cand;
-    }
-
-    void repairConnectionsForUpdateReplCand(
-        const void *dataPoint,
-        tableint entryPointInternalId,
-        tableint dataPointInternalId,
-        int dataPointLevel,
-        int maxLevel,
-        bool include_tombstones_search_layer = false) {
-        tableint currObj = entryPointInternalId;
-        if (dataPointLevel < maxLevel) {
-            dist_t curdist = fstdistfunc_(dataPoint, getDataByInternalId(currObj), dist_func_param_);
-            for (int level = maxLevel; level > dataPointLevel; level--) {
-                bool changed = true;
-                while (changed) {
-                    changed = false;
-                    unsigned int *data;
-                    std::unique_lock <std::mutex> lock(link_list_locks_[currObj]);
-                    data = get_linklist_at_level(currObj, level);
-                    int size = getListCount(data);
-                    tableint *datal = (tableint *) (data + 1);
-#ifdef USE_SSE
-                    _mm_prefetch(getDataByInternalId(*datal), _MM_HINT_T0);
-#endif
-                    for (int i = 0; i < size; i++) {
-#ifdef USE_SSE
-                        _mm_prefetch(getDataByInternalId(*(datal + i + 1)), _MM_HINT_T0);
-#endif
-                        tableint cand = datal[i];
-                        dist_t d = fstdistfunc_(dataPoint, getDataByInternalId(cand), dist_func_param_);
-                        if (d < curdist) {
-                            curdist = d;
-                            currObj = cand;
-                            changed = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (dataPointLevel > maxLevel)
-            throw std::runtime_error("Level of item to be updated cannot be bigger than max level");
-
-        for (int level = dataPointLevel; level >= 0; level--) {
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates;
-            if(include_tombstones_search_layer) {
-                topCandidates = searchBaseLayerIncludeTombstones(
-                        currObj, dataPoint, level);
-            } else {
-                topCandidates = searchBaseLayer(
-                        currObj, dataPoint, level);
-            }
-
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
-            while (topCandidates.size() > 0) {
-                if (topCandidates.top().second != dataPointInternalId)
-                    filteredTopCandidates.push(topCandidates.top());
-
-                topCandidates.pop();
-            }
-
-            // Since element_levels_ is being used to get `dataPointLevel`, there could be cases where `topCandidates` could just contains entry point itself.
-            // To prevent self loops, the `topCandidates` is filtered and thus can be empty.
-            if (filteredTopCandidates.size() > 0) {
-                bool epDeleted = isMarkedDeleted(entryPointInternalId);
-                if (epDeleted) {
-                    filteredTopCandidates.emplace(fstdistfunc_(dataPoint, getDataByInternalId(entryPointInternalId), dist_func_param_), entryPointInternalId);
-                    if (filteredTopCandidates.size() > ef_construction_)
-                        filteredTopCandidates.pop();
-                }
-
-                currObj = mutuallyConnectNewElement(dataPoint, dataPointInternalId, filteredTopCandidates, level, true);
-            }
-        }
-    }
 
     void repairConnectionsForUpdate(
         const void *dataPoint,
         tableint entryPointInternalId,
         tableint dataPointInternalId,
         int dataPointLevel,
-        int maxLevel,
-        bool include_tombstones_search_layer = false) {
+        int maxLevel) {
         tableint currObj = entryPointInternalId;
         if (dataPointLevel < maxLevel) {
             dist_t curdist = fstdistfunc_(dataPoint, getDataByInternalId(currObj), dist_func_param_);
@@ -1419,14 +1133,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             throw std::runtime_error("Level of item to be updated cannot be bigger than max level");
 
         for (int level = dataPointLevel; level >= 0; level--) {
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates;
-            if(include_tombstones_search_layer) {
-                topCandidates = searchBaseLayerIncludeTombstones(
-                        currObj, dataPoint, level);
-            } else {
-                topCandidates = searchBaseLayer(
-                        currObj, dataPoint, level);
-            }
+            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates = searchBaseLayer(
+                    currObj, dataPoint, level);
 
             std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
             while (topCandidates.size() > 0) {
@@ -1563,253 +1271,6 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
                     if (top_candidates.size() > ef_construction_)
                         top_candidates.pop();
                 }
-                currObj = mutuallyConnectNewElement(data_point, cur_c, top_candidates, level, false);
-            }
-        } else {
-            // Do nothing for the first element
-            enterpoint_node_ = 0;
-            maxlevel_ = curlevel;
-        }
-
-        // Releasing lock for the maximum level
-        if (curlevel > maxlevelcopy) {
-            enterpoint_node_ = cur_c;
-            maxlevel_ = curlevel;
-        }
-        return cur_c;
-    }
-
-    struct CandToReplaceResult {
-        tableint candidate_id;
-        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
-        
-        CandToReplaceResult() : candidate_id(-1) {}
-    };
-
-    CandToReplaceResult findCandToReplace(const void *data_point, labeltype label, int level) {
-        CandToReplaceResult result;
-
-        int maxlevelcopy = maxlevel_;
-        int curlevel = 0;
-        tableint currObj = enterpoint_node_;
-        tableint enterpoint_copy = enterpoint_node_;
-
-        if ((signed)currObj != -1) {
-            if (curlevel < maxlevelcopy) {
-                dist_t curdist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
-                for (int level = maxlevelcopy; level > curlevel; level--) {
-                    bool changed = true;
-                    while (changed) {
-                        changed = false;
-                        unsigned int *data;
-                        std::unique_lock <std::mutex> lock(link_list_locks_[currObj]);
-                        data = get_linklist(currObj, level);
-                        int size = getListCount(data);
-
-                        tableint *datal = (tableint *) (data + 1);
-                        for (int i = 0; i < size; i++) {
-                            tableint cand = datal[i];
-                            if (cand < 0 || cand > max_elements_)
-                                throw std::runtime_error("cand error");
-                            dist_t d = fstdistfunc_(data_point, getDataByInternalId(cand), dist_func_param_);
-                            if (d < curdist) {
-                                curdist = d;
-                                currObj = cand;
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            bool epDeleted = isMarkedDeleted(enterpoint_copy);
-
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates = searchBaseLayerIncludeTombstones(
-                    currObj, data_point, 0);
-            if (epDeleted) {
-                top_candidates.emplace(fstdistfunc_(data_point, getDataByInternalId(enterpoint_copy), dist_func_param_), enterpoint_copy);
-                if (top_candidates.size() > ef_construction_)
-                    top_candidates.pop();
-            }
-
-            result.top_candidates = top_candidates;
-
-            std::priority_queue<std::pair<dist_t, tableint>> queue_closest;
-            // std::vector<std::pair<dist_t, tableint>> return_list;
-            while (top_candidates.size() > 0) {
-                queue_closest.emplace(-top_candidates.top().first, top_candidates.top().second);
-                top_candidates.pop();
-            }
-
-            // Iterate through top candidates nearest neighbor first and check for tombstones
-            while (!queue_closest.empty()) {
-                auto current = queue_closest.top();  // Get the top element
-                // Get first tombstoned candidate if any
-                if (isMarkedDeleted(current.second)) {
-                    // Get internal id of tombstoned candidate
-                    result.candidate_id = current.second;
-                    break;
-                }
-                queue_closest.pop();  // Remove the top element
-            }
-            return result;
-        }
-    }
-
-    tableint addPointReplCand(const void *data_point, labeltype label, int level) {
-        tableint cur_c = 0;
-        {
-            // Checking if the element with the same label already exists
-            // if so, updating it *instead* of creating a new element.
-            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
-            auto search = label_lookup_.find(label);
-            if (search != label_lookup_.end()) {
-                tableint existingInternalId = search->second;
-                if (allow_replace_deleted_) {
-                    if (isMarkedDeleted(existingInternalId)) {
-                        throw std::runtime_error("Can't use addPoint to update deleted elements if replacement of deleted elements is enabled.");
-                    }
-                }
-                lock_table.unlock();
-
-                if (isMarkedDeleted(existingInternalId)) {
-                    unmarkDeletedInternal(existingInternalId);
-                }
-                updatePointReplCand(data_point, existingInternalId);
-
-                return existingInternalId;
-            }
-        }
-
-        int curlevel = getRandomLevel(mult_);
-        if (level > 0)
-            curlevel = level;
-
-        // element_levels_[cur_c] = curlevel;
-
-        std::unique_lock <std::mutex> templock(global);
-        int maxlevelcopy = maxlevel_;
-        if (curlevel <= maxlevelcopy)
-            templock.unlock();
-        tableint currObj = enterpoint_node_;
-        tableint enterpoint_copy = enterpoint_node_;
-
-        if ((signed)currObj != -1) {
-            if (curlevel < maxlevelcopy) {
-                dist_t curdist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
-                for (int level = maxlevelcopy; level > curlevel; level--) {
-                    bool changed = true;
-                    while (changed) {
-                        changed = false;
-                        unsigned int *data;
-                        std::unique_lock <std::mutex> lock(link_list_locks_[currObj]);
-                        data = get_linklist(currObj, level);
-                        int size = getListCount(data);
-
-                        tableint *datal = (tableint *) (data + 1);
-                        for (int i = 0; i < size; i++) {
-                            tableint cand = datal[i];
-                            if (cand < 0 || cand > max_elements_)
-                                throw std::runtime_error("cand error");
-                            dist_t d = fstdistfunc_(data_point, getDataByInternalId(cand), dist_func_param_);
-                            if (d < curdist) {
-                                curdist = d;
-                                currObj = cand;
-                                changed = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            bool epDeleted = isMarkedDeleted(enterpoint_copy);
-            bool replaceCandidate = false; // Keep track of whether we've found a candidate to replace
-            for (int level = std::min(curlevel, maxlevelcopy); level >= 0; level--) {
-                if (level > maxlevelcopy || level < 0)  // possible?
-                    throw std::runtime_error("Level error");
-
-                std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates = searchBaseLayerIncludeTombstones(
-                        currObj, data_point, level);
-                // TODO: since tombstones included, this prolly doesn't need to be done
-                if (epDeleted) {
-                    top_candidates.emplace(fstdistfunc_(data_point, getDataByInternalId(enterpoint_copy), dist_func_param_), enterpoint_copy);
-                    if (top_candidates.size() > ef_construction_)
-                        top_candidates.pop();
-                }
-                // If current level == highest level of new element, check for tombstoned nodes in top candidates
-                if (level == curlevel) {
-                    // Copy original top candidates
-                    auto top_candidates_copy = top_candidates;
-                    // Iterate through top candidates and check for tombstones
-                    while (!top_candidates_copy.empty()) {
-                        auto current = top_candidates_copy.top();  // Get the top element
-                        // Get first tombstoned candidate if any
-                        if (isMarkedDeleted(current.second)) {
-                            // Get internal id of tombstoned candidate
-                            tableint internal_id_replaced;
-                            std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
-                            internal_id_replaced = current.second;
-                            // Remove tombstoned node from delete list
-                            deleted_elements.erase(internal_id_replaced);
-                            lock_deleted_elements.unlock();
-
-                            // Replace tombstoned node with new node
-                            // we assume that there are no concurrent operations on deleted element
-                            labeltype label_replaced = getExternalLabel(internal_id_replaced);
-                            setExternalLabel(internal_id_replaced, label);
-
-                            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
-                            label_lookup_.erase(label_replaced);
-                            label_lookup_[label] = internal_id_replaced;
-                            lock_table.unlock();
-
-                            unmarkDeletedInternal(internal_id_replaced);
-                            replaceCandidate = true;
-                            // Run updatePoint here w tombstoned cand as replaced node
-                            updatePointReplCand(data_point, internal_id_replaced); 
-                            return internal_id_replaced;
-                        }
-                        // Remove tombstoned node from top candidates
-                        top_candidates_copy.pop();  // Remove the top element
-                    }
-                    if (replaceCandidate) {
-                        // If we found a candidate to replace, we can break early
-                        break;
-                    } else {
-                        // If we didn't find a candidate to replace, initialize new node
-                        {
-                            // Checking if the element with the same label already exists
-                            // if so, updating it *instead* of creating a new element.
-                            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
-                          
-                            if (cur_element_count >= max_elements_) {
-                                throw std::runtime_error("The number of elements exceeds the specified limit");
-                            }
-
-                            cur_c = cur_element_count;
-                            cur_element_count++;
-                            label_lookup_[label] = cur_c;
-                        }
-
-                        element_levels_[cur_c] = curlevel;
-
-                        std::unique_lock <std::mutex> lock_el(link_list_locks_[cur_c]);
-                        memset(data_level0_memory_ + cur_c * size_data_per_element_ + offsetLevel0_, 0, size_data_per_element_);
-
-                        // Initialisation of the data and label
-                        memcpy(getExternalLabeLp(cur_c), &label, sizeof(labeltype));
-                        memcpy(getDataByInternalId(cur_c), data_point, data_size_);
-
-                        if (curlevel) {
-                            linkLists_[cur_c] = (char *) malloc(size_links_per_element_ * curlevel + 1);
-                            if (linkLists_[cur_c] == nullptr)
-                                throw std::runtime_error("Not enough memory: addPoint failed to allocate linklist");
-                            memset(linkLists_[cur_c], 0, size_links_per_element_ * curlevel + 1);
-                        }
-                    }
-                }
-
-                // mutually connect element at current level
                 currObj = mutuallyConnectNewElement(data_point, cur_c, top_candidates, level, false);
             }
         } else {
@@ -2171,6 +1632,388 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
         std::cout << "integrity ok, checked " << connections_checked << " connections\n";
     }
+
+
+    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst>
+    searchBaseLayerIncludeTombstones(tableint ep_id, const void *data_point, int layer) {
+        VisitedList *vl = visited_list_pool_->getFreeVisitedList();
+        vl_type *visited_array = vl->mass;
+        vl_type visited_array_tag = vl->curV;
+
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidateSet;
+
+        dist_t lowerBound;
+        if (!isMarkedDeleted(ep_id)) {
+            dist_t dist = fstdistfunc_(data_point, getDataByInternalId(ep_id), dist_func_param_);
+            top_candidates.emplace(dist, ep_id);
+            lowerBound = dist;
+            candidateSet.emplace(-dist, ep_id);
+        } else {
+            lowerBound = std::numeric_limits<dist_t>::max();
+            candidateSet.emplace(-lowerBound, ep_id);
+        }
+        visited_array[ep_id] = visited_array_tag;
+
+        while (!candidateSet.empty()) {
+            std::pair<dist_t, tableint> curr_el_pair = candidateSet.top();
+            if ((-curr_el_pair.first) > lowerBound && top_candidates.size() == ef_construction_) {
+                break;
+            }
+            candidateSet.pop();
+
+            tableint curNodeNum = curr_el_pair.second;
+
+            std::unique_lock <std::mutex> lock(link_list_locks_[curNodeNum]);
+
+            int *data;  // = (int *)(linkList0_ + curNodeNum * size_links_per_element0_);
+            if (layer == 0) {
+                data = (int*)get_linklist0(curNodeNum);
+            } else {
+                data = (int*)get_linklist(curNodeNum, layer);
+//                    data = (int *) (linkLists_[curNodeNum] + (layer - 1) * size_links_per_element_);
+            }
+            size_t size = getListCount((linklistsizeint*)data);
+            tableint *datal = (tableint *) (data + 1);
+#ifdef USE_SSE
+            _mm_prefetch((char *) (visited_array + *(data + 1)), _MM_HINT_T0);
+            _mm_prefetch((char *) (visited_array + *(data + 1) + 64), _MM_HINT_T0);
+            _mm_prefetch(getDataByInternalId(*datal), _MM_HINT_T0);
+            _mm_prefetch(getDataByInternalId(*(datal + 1)), _MM_HINT_T0);
+#endif
+
+            for (size_t j = 0; j < size; j++) {
+                tableint candidate_id = *(datal + j);
+//                    if (candidate_id == 0) continue;
+#ifdef USE_SSE
+                _mm_prefetch((char *) (visited_array + *(datal + j + 1)), _MM_HINT_T0);
+                _mm_prefetch(getDataByInternalId(*(datal + j + 1)), _MM_HINT_T0);
+#endif
+                if (visited_array[candidate_id] == visited_array_tag) continue;
+                visited_array[candidate_id] = visited_array_tag;
+                char *currObj1 = (getDataByInternalId(candidate_id));
+
+                dist_t dist1 = fstdistfunc_(data_point, currObj1, dist_func_param_);
+                if (top_candidates.size() < ef_construction_ || lowerBound > dist1) {
+                    candidateSet.emplace(-dist1, candidate_id);
+#ifdef USE_SSE
+                    _mm_prefetch(getDataByInternalId(candidateSet.top().second), _MM_HINT_T0);
+#endif
+
+                    top_candidates.emplace(dist1, candidate_id);
+                        
+                    if (top_candidates.size() > ef_construction_)
+                        top_candidates.pop();
+
+                    if (!top_candidates.empty())
+                        lowerBound = top_candidates.top().first;
+                }
+            }
+        }
+        visited_list_pool_->releaseVisitedList(vl);
+
+        return top_candidates;
+    }
+
+    struct CandToReplaceResult {
+        tableint candidate_id;
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
+        
+        CandToReplaceResult() : candidate_id(-1) {}
+    };
+
+    CandToReplaceResult findCandToReplace(const void *data_point, labeltype label, int level) {
+        CandToReplaceResult result;
+
+        int maxlevelcopy = maxlevel_;
+        int curlevel = 0;
+        tableint currObj = enterpoint_node_;
+        tableint enterpoint_copy = enterpoint_node_;
+
+        if ((signed)currObj != -1) {
+            if (curlevel < maxlevelcopy) {
+                dist_t curdist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
+                for (int level = maxlevelcopy; level > curlevel; level--) {
+                    bool changed = true;
+                    while (changed) {
+                        changed = false;
+                        unsigned int *data;
+                        std::unique_lock <std::mutex> lock(link_list_locks_[currObj]);
+                        data = get_linklist(currObj, level);
+                        int size = getListCount(data);
+
+                        tableint *datal = (tableint *) (data + 1);
+                        for (int i = 0; i < size; i++) {
+                            tableint cand = datal[i];
+                            if (cand < 0 || cand > max_elements_)
+                                throw std::runtime_error("cand error");
+                            dist_t d = fstdistfunc_(data_point, getDataByInternalId(cand), dist_func_param_);
+                            if (d < curdist) {
+                                curdist = d;
+                                currObj = cand;
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            bool epDeleted = isMarkedDeleted(enterpoint_copy);
+
+            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates = searchBaseLayerIncludeTombstones(
+                    currObj, data_point, 0);
+            if (epDeleted) {
+                top_candidates.emplace(fstdistfunc_(data_point, getDataByInternalId(enterpoint_copy), dist_func_param_), enterpoint_copy);
+                if (top_candidates.size() > ef_construction_)
+                    top_candidates.pop();
+            }
+
+            result.top_candidates = top_candidates;
+
+            std::priority_queue<std::pair<dist_t, tableint>> queue_closest;
+            // std::vector<std::pair<dist_t, tableint>> return_list;
+            while (top_candidates.size() > 0) {
+                queue_closest.emplace(-top_candidates.top().first, top_candidates.top().second);
+                top_candidates.pop();
+            }
+
+            // Iterate through top candidates nearest neighbor first and check for tombstones
+            // std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+            while (!queue_closest.empty()) {
+                auto current = queue_closest.top();  // Get the top element
+                // Get first tombstoned candidate if any
+                if (isMarkedDeleted(current.second)) {
+                    // Get internal id of tombstoned candidate
+                    result.candidate_id = current.second;
+                    break;
+                }
+                queue_closest.pop();  // Remove the top element
+            }
+            // lock_deleted_elements.unlock();
+            return result;
+        }
+    }
+
+    /*
+    * Adds point. Updates the point if it is already in the index.
+    * If replacement of deleted elements is enabled and the delete list is not empty, 
+    * run addPointReplCand which attempts to replace the point with a candidate neighbor
+    */
+    int addPointReplCand(const void *data_point, labeltype label, bool replace_deleted = true, bool use_neigh_update = false, bool include_tombstones_search_layer = true) {
+        int used_repl_cand = 0;
+
+        if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
+            throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
+        }
+
+        // lock all operations with element by label
+        std::unique_lock <std::mutex> lock_label(getLabelOpMutex(label));
+        if (!replace_deleted) {
+            addPoint(data_point, label, -1);
+            return used_repl_cand;
+        }
+        // check if there is vacant place
+        // TODO: lock is only here and no element popped, thus when actually running replace due to 
+        // this part returning there is a vacant place, there may not be one when the lock is released
+        // thus rerun this check later IF actually popping element where findTombstonedCand returns -1
+        std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+        bool is_vacant_place = !deleted_elements.empty();
+        lock_deleted_elements.unlock();
+
+        // if there is no vacant place then add or update point
+        // else add point to vacant place
+        if (!is_vacant_place) {
+            addPoint(data_point, label, -1);
+        } else {
+            tableint internal_id_replaced;
+            std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+            auto result = findCandToReplace(data_point, label, -1);
+            auto topCandidates = result.top_candidates;
+            if (result.candidate_id == -1) {
+                internal_id_replaced = *deleted_elements.begin();
+            } else {
+                internal_id_replaced = result.candidate_id;
+                used_repl_cand = 1;
+            }
+            deleted_elements.erase(internal_id_replaced);
+            lock_deleted_elements.unlock();
+
+            // we assume that there are concurrent operations on deleted element (tombstones could be included in layer search)
+            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
+            labeltype label_replaced = getExternalLabel(internal_id_replaced);
+            setExternalLabel(internal_id_replaced, label);
+
+            label_lookup_.erase(label_replaced);
+            label_lookup_[label] = internal_id_replaced;
+            lock_table.unlock();
+
+            unmarkDeletedInternal(internal_id_replaced);
+
+            // update the feature vector associated with existing point with new vector
+            memcpy(getDataByInternalId(internal_id_replaced), data_point, data_size_);
+
+            int maxLevelCopy = maxlevel_;
+            tableint entryPointCopy = enterpoint_node_;
+            // If point to be updated is entry point and graph just contains single element then just return.
+            if (entryPointCopy == internal_id_replaced && cur_element_count == 1)
+                return used_repl_cand;
+
+            int elemLevel = element_levels_[internal_id_replaced];
+
+            // Use neighbor update for non-candidate neighbor replacements if config is set.
+            if(use_neigh_update && used_repl_cand == 0) {
+                // First update previous neighbors at all levels
+                for (int layer = 0; layer <= elemLevel; layer++) {
+                    std::unordered_set<tableint> sCand;
+                    std::unordered_set<tableint> sNeigh;
+                    std::vector<tableint> listOneHop = getConnectionsWithLock(internal_id_replaced, layer);
+                    if (listOneHop.size() == 0)
+                        continue;
+
+                    sCand.insert(internal_id_replaced);
+
+                    for (auto&& elOneHop : listOneHop) {
+                        sCand.insert(elOneHop);
+
+                        // if (distribution(update_probability_generator_) > 1.0)
+                        //     continue;
+
+                        sNeigh.insert(elOneHop);
+
+                        std::vector<tableint> listTwoHop = getConnectionsWithLock(elOneHop, layer);
+                        for (auto&& elTwoHop : listTwoHop) {
+                            sCand.insert(elTwoHop);
+                        }
+                    }
+
+                    for (auto&& neigh : sNeigh) {
+                        // if (neigh == internalId)
+                        //     continue;
+
+                        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidates;
+                        size_t size = sCand.find(neigh) == sCand.end() ? sCand.size() : sCand.size() - 1;  // sCand guaranteed to have size >= 1
+                        size_t elementsToKeep = std::min(ef_construction_, size);
+                        for (auto&& cand : sCand) {
+                            if (cand == neigh)
+                                continue;
+
+                            dist_t distance = fstdistfunc_(getDataByInternalId(neigh), getDataByInternalId(cand), dist_func_param_);
+                            if (candidates.size() < elementsToKeep) {
+                                candidates.emplace(distance, cand);
+                            } else {
+                                if (distance < candidates.top().first) {
+                                    candidates.pop();
+                                    candidates.emplace(distance, cand);
+                                }
+                            }
+                        }
+
+                        // Retrieve neighbours using heuristic and set connections.
+                        getNeighborsByHeuristic2(candidates, layer == 0 ? maxM0_ : maxM_);
+
+                        {
+                            std::unique_lock <std::mutex> lock(link_list_locks_[neigh]);
+                            linklistsizeint *ll_cur;
+                            ll_cur = get_linklist_at_level(neigh, layer);
+                            size_t candSize = candidates.size();
+                            setListCount(ll_cur, candSize);
+                            tableint *data = (tableint *) (ll_cur + 1);
+                            for (size_t idx = 0; idx < candSize; idx++) {
+                                data[idx] = candidates.top().second;
+                                candidates.pop();
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update links at base layer
+            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
+            while (topCandidates.size() > 0) {
+                // Filter out self loop
+                if (topCandidates.top().second != internal_id_replaced)
+                    filteredTopCandidates.push(topCandidates.top());
+
+                topCandidates.pop();
+            }
+            // Since element_levels_ is being used to get `dataPointLevel`, there could be cases where `topCandidates` could just contains entry point itself.
+            // To prevent self loops, the `topCandidates` is filtered and thus can be empty.
+            if (filteredTopCandidates.size() > 0) {
+                mutuallyConnectNewElement(data_point, internal_id_replaced, filteredTopCandidates, 0, true);
+            }
+
+            // If replaced node exists at higher levels, then update the links at those levels
+            if (elemLevel > 0) {
+                tableint currObj = entryPointCopy;
+                if (elemLevel < maxLevelCopy) {
+                    dist_t curdist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
+                    for (int level = maxLevelCopy; level > elemLevel; level--) {
+                        bool changed = true;
+                        while (changed) {
+                            changed = false;
+                            unsigned int *data;
+                            std::unique_lock <std::mutex> lock(link_list_locks_[currObj]);
+                            data = get_linklist_at_level(currObj, level);
+                            int size = getListCount(data);
+                            tableint *datal = (tableint *) (data + 1);
+        #ifdef USE_SSE
+                            _mm_prefetch(getDataByInternalId(*datal), _MM_HINT_T0);
+        #endif
+                            for (int i = 0; i < size; i++) {
+        #ifdef USE_SSE
+                                _mm_prefetch(getDataByInternalId(*(datal + i + 1)), _MM_HINT_T0);
+        #endif
+                                tableint cand = datal[i];
+                                dist_t d = fstdistfunc_(data_point, getDataByInternalId(cand), dist_func_param_);
+                                if (d < curdist) {
+                                    curdist = d;
+                                    currObj = cand;
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (elemLevel > maxLevelCopy)
+                    throw std::runtime_error("Level of item to be updated cannot be bigger than max level");
+
+                for (int level = elemLevel; level >= 1; level--) { // level >= 1 because level 0 is already updated
+                    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates;
+                    if(include_tombstones_search_layer) {
+                        topCandidates = searchBaseLayerIncludeTombstones(
+                                currObj, data_point, level);
+                    } else {
+                        topCandidates = searchBaseLayer(
+                                currObj, data_point, level);
+                    }
+
+                    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
+                    while (topCandidates.size() > 0) {
+                        if (topCandidates.top().second != internal_id_replaced)
+                            filteredTopCandidates.push(topCandidates.top());
+
+                        topCandidates.pop();
+                    }
+
+                    // Since element_levels_ is being used to get `dataPointLevel`, there could be cases where `topCandidates` could just contains entry point itself.
+                    // To prevent self loops, the `topCandidates` is filtered and thus can be empty.
+                    if (filteredTopCandidates.size() > 0) {
+                        bool epDeleted = isMarkedDeleted(entryPointCopy);
+                        if (epDeleted) {
+                            filteredTopCandidates.emplace(fstdistfunc_(data_point, getDataByInternalId(entryPointCopy), dist_func_param_), entryPointCopy);
+                            if (filteredTopCandidates.size() > ef_construction_)
+                                filteredTopCandidates.pop();
+                        }
+
+                        currObj = mutuallyConnectNewElement(data_point, internal_id_replaced, filteredTopCandidates, level, true);
+                    }
+                }
+            }
+        }
+        return used_repl_cand;
+    }
+
 
 
     
