@@ -65,6 +65,13 @@ void DatabaseSetup::initializeResultsTable(Connection& con, const std::string& t
     con.Query(results_query);
 }
 
+void DatabaseSetup::initializeReplMethodDistTable(Connection& con, const std::string& table_name) {
+    std::string repl_method_dist_query = "CREATE OR REPLACE TABLE " + table_name + "_repl_method_dist (" +
+                std::string("dataset VARCHAR, iteration INT, vec_nr INT, ") +
+                std::string("used_repl_cand INT, duration FLOAT);");
+    con.Query(repl_method_dist_query);
+}
+
 void DatabaseSetup::initializeBMTable(Connection& con, const std::string& table_name) {
     std::string bm_stats_query = "CREATE OR REPLACE TABLE memory." + table_name + "_bm_stats (" +
             std::string("dataset VARCHAR, iteration INT, num_queries INT, num_del_add INT, ") +

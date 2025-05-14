@@ -21,6 +21,7 @@ public:
     static void setupTestTable(Connection& con, const std::string& table_name, int vector_dimensionality);
     static void setupFullDataset(Connection& con, const DatasetConfig& config);
     static void initializeResultsTable(Connection& con, const std::string& table_name);
+    static void initializeReplMethodDistTable(Connection& con, const std::string& table_name);
     static void initializeBMTable(Connection& con, const std::string& table_name);
     static void intializeEarlyTermTable(Connection& con);
     static void exportResultsToCSV(Connection& con, const std::string& table_name);
