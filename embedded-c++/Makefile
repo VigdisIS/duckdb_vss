@@ -112,14 +112,17 @@ run-all-repl-cand-hnswlib-experiments: build-repl-cand-hnswlib
 
 
 # current
-run-repl-cand-and-unreachable: build-repl-cand-hnswlib build-hnswlib
+run-repl-cand-and-hnswlib: build-repl-cand-hnswlib build-hnswlib
 	./build/repl_cand_hnswlib/full_coverage
 	./build/repl_cand_hnswlib/new_data
 	./build/repl_cand_hnswlib/random
 	./build/repl_cand_hnswlib/unreachable_points_sampl_reachable
-	./build/hnswlib/unreachable_points_sampl_reachable
 	./build/repl_cand_hnswlib/unreachable_points_sampl_all
+	./build/hnswlib/unreachable_points_sampl_reachable
 	./build/hnswlib/unreachable_points_sampl_all
+	./build/hnswlib/random
+	./build/hnswlib/full_coverage
+	./build/hnswlib/new_data
 	
 
 # only experiments in order (no setup)

@@ -1,0 +1,25 @@
+# Build directory for usearch experiments
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/usearch)
+
+# usearch executables
+add_executable(usearch_random random.cpp)
+add_executable(usearch_full_coverage full_coverage.cpp)
+add_executable(usearch_new_data new_data.cpp)
+add_executable(usearch_unreachable_points_sampl_all unreachable_points_sampl_all.cpp)
+add_executable(usearch_unreachable_points_sampl_reachable unreachable_points_sampl_reachable.cpp)
+add_executable(usearch_create_indexes create_index.cpp)
+
+set_target_properties(usearch_random PROPERTIES OUTPUT_NAME random)
+set_target_properties(usearch_full_coverage PROPERTIES OUTPUT_NAME full_coverage)
+set_target_properties(usearch_new_data PROPERTIES OUTPUT_NAME new_data)
+set_target_properties(usearch_unreachable_points_sampl_all PROPERTIES OUTPUT_NAME unreachable_points_sampl_all)
+set_target_properties(usearch_unreachable_points_sampl_reachable PROPERTIES OUTPUT_NAME unreachable_points_sampl_reachable)
+set_target_properties(usearch_create_indexes PROPERTIES OUTPUT_NAME create_indexes)
+
+# Link libraries
+target_link_libraries(usearch_random usearch_utils duckdb)
+target_link_libraries(usearch_full_coverage usearch_utils duckdb)
+target_link_libraries(usearch_new_data usearch_utils duckdb)
+target_link_libraries(usearch_unreachable_points_sampl_all usearch_utils duckdb)
+target_link_libraries(usearch_unreachable_points_sampl_reachable usearch_utils duckdb)
+target_link_libraries(usearch_create_indexes usearch_utils duckdb)
