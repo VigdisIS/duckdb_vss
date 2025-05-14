@@ -1,0 +1,25 @@
+# Build directory for hnswlib experiments
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/hnswlib)
+
+# hnswlib executables
+add_executable(hnswlib_random random.cpp)
+add_executable(hnswlib_full_coverage full_coverage.cpp)
+add_executable(hnswlib_new_data new_data.cpp)
+add_executable(hnswlib_unreachable_points_sampl_all unreachable_points_sampl_all.cpp)
+add_executable(hnswlib_unreachable_points_sampl_reachable unreachable_points_sampl_reachable.cpp)
+add_executable(hnswlib_create_indexes create_index.cpp)
+
+set_target_properties(hnswlib_random PROPERTIES OUTPUT_NAME random)
+set_target_properties(hnswlib_full_coverage PROPERTIES OUTPUT_NAME full_coverage)
+set_target_properties(hnswlib_new_data PROPERTIES OUTPUT_NAME new_data)
+set_target_properties(hnswlib_unreachable_points_sampl_all PROPERTIES OUTPUT_NAME unreachable_points_sampl_all)
+set_target_properties(hnswlib_unreachable_points_sampl_reachable PROPERTIES OUTPUT_NAME unreachable_points_sampl_reachable)
+set_target_properties(hnswlib_create_indexes PROPERTIES OUTPUT_NAME create_indexes)
+
+# Link libraries
+target_link_libraries(hnswlib_random hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_full_coverage hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_new_data hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_unreachable_points_sampl_all hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_unreachable_points_sampl_reachable hnswlib_utils usearch_utils duckdb)
+target_link_libraries(hnswlib_create_indexes hnswlib_utils usearch_utils duckdb)
