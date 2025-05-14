@@ -10,6 +10,7 @@ using namespace duckdb;
 using namespace hnswlib;
 
 std::string experiment;
+std::string alg_config;
 
 // ==================== Main New Data USearch Runner ====================
 class HNSWLibNewDataRunner {
@@ -19,9 +20,11 @@ private:
     std::vector<DatasetConfig> datasets;
     int max_iterations;
     int threads;
+    bool use_neigh_update;
+    bool include_tombstones;
 
 public:
-HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
+HNSWLibNewDataRunner(int iterations, int threads, bool use_neigh_update, bool include_tombstones) : db(nullptr), con(db), max_iterations(iterations), threads(threads), use_neigh_update(use_neigh_update), include_tombstones(include_tombstones) {
         con.Query("SET THREADS TO " + std::to_string(threads) + ";");
         datasets = DatabaseSetup::getDatasetConfigs();
     }
@@ -43,6 +46,7 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
 
             // Setup database tables
             DatabaseSetup::initializeResultsTable(con, dataset.name);
+            DatabaseSetup::initializeReplMethodDistTable(con, dataset.name);
             DatabaseSetup::initializeBMTable(con, dataset.name + "_del");
             DatabaseSetup::initializeBMTable(con, dataset.name + "_add");
             DatabaseSetup::initializeBMTable(con, dataset.name + "_search");
@@ -65,8 +69,6 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
                 index_map[key] = value;
             }
             index_map_file.close();
-            
-            index.resizeIndex(dataset_cardinality);
 
             // Partition dataset into 20
             auto partitions = QueryRunner::partitionDataset(con, dataset.name, 20);
@@ -82,6 +84,7 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             Appender add_bm_appender(con, dataset.name + "_add_bm");
             Appender search_bm_appender(con, dataset.name + "_search_bm");
             Appender early_termination_appender(con, "early_terminated_queries");
+            Appender repl_method_dist_appender(con, dataset.name + "_repl_method_dist");
 
             // Get test vectors
             auto test_vectors = con.Query("SELECT * FROM " + dataset.name + "_test order by id asc;");
@@ -146,8 +149,8 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
                     new_vectors.push_back(ExtractFloatVector(partitions_to_add->GetValue(1, i)));
                 }
                 // Add vectors from second half
-                size_t added = HNSWLibIndexOperations::parallelAdd(index, new_vectors, new_indices,  dataset.name, 
-                    iteration, add_bm_appender, threads, true);
+                size_t added = HNSWLibIndexOperations::parallelAddReplCand(index, new_vectors, new_indices,  dataset.name, 
+                    iteration, add_bm_appender, repl_method_dist_appender, threads, use_neigh_update, include_tombstones);
 
                 // Log index stats
                 index.log_memory_stats();
@@ -184,6 +187,7 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             add_bm_appender.Close();
             search_bm_appender.Close();
             gt_appender.Close();
+            repl_method_dist_appender.Close();
 
             // Calculate recall and aggregate stats
             QueryRunner::calculateRecall(con, dataset.name);
@@ -195,8 +199,8 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             QueryRunner::aggregateBMStats(con, dataset.name + "_search", test_vectors_count, (dataset_cardinality/partitions.size()));
 
             // Output experiment results to CSV
-            // dir name: usearch/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{partition_size}p/
-            std::string output_dir = "repl_cand_hnswlib/results/newdata/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string((int) (dataset_cardinality/partitions.size())) + "r/";
+            // dir name: repl_cand_hnswlib/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{partition_size}p/
+            std::string output_dir = "repl_cand_hnswlib/results/" + alg_config + "/newdata/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string((int) (dataset_cardinality/partitions.size())) + "r/";
             // Create the directory if it doesn't exist
             std::filesystem::create_directories(output_dir);
             FileOperations::cleanupOutputFiles(output_dir);
@@ -205,11 +209,11 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             QueryRunner::outputTableAsCSV(con, dataset.name + "_del_bm_stats", output_dir + "bm_delete.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_add_bm_stats", output_dir + "bm_add.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_search_bm_stats", output_dir + "bm_search.csv");
+            QueryRunner::outputTableAsCSV(con, dataset.name + "_repl_method_dist", output_dir + "replace_method_distribution.csv");
 
             // Move lib output files to output dir
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
-            FileOperations::copyFileTo("replace_method_distribution.csv", output_dir + "replace_method_distribution.csv");
 
             // Save the final index
             std::string s_path = output_dir + "new_data_" + dataset.name + "_index.bin";
@@ -243,21 +247,61 @@ int main() {
     experiment = "repl_cand_hnswlib_";
 
     try {
+        alg_config = "00";
         // fashion_mnist
-        HNSWLibNewDataRunner fm_runner(max_iterations, executor_threads);
-        fm_runner.runTest(0);
-
+        HNSWLibNewDataRunner fm_00_runner(max_iterations, executor_threads, false, false);
+        fm_00_runner.runTest(0);
         // mnist
-        HNSWLibNewDataRunner m_runner(max_iterations, executor_threads);
-        fm_runner.runTest(1);
-
+        HNSWLibNewDataRunner m_00_runner(max_iterations, executor_threads, false, false);
+        m_00_runner.runTest(1);
         // sift
-        HNSWLibNewDataRunner s_runner(max_iterations, executor_threads);
-        s_runner.runTest(2);
-
+        HNSWLibNewDataRunner s_00_runner(max_iterations, executor_threads, false, false);
+        s_00_runner.runTest(2);
         // gist
-        HNSWLibNewDataRunner g_runner(max_iterations, executor_threads);
-        fm_runner.runTest(3);
+        HNSWLibNewDataRunner g_00_runner(max_iterations, executor_threads, false, false);
+        g_00_runner.runTest(3);
+
+        alg_config = "01";
+        // fashion_mnist
+        HNSWLibNewDataRunner fm_01_runner(max_iterations, executor_threads, false, true);
+        fm_01_runner.runTest(0);
+        // mnist
+        HNSWLibNewDataRunner m_01_runner(max_iterations, executor_threads, false, true);
+        m_01_runner.runTest(1);
+        // sift
+        HNSWLibNewDataRunner s_01_runner(max_iterations, executor_threads, false, true);
+        s_01_runner.runTest(2);
+        // gist
+        HNSWLibNewDataRunner g_01_runner(max_iterations, executor_threads, false, true);
+        g_01_runner.runTest(3);
+
+        alg_config = "10";
+        // fashion_mnist
+        HNSWLibNewDataRunner fm_10_runner(max_iterations, executor_threads, true, false);
+        fm_10_runner.runTest(0);
+        // mnist
+        HNSWLibNewDataRunner m_10_runner(max_iterations, executor_threads, true, false);
+        m_10_runner.runTest(1);
+        // sift
+        HNSWLibNewDataRunner s_10_runner(max_iterations, executor_threads, true, false);
+        s_10_runner.runTest(2);
+        // gist
+        HNSWLibNewDataRunner g_10_runner(max_iterations, executor_threads, true, false);
+        g_10_runner.runTest(3);
+
+        alg_config = "11";
+        // fashion_mnist
+        HNSWLibNewDataRunner fm_11_runner(max_iterations, executor_threads, true, true);
+        fm_11_runner.runTest(0);
+        // mnist
+        HNSWLibNewDataRunner m_11_runner(max_iterations, executor_threads, true, true);
+        m_11_runner.runTest(1);
+        // sift
+        HNSWLibNewDataRunner s_11_runner(max_iterations, executor_threads, true, true);
+        s_11_runner.runTest(2);
+        // gist
+        HNSWLibNewDataRunner g_11_runner(max_iterations, executor_threads, true, true);
+        g_11_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {

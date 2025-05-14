@@ -10,6 +10,7 @@ using namespace duckdb;
 using namespace hnswlib;
 
 std::string experiment;
+std::string alg_config;
 
 // ==================== Main Full Coverage USearch Runner ====================
 class HNSWLibFullCoverageRunner {
@@ -19,9 +20,11 @@ private:
     std::vector<DatasetConfig> datasets;
     int max_iterations;
     int threads;
+    bool use_neigh_update;
+    bool include_tombstones;
 
 public:
-HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
+HNSWLibFullCoverageRunner(int iterations, int threads, bool use_neigh_update, bool include_tombstones) : db(nullptr), con(db), max_iterations(iterations), threads(threads), use_neigh_update(use_neigh_update), include_tombstones(include_tombstones) {
         con.Query("SET THREADS TO " + std::to_string(threads) + ";");
         datasets = DatabaseSetup::getDatasetConfigs();
     }
@@ -43,6 +46,7 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
 
             // Setup database tables
             DatabaseSetup::initializeResultsTable(con, dataset.name);
+            DatabaseSetup::initializeReplMethodDistTable(con, dataset.name);
             DatabaseSetup::initializeBMTable(con, dataset.name + "_del");
             DatabaseSetup::initializeBMTable(con, dataset.name + "_add");
             DatabaseSetup::initializeBMTable(con, dataset.name + "_search");
@@ -78,6 +82,7 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
             Appender del_bm_appender(con, dataset.name + "_del_bm");
             Appender add_bm_appender(con, dataset.name + "_add_bm");
             Appender search_bm_appender(con, dataset.name + "_search_bm");
+            Appender repl_method_dist_appender(con, dataset.name + "_repl_method_dist");
             Appender early_termination_appender(con, "early_terminated_queries");
 
             // Initial query run (multi-threaded)
@@ -132,8 +137,8 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
                 }
                 
                 // Re-add vectors from this partition to the index
-                size_t added = HNSWLibIndexOperations::parallelAdd(index, deleted_vectors, new_indices,  dataset.name, 
-                                                        iteration, add_bm_appender, threads, true);
+                size_t added = HNSWLibIndexOperations::parallelAddReplCand(index, deleted_vectors, new_indices,  dataset.name, 
+                                                        iteration, add_bm_appender, repl_method_dist_appender, threads, use_neigh_update, include_tombstones);
 
                 // Log index stats
                 index.log_memory_stats();
@@ -151,7 +156,7 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
             del_bm_appender.Close();
             add_bm_appender.Close();
             search_bm_appender.Close();
-
+            repl_method_dist_appender.Close();
             // Calculate recall and aggregate stats
             QueryRunner::calculateRecall(con, dataset.name);
             QueryRunner::aggregateRecallStats(con, dataset.name);
@@ -162,8 +167,8 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
             QueryRunner::aggregateBMStats(con, dataset.name + "_search", test_vectors_count, (dataset_cardinality/partitions.size()));
 
             // Output experiment results to CSV
-            // dir name: usearch/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{partition_size}p/
-            std::string output_dir = "repl_cand_hnswlib/results/fullcoverage/" + experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string((int) (dataset_cardinality/partitions.size())) + "r/";
+            // dir name: repl_cand_hnswlib/results/{alg_config}/fullcoverage/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{partition_size}p/
+            std::string output_dir = "repl_cand_hnswlib/results/" + alg_config + "/fullcoverage/" + experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string((int) (dataset_cardinality/partitions.size())) + "r/";
             // Create the directory if it doesn't exist
             std::filesystem::create_directories(output_dir);
             FileOperations::cleanupOutputFiles(output_dir);
@@ -172,11 +177,11 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
             QueryRunner::outputTableAsCSV(con, dataset.name + "_del_bm_stats", output_dir + "bm_delete.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_add_bm_stats", output_dir + "bm_add.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_search_bm_stats", output_dir + "bm_search.csv");
+            QueryRunner::outputTableAsCSV(con, dataset.name + "_repl_method_dist", output_dir + "replace_method_distribution.csv");
 
             // Move lib output files to output dir
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
-            FileOperations::copyFileTo("replace_method_distribution.csv", output_dir + "replace_method_distribution.csv");
             
             // Save the final index
             std::string s_path = output_dir + "full_coverage_" + dataset.name + "_index.bin";
@@ -209,22 +214,63 @@ int main() {
     experiment = "repl_cand_hnswlib_";
 
     try {
+
+        alg_config = "00";
         // fashion_mnist
-        HNSWLibFullCoverageRunner fm_runner(max_iterations, executor_threads);
-        fm_runner.runTest(0);
-
+        HNSWLibFullCoverageRunner fm_00_runner(max_iterations, executor_threads, false, false);
+        fm_00_runner.runTest(0);
         // mnist
-        HNSWLibFullCoverageRunner m_runner(max_iterations, executor_threads);
-        fm_runner.runTest(1);
-
-          // sift
-        HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
-        fm_runner.runTest(2);
-
+        HNSWLibFullCoverageRunner m_00_runner(max_iterations, executor_threads, false, false);
+        m_00_runner.runTest(1);
+        // sift
+        HNSWLibFullCoverageRunner s_00_runner(max_iterations, executor_threads, false, false);
+        s_00_runner.runTest(2);
         // gist
-        HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
-        fm_runner.runTest(3);
+        HNSWLibFullCoverageRunner g_00_runner(max_iterations, executor_threads, false, false);
+        g_00_runner.runTest(3);
 
+        alg_config = "01";
+        // fashion_mnist
+        HNSWLibFullCoverageRunner fm_01_runner(max_iterations, executor_threads, false, true);
+        fm_01_runner.runTest(0);
+        // mnist
+        HNSWLibFullCoverageRunner m_01_runner(max_iterations, executor_threads, false, true);
+        m_01_runner.runTest(1);
+        // sift
+        HNSWLibFullCoverageRunner s_01_runner(max_iterations, executor_threads, false, true);
+        s_01_runner.runTest(2);
+        // gist
+        HNSWLibFullCoverageRunner g_01_runner(max_iterations, executor_threads, false, true);
+        g_01_runner.runTest(3);
+
+        alg_config = "10";
+        // fashion_mnist
+        HNSWLibFullCoverageRunner fm_10_runner(max_iterations, executor_threads, true, false);
+        fm_10_runner.runTest(0);
+        // mnist
+        HNSWLibFullCoverageRunner m_10_runner(max_iterations, executor_threads, true, false);
+        m_10_runner.runTest(1);
+        // sift
+        HNSWLibFullCoverageRunner s_10_runner(max_iterations, executor_threads, true, false);
+        s_10_runner.runTest(2);
+        // gist
+        HNSWLibFullCoverageRunner g_10_runner(max_iterations, executor_threads, true, false);
+        g_10_runner.runTest(3);
+
+        alg_config = "11";
+        // fashion_mnist
+        HNSWLibFullCoverageRunner fm_11_runner(max_iterations, executor_threads, true, true);
+        fm_11_runner.runTest(0);
+        // mnist
+        HNSWLibFullCoverageRunner m_11_runner(max_iterations, executor_threads, true, true);
+        m_11_runner.runTest(1);
+        // sift
+        HNSWLibFullCoverageRunner s_11_runner(max_iterations, executor_threads, true, true);
+        s_11_runner.runTest(2);
+        // gist
+        HNSWLibFullCoverageRunner g_11_runner(max_iterations, executor_threads, true, true);
+        g_11_runner.runTest(3);
+        
         return 0;
     } catch (std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;

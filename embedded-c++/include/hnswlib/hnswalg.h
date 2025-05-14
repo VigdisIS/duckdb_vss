@@ -584,6 +584,44 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
     }
 
+    void getNeighborsByHeuristic2AlreadySorted(
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &neighbors,
+        const size_t M) {
+        if (top_candidates.size() < M) {
+            return;
+        }
+
+        std::vector<std::pair<dist_t, tableint>> return_list;
+
+        while (top_candidates.size()) {
+            if (return_list.size() >= M)
+                break;
+            std::pair<dist_t, tableint> curent_pair = top_candidates.top();
+            dist_t dist_to_query = -curent_pair.first;
+            top_candidates.pop();
+            bool good = true;
+
+            for (std::pair<dist_t, tableint> second_pair : return_list) {
+                dist_t curdist =
+                        fstdistfunc_(getDataByInternalId(second_pair.second),
+                                        getDataByInternalId(curent_pair.second),
+                                        dist_func_param_);
+                if (curdist < dist_to_query) {
+                    good = false;
+                    break;
+                }
+            }
+            if (good) {
+                return_list.push_back(curent_pair);
+            }
+        }
+
+        for (std::pair<dist_t, tableint> curent_pair : return_list) {
+            neighbors.emplace(-curent_pair.first, curent_pair.second);
+        }
+    }
+
 
     linklistsizeint *get_linklist0(tableint internal_id) const {
         return (linklistsizeint *) (data_level0_memory_ + internal_id * size_data_per_element_ + offsetLevel0_);
@@ -1094,7 +1132,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
     }
 
 
-    void updatePoint(const void *dataPoint, tableint internalId, float updateNeighborProbability) {
+    void updatePoint(const void *dataPoint, tableint internalId, float updateNeighborProbability, bool include_tombstones_search_layer = false) {
         // update the feature vector associated with existing point with new vector
         memcpy(getDataByInternalId(internalId), dataPoint, data_size_);
 
@@ -1169,10 +1207,10 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             }
         }
 
-        repairConnectionsForUpdate(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy);
+        repairConnectionsForUpdate(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy, include_tombstones_search_layer);
     }
 
-    void updatePointReplCand(const void *dataPoint, tableint internalId) {
+    void updatePointReplCand(const void *dataPoint, tableint internalId, bool include_tombstones_search_layer = false) {
         // update the feature vector associated with existing point with new vector
         memcpy(getDataByInternalId(internalId), dataPoint, data_size_);
 
@@ -1181,7 +1219,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
         int elemLevel = element_levels_[internalId];
 
-        repairConnectionsForUpdateReplCand(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy);
+        repairConnectionsForUpdateReplCand(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy, include_tombstones_search_layer);
     }
 
     /*
@@ -1189,8 +1227,9 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
     * If replacement of deleted elements is enabled and the delete list is not empty, 
     * run addPointReplCand which attempts to replace the point with a candidate neighbor
     */
-    int addPointReplCand(const void *data_point, labeltype label, bool replace_deleted = true) {
+    int addPointReplCand(const void *data_point, labeltype label, bool replace_deleted = true, bool use_neigh_update = false, bool include_tombstones_search_layer = true) {
         int used_repl_cand = 0;
+
         if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
             throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
         }
@@ -1216,46 +1255,15 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         } else {
             tableint internal_id_replaced;
             std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
-            internal_id_replaced = findCandToReplace(data_point, label, -1);
-            if (internal_id_replaced == -1) {
-                // // check if there is vacant place again
-                // is_vacant_place = !deleted_elements.empty();
-                // if (!is_vacant_place) {
-                //     std::cout << "❌ Delete list empty, adding new point" << std::endl;
-                //     addPoint(data_point, label, -1);
-                // } else {
-                    internal_id_replaced = *deleted_elements.begin();
-                    // // check if a point with the same label exists AND is tombstoned AND measure its distance to the new point
-                    // // IF dist == 0 and not found during findCandToReplace, then it is most likely unreachable
-                    // // thus we pop the node from the deleted list and replace it with the new vector 
-                    // // following the same logic as addPointReplCand 
-                    // // (same vector val, therefore same placement in vector space and can safely inherit neighborhood without updating it)
-                    // auto search = deleted_elements.find(label);
-                    // if (search != deleted_elements.end()) {
-                    //     tableint currObj = *search;
-                    //     dist_t d = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
-                    //     if(d == 0) {
-                    //         std::cout << "✅ Found same node in delete list with dist == 0, replacing it" << std::endl;
-                    //         internal_id_replaced = currObj;
-                    //     } else {
-                    //         // Node w same label does not have distance 0, thus it is not the same node
-                    //         // thus we pop first item from delete list and replace it with new vector
-                    //         std::cout << "ℹ️ Found same node in delete list but dist > 0, pop first item from delete list" << std::endl;
-                    //         internal_id_replaced = *deleted_elements.begin();
-                    //     }
-                    // } else {
-                    //     // Node w same label is not tombstoned and no tombstoned candidate 
-                    //     // found, thus we pop first item from delete list and replace it with new vector
-                    //     std::cout << "ℹ️ Node not in delete list, pop first item from delete list" << std::endl;
-                    //     internal_id_replaced = *deleted_elements.begin();
-                    // }
-                // }
+            auto result = findCandToReplace(data_point, label, -1);
+            if (result.candidate_id == -1) {
+                internal_id_replaced = *deleted_elements.begin();
             } else {
+                internal_id_replaced = result.candidate_id;
                 used_repl_cand = 1;
             }
     
             deleted_elements.erase(internal_id_replaced);
-
             lock_deleted_elements.unlock();
 
             // we assume that there are no concurrent operations on deleted element
@@ -1268,12 +1276,31 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             lock_table.unlock();
 
             unmarkDeletedInternal(internal_id_replaced);
-            updatePointReplCand(data_point, internal_id_replaced);
-            return used_repl_cand;
+
+            // std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> neighbors;
+
+            // getNeighborsByHeuristic2AlreadySorted(result.top_candidates, neighbors, maxM0_);
+
+            // Get neighbors getNeighborsByHeuristic2AlreadySorted
+            // if use updateNeighbors, first update neighbors of tombstoned node at base layer
+            // then update links of tombstoned node at base layer
+            // if replaced node max level > 0, run updatePoint until base + 1 layer, else run updatePointReplCand until base + 1 layer
+
+            // we have already done neighbors in base.
+
+            // mutuallyConnectNewElement(data_point, internal_id_replaced, result.top_candidates, 0, true);
+
+            if(use_neigh_update && used_repl_cand == 0) {
+                updatePoint(data_point, internal_id_replaced, 1.0, include_tombstones_search_layer);
+                return used_repl_cand;
+            }
+
+            updatePointReplCand(data_point, internal_id_replaced, include_tombstones_search_layer);
            
             // std::cout << "Running addPointReplCand" << std::endl;
             // addPointReplCand(data_point, label, -1);
         }
+        return used_repl_cand;
     }
 
     void repairConnectionsForUpdateReplCand(
@@ -1281,7 +1308,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         tableint entryPointInternalId,
         tableint dataPointInternalId,
         int dataPointLevel,
-        int maxLevel) {
+        int maxLevel,
+        bool include_tombstones_search_layer = false) {
         tableint currObj = entryPointInternalId;
         if (dataPointLevel < maxLevel) {
             dist_t curdist = fstdistfunc_(dataPoint, getDataByInternalId(currObj), dist_func_param_);
@@ -1317,8 +1345,14 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             throw std::runtime_error("Level of item to be updated cannot be bigger than max level");
 
         for (int level = dataPointLevel; level >= 0; level--) {
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates = searchBaseLayerIncludeTombstones(
-                    currObj, dataPoint, level);
+            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates;
+            if(include_tombstones_search_layer) {
+                topCandidates = searchBaseLayerIncludeTombstones(
+                        currObj, dataPoint, level);
+            } else {
+                topCandidates = searchBaseLayer(
+                        currObj, dataPoint, level);
+            }
 
             std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
             while (topCandidates.size() > 0) {
@@ -1348,7 +1382,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         tableint entryPointInternalId,
         tableint dataPointInternalId,
         int dataPointLevel,
-        int maxLevel) {
+        int maxLevel,
+        bool include_tombstones_search_layer = false) {
         tableint currObj = entryPointInternalId;
         if (dataPointLevel < maxLevel) {
             dist_t curdist = fstdistfunc_(dataPoint, getDataByInternalId(currObj), dist_func_param_);
@@ -1384,8 +1419,14 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             throw std::runtime_error("Level of item to be updated cannot be bigger than max level");
 
         for (int level = dataPointLevel; level >= 0; level--) {
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates = searchBaseLayerIncludeTombstones(
-                    currObj, dataPoint, level);
+            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates;
+            if(include_tombstones_search_layer) {
+                topCandidates = searchBaseLayerIncludeTombstones(
+                        currObj, dataPoint, level);
+            } else {
+                topCandidates = searchBaseLayer(
+                        currObj, dataPoint, level);
+            }
 
             std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
             while (topCandidates.size() > 0) {
@@ -1538,9 +1579,16 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         return cur_c;
     }
 
-    tableint findCandToReplace(const void *data_point, labeltype label, int level) {
-        tableint cur_c = -1;
-       
+    struct CandToReplaceResult {
+        tableint candidate_id;
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
+        
+        CandToReplaceResult() : candidate_id(-1) {}
+    };
+
+    CandToReplaceResult findCandToReplace(const void *data_point, labeltype label, int level) {
+        CandToReplaceResult result;
+
         int maxlevelcopy = maxlevel_;
         int curlevel = 0;
         tableint currObj = enterpoint_node_;
@@ -1584,19 +1632,27 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
                     top_candidates.pop();
             }
 
-            // Iterate through top candidates and check for tombstones
-            while (!top_candidates.empty()) {
-                auto current = top_candidates.top();  // Get the top element
+            result.top_candidates = top_candidates;
+
+            std::priority_queue<std::pair<dist_t, tableint>> queue_closest;
+            // std::vector<std::pair<dist_t, tableint>> return_list;
+            while (top_candidates.size() > 0) {
+                queue_closest.emplace(-top_candidates.top().first, top_candidates.top().second);
+                top_candidates.pop();
+            }
+
+            // Iterate through top candidates nearest neighbor first and check for tombstones
+            while (!queue_closest.empty()) {
+                auto current = queue_closest.top();  // Get the top element
                 // Get first tombstoned candidate if any
                 if (isMarkedDeleted(current.second)) {
                     // Get internal id of tombstoned candidate
-                    tableint internal_id_replaced = current.second;
-
-                    return internal_id_replaced;
+                    result.candidate_id = current.second;
+                    break;
                 }
-                top_candidates.pop();  // Remove the top element
+                queue_closest.pop();  // Remove the top element
             }
-            return cur_c;
+            return result;
         }
     }
 
