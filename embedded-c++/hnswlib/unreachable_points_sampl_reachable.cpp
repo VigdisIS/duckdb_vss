@@ -134,32 +134,16 @@ HNSWLibExclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), ma
             
             unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
-            // Update available points
-            std::unordered_set<size_t> available_points;
-            available_points.reserve(dataset_cardinality);
-
-            for (size_t j = 0; j < results[0].size(); ++j) {
-                size_t predicted_index = results[0][j];
-                if(index_map.find(predicted_index) == index_map.end()){
-                    std::runtime_error("error, index_map doesn't contain indice");
-                }
-                predicted_index = index_map.at(predicted_index);
-                if (true_set.find(predicted_index) != true_set.end()) {
-                    available_points.insert(predicted_index);
-                }
-            }
-            assert(available_points.size() == results.front().size());
+            std::vector<std::vector<size_t>> results_curr_it = results;
 
             std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
-            std::cout << "(" << available_points.size() << " available)" << std::endl;
 
             // Run iterations
-            size_t last_idx = 0;
             for (int iteration = 1; iteration <= max_iterations; iteration++) {
                 std::cout << "▶️ ITERATION " << iteration << " ▶️" << std::endl;
 
                 // Get sample vectors to delete and re-add
-                auto sample_vecs = QueryRunner::getSampleReachableVectors(con, dataset.name, sample_size, available_points);
+                auto sample_vecs = QueryRunner::getSampleReachableVectors(con, dataset.name, sample_size, results_curr_it[0]);
 
                 std::unordered_set<size_t> delete_indices_set;
 
@@ -207,6 +191,7 @@ HNSWLibExclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), ma
             
                 // Get unreachable points
                 index.setEf(1000000);
+                std::vector<std::vector<size_t>> results = {std::vector<size_t>(query_indices.begin(), query_indices.end())};
                 util::query_hnsw_unreachable(index, queries_tmp, 1000000, executor_threads, results);
                 for (size_t j = 0; j < queries_tmp.size(); ++j) {
                     std::cout << "Query " << j << ":" << std::endl;
@@ -219,23 +204,9 @@ HNSWLibExclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), ma
 
                 unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
-                // Update available points
-                available_points.clear();
-
-                for (size_t j = 0; j < results[0].size(); ++j) {
-                    size_t predicted_index = results[0][j];
-                    if(index_map.find(predicted_index) == index_map.end()){
-                        std::runtime_error("error, index_map doesn't contain indice");
-                    }
-                    predicted_index = index_map.at(predicted_index);
-                    if (true_set.find(predicted_index) != true_set.end()) {
-                        available_points.insert(predicted_index);
-                    }
-                }
-                assert(available_points.size() == results.front().size());
+                results_curr_it = results;
 
                 std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
-                std::cout << "(" << available_points.size() << " available)" << std::endl;
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }
@@ -310,13 +281,13 @@ int main() {
     experiment = "hnswlib_";
 
     try {
-        // // fashion_mnist
-        // HNSWLibExclusiveUPRunner fm_runner(max_iterations, executor_threads);
-        // fm_runner.runTest(0);
+        // fashion_mnist
+        HNSWLibExclusiveUPRunner fm_runner(max_iterations, executor_threads);
+        fm_runner.runTest(0);
 
-        // // mnist
-        // HNSWLibExclusiveUPRunner m_runner(max_iterations, executor_threads);
-        // m_runner.runTest(1);
+        // mnist
+        HNSWLibExclusiveUPRunner m_runner(max_iterations, executor_threads);
+        m_runner.runTest(1);
 
         // sift
         HNSWLibExclusiveUPRunner s_runner(max_iterations, executor_threads);
