@@ -305,6 +305,76 @@ def plot_unreachable_points_over_time(df: pd.DataFrame,
     except Exception as e:
         print(f"Error plotting unreachable points for {filename}: {str(e)}")
 
+def plot_replace_method_distribution(
+    df: pd.DataFrame,
+    title: str,
+    save_dir: str,
+    filename: str
+) -> None:
+    """Create a stacked bar chart showing distribution of replacement candidates usage by iteration."""
+    setup_plot_style()
+    
+    # Check if DataFrame is empty
+    if df.empty:
+        print(f"Warning: No data available for {filename}")
+        return
+    
+    # Required columns check
+    required_cols = ['iteration', 'used_repl_cand']
+    if not all(col in df.columns for col in required_cols):
+        print(f"Warning: Missing required columns for {filename}")
+        return
+    
+    # Get min and max iteration for x-axis limits
+    min_iter = df['iteration'].min()
+    max_iter = df['iteration'].max()
+    
+    # Group by iteration and used_repl_cand, count occurrences
+    grouped = df.groupby(['iteration', 'used_repl_cand']).size().unstack(fill_value=0)
+    
+    # Ensure both 0 and 1 columns exist
+    if 0 not in grouped.columns:
+        grouped[0] = 0
+    if 1 not in grouped.columns:
+        grouped[1] = 0
+    
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    # Create stacked bar chart
+    bottom_bars = grouped[1]  # used_repl_cand == 1 (bottom)
+    top_bars = grouped[0]     # used_repl_cand == 0 (top)
+    
+    # Plot bottom bars (used_repl_cand == 1)
+    ax.bar(grouped.index, bottom_bars, label='Replacement Used', color='#4169E1')
+    
+    # Plot top bars (used_repl_cand == 0)
+    ax.bar(grouped.index, top_bars, bottom=bottom_bars, label='No Replacement', color='#A9CCE3')
+    
+    # Set title and labels
+    ax.set_title(title)
+    ax.set_xlabel('Iteration')
+    ax.set_ylabel('Count')
+    
+    # Set x-axis limits
+    ax.set_xlim(min_iter, max_iter)
+    
+    # Calculate tick spacing based on range
+    tick_spacing = max(1, (max_iter - min_iter) // 10)
+    ax.set_xticks(range(min_iter, max_iter + 1, tick_spacing))
+    
+    # Add legend
+    ax.legend()
+    
+    # Add grid
+    ax.grid(True, alpha=0.3)
+    
+    # Rotate x-axis labels for better readability
+    plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+    
+    # Save the plot
+    save_plot(fig, save_dir, filename)
+    plt.close()
+
 def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
     """Generate all search-related plots."""
     search_metrics = ['recall', 'computed_distances', 'visited_members']
@@ -343,6 +413,18 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                     search_df,
                     save_dir,
                     f'{scenario}_search_efficiency'
+                )
+            
+            # Replace method distribution plot 
+            # Add to the generate_search_analysis_plots function where the replace_method_path is handled
+            replace_method_path = os.path.join(dataset_path, 'replace_method_distribution.csv')
+            if os.path.exists(replace_method_path):
+                replace_method_df = load_csv_data(replace_method_path)
+                plot_replace_method_distribution(
+                    replace_method_df,
+                    f'Replace Method Distribution ({dataset_name})',
+                    save_dir,
+                    f'{scenario}_replace_method_distribution'
                 )
 
             # Unreachable points plots
