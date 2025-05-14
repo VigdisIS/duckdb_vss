@@ -77,15 +77,33 @@ unique_ptr<MaterializedQueryResult> QueryRunner::getSampleVectors(Connection& co
         std::to_string(rows)+ ";");
 }
 
-unique_ptr<MaterializedQueryResult> QueryRunner::getSampleReachableVectors(Connection& con, const std::string& table_name, int rows, std::unordered_set<size_t>& available_points) {
-    std::string available_points_str;
-    for (const auto& point : available_points) {
-        available_points_str += std::to_string(point) + ",";
+unique_ptr<MaterializedQueryResult> QueryRunner::getSampleReachableVectors(Connection& con, const std::string& table_name, int rows, std::vector<size_t>& available_points) {
+    std::string query = "SELECT * FROM " + table_name + "_train";
+    
+    if (available_points.empty()) {
+        // Handle empty set case - return empty result set
+        query += " WHERE 1=0";
+    } else if (available_points.size() == 1) {
+        // Handle single element case
+        query += " WHERE id = " + std::to_string(*available_points.begin());
+    } else {
+        // Handle multiple elements case
+        std::string available_points_str;
+        bool first = true;
+        
+        for (const auto& point : available_points) {
+            if (!first) {
+                available_points_str += ",";
+            }
+            available_points_str += std::to_string(point);
+            first = false;
+        }
+        
+        query += " WHERE id IN (" + available_points_str + ")";
     }
-    available_points_str.pop_back(); // Remove the last comma
-    return con.Query(
-        "SELECT * FROM " + table_name + "_train where id in (" + available_points_str + ") USING SAMPLE " +
-        std::to_string(rows)+ ";");
+    
+    query += " USING SAMPLE " + std::to_string(rows) + ";";
+    return con.Query(query);
 }
 
 std::vector<unique_ptr<MaterializedQueryResult>> QueryRunner::partitionDataset(
