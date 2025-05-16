@@ -10,6 +10,14 @@ import seaborn as sns
 from scripts.plots.plot_utils import (load_csv_data, calculate_error_bounds,
                         plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits)
 
+# Configuration descriptions
+CONFIG_INFO = {
+    "00": "No neighbor update, No tombstones",
+    "01": "No neighbor update, With tombstones",
+    "10": "With neighbor update, No tombstones",
+    "11": "With neighbor update, With tombstones"
+}
+
 def plot_benchmark_metrics(df: pd.DataFrame,
                          metric: str,
                          title: str,
@@ -135,7 +143,7 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
     except Exception as e:
         print(f"Error plotting benchmark correlations for {filename}: {str(e)}")
 
-def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
+def generate_benchmark_plots(experiment_paths: Dict[str, List[str]], config: str):
     """Generate all benchmark-related plots."""
     metrics = ['time']
     benchmark_files = ['bm_add.csv', 'bm_delete.csv', 'bm_search.csv']
@@ -146,11 +154,25 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
 
             # Extract dataset name from the folder path
             dataset_name = os.path.basename(dataset_path)
+            algorithm_name = os.path.basename(dataset_path)
             # Handle special case for fashion-mnist
+            print(dataset_name)
             if "fashion_mnist" in dataset_name:
                 dataset_name = "fashion-mnist"
             else:
-                dataset_name = dataset_name.split('_')[1]
+                if("cand" in dataset_name):
+                    dataset_name = dataset_name.split('_')[3]
+                else:
+                    dataset_name = dataset_name.split('_')[1]
+            
+            if "reset_first_candidate" in algorithm_name:
+                algorithm_name = "RFC"
+            elif "repl_cand" in algorithm_name:
+                algorithm_name = "RBC"
+            elif "hnswlib" in algorithm_name:
+                algorithm_name = "HNSWLib"
+            elif "usearch" in algorithm_name:
+                algorithm_name = "USearch"
 
             # Load benchmark data
             benchmark_dfs = {}
@@ -169,7 +191,7 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
                     plot_benchmark_metrics(
                         df,
                         metric,
-                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} - {scenario.title()} ({dataset_name})',
+                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                         f'{metric.title()} (seconds)',
                         save_dir,
                         f'{scenario}_{bm_file.replace(".csv", "")}_{metric}.png'
@@ -179,7 +201,7 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]]):
             if benchmark_dfs:
                 plot_benchmark_correlations(
                     benchmark_dfs,
-                    f'Operation Times Comparison - {scenario.title()} ({dataset_name})',
+                    f'Operation Times Comparison {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}_bm_times_comparison.png'
                 )

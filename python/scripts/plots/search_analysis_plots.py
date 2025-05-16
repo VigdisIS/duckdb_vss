@@ -9,11 +9,19 @@ import seaborn as sns
 from scripts.plots.plot_utils import (load_csv_data, calculate_error_bounds,
                         plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits)
 
+CONFIG_INFO = {
+    "00": "No neighbor update, No tombstones",
+    "01": "No neighbor update, With tombstones",
+    "10": "With neighbor update, No tombstones",
+    "11": "With neighbor update, With tombstones"
+}
+
 def plot_early_termination_analysis(
     dataset_name: str,
     df: pd.DataFrame,
     save_dir: str,
-    filename: str
+    filename: str,
+    config: str
 ) -> None:
     """Create multiple plots for early termination analysis using raw query data."""
     setup_plot_style()
@@ -53,7 +61,7 @@ def plot_early_termination_analysis(
                edgecolor='#4169E1',  # Royal blue for edge
                linewidth=0.5,  # Subtle border
                width=1.0)
-        ax.set_title(f'Distribution of Early Termination Iterations - {filename.title()} ({dataset_name})')
+        ax.set_title(f'Distribution of Early Termination Iterations [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Number of Early Terminated Queries')
 
@@ -83,7 +91,7 @@ def plot_early_termination_analysis(
         recall_by_iter = df.groupby('iteration')['recall'].mean()
         if not recall_by_iter.empty:
             ax.plot(recall_by_iter.index, recall_by_iter.values, linewidth=2)
-            ax.set_title(f'Recall by Iteration - {filename.title()} ({dataset_name})')
+            ax.set_title(f'Recall by Iteration [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
             ax.set_xlabel('Iteration')
             ax.set_ylabel('Mean Recall')
 
@@ -110,7 +118,7 @@ def plot_early_termination_analysis(
     scatter_cols = ['computed_distances', 'visited_members', 'recall']
     if any(col in df.columns for col in scatter_cols):
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-        fig.suptitle(f'Early Termination Analysis: Key Relationships - {filename.title()} ({dataset_name})')
+        fig.suptitle(f'Early Termination Analysis: Key Relationships [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
 
         # Computed distances vs Iteration
         if 'computed_distances' in df.columns:
@@ -124,7 +132,7 @@ def plot_early_termination_analysis(
                 axes[0,0].set_yticks(yticks)
             axes[0,0].tick_params(axis='y', rotation=0)
             axes[0,0].set_ylabel('Euclidean Distance')
-        axes[0,0].set_title(f'Computed Distances vs Iteration - {filename.title()} ({dataset_name})')
+        axes[0,0].set_title(f'Computed Distances vs Iteration [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
 
         # Visited members vs Iteration
         if 'visited_members' in df.columns:
@@ -137,7 +145,7 @@ def plot_early_termination_analysis(
                 yticks = [0] + list(yticks)
                 axes[0,1].set_yticks(yticks)
             axes[0,1].tick_params(axis='y', rotation=0)
-        axes[0,1].set_title(f'Visited Members vs Iteration - {filename.title()} ({dataset_name})')
+        axes[0,1].set_title(f'Visited Members vs Iteration [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
 
         # Recall vs Computed Distances
         if 'recall' in df.columns and 'computed_distances' in df.columns:
@@ -149,7 +157,7 @@ def plot_early_termination_analysis(
                 axes[1,0].set_yticks(yticks)
             axes[1,0].tick_params(axis='y', rotation=0)
             axes[1,0].set_xlabel('Euclidean Distance')
-        axes[1,0].set_title(f'Recall vs Computed Distances - {filename.title()} ({dataset_name})')
+        axes[1,0].set_title(f'Recall vs Computed Distances [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
 
         # Recall vs Visited Members
         if 'recall' in df.columns and 'visited_members' in df.columns:
@@ -160,7 +168,7 @@ def plot_early_termination_analysis(
                 yticks = [0] + list(yticks)
                 axes[1,1].set_yticks(yticks)
             axes[1,1].tick_params(axis='y', rotation=0)
-        axes[1,1].set_title(f'Recall vs Visited Members - {filename.title()} ({dataset_name})')
+        axes[1,1].set_title(f'Recall vs Visited Members [{CONFIG_INFO[config]}] - {filename.title()} ({dataset_name})')
 
         # Rotate x-axis labels for all subplots
         for ax in axes.flat:
@@ -170,9 +178,11 @@ def plot_early_termination_analysis(
         save_plot(fig, save_dir, f"{filename}_relationships")
 
 def plot_visited_vs_computed(dataset_name: str,
+                      algorithm_name: str,
                       df: pd.DataFrame,
                       save_dir: str,
-                      filename: str):
+                      filename: str,
+                      config: str):
     """Plot the relationship between visited members and computed distances."""
     setup_plot_style()
 
@@ -194,7 +204,7 @@ def plot_visited_vs_computed(dataset_name: str,
 
     ax.set_xlabel('Mean Number of Visited Members')
     ax.set_ylabel('Mean Number of Computed Distances')
-    ax.set_title(f'Visited Members vs Computed Distances - {filename.split("_")[1].title()} ({dataset_name})')
+    ax.set_title(f'Visited Members vs Computed Distances {algorithm_name} [{CONFIG_INFO[config]}] - {filename.split("_")[1].title()} ({dataset_name})')
     ax.grid(True)
 
     # Set axis limits without forcing x-axis to start at 0
@@ -210,7 +220,8 @@ def plot_search_metric_over_time(df: pd.DataFrame,
                                title: str,
                                ylabel: str,
                                save_dir: str,
-                               filename: str):
+                               filename: str,
+                               config: str):
     """Plot a single search metric over time with mean and median."""
     try:
         # Validate inputs
@@ -268,7 +279,8 @@ def plot_search_metric_over_time(df: pd.DataFrame,
 def plot_unreachable_points_over_time(df: pd.DataFrame,
                                title: str,
                                save_dir: str,
-                               filename: str):
+                               filename: str,
+                               config: str):
     """Plot amount of unreachable points over iterations."""
     try:
         # Validate inputs
@@ -309,7 +321,8 @@ def plot_replace_method_distribution(
     df: pd.DataFrame,
     title: str,
     save_dir: str,
-    filename: str
+    filename: str,
+    config: str
 ) -> None:
     """Create a stacked bar chart showing distribution of replacement candidates usage by iteration."""
     setup_plot_style()
@@ -345,10 +358,10 @@ def plot_replace_method_distribution(
     top_bars = grouped[0]     # used_repl_cand == 0 (top)
     
     # Plot bottom bars (used_repl_cand == 1)
-    ax.bar(grouped.index, bottom_bars, label='Replacement Used', color='#4169E1')
+    ax.bar(grouped.index, bottom_bars, label='Candidate Replaced', color='#4169E1')
     
     # Plot top bars (used_repl_cand == 0)
-    ax.bar(grouped.index, top_bars, bottom=bottom_bars, label='No Replacement', color='#A9CCE3')
+    ax.bar(grouped.index, top_bars, bottom=bottom_bars, label='No Tombstoned Candidate Found', color='#A9CCE3')
     
     # Set title and labels
     ax.set_title(title)
@@ -375,9 +388,11 @@ def plot_replace_method_distribution(
     save_plot(fig, save_dir, filename)
     plt.close()
 
-def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
+def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]], config: str):
     """Generate all search-related plots."""
-    search_metrics = ['recall', 'computed_distances', 'visited_members']
+    # search_metrics = ['recall', 'computed_distances', 'visited_members']
+
+    search_metrics = ['recall']
 
     for scenario, paths in experiment_paths.items():
         for dataset_path in paths:
@@ -385,7 +400,23 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
             # os.makedirs(save_dir, exist_ok=True)
 
             dataset_name = os.path.basename(dataset_path)
-            dataset_name = "fashion-mnist" if "fashion_mnist" in dataset_name else dataset_name.split('_')[1]
+            algorithm_name = os.path.basename(dataset_path)
+            if "fashion_mnist" in dataset_name: 
+                dataset_name = "fashion-mnist"
+            else:
+                if("cand" in dataset_name):
+                    dataset_name = dataset_name.split('_')[3]
+                else:
+                    dataset_name = dataset_name.split('_')[1]
+            
+            if "reset_first_candidate" in algorithm_name:
+                algorithm_name = "RFC"
+            elif "repl_cand" in algorithm_name:
+                algorithm_name = "RBC"
+            elif "hnswlib" in algorithm_name:
+                algorithm_name = "HNSWLib"
+            elif "usearch" in algorithm_name:
+                algorithm_name = "USearch"
 
             # Search query stats plots (aggregated data)
             search_stats_path = os.path.join(dataset_path, 'search_query_stats.csv')
@@ -402,18 +433,20 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                     plot_search_metric_over_time(
                         search_df,
                         metric,
-                        f'Search {metric.replace("_", " ").title()} - {scenario.title()} ({dataset_name})',
+                        f'Search {metric.replace("_", " ").title()} {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                         metric.replace("_", " ").title(),
                         save_dir,
-                        f'{scenario}_search_{metric}.png'
+                        f'{scenario}_search_{metric}.png',
+                        config
                     )
 
-                plot_visited_vs_computed(
-                    dataset_name,
-                    search_df,
-                    save_dir,
-                    f'{scenario}_search_efficiency'
-                )
+                # plot_visited_vs_computed(
+                #     dataset_name,
+                #     search_df,
+                #     save_dir,
+                #     f'{scenario}_search_efficiency',
+                #     config
+                # )
             
             # Replace method distribution plot 
             # Add to the generate_search_analysis_plots function where the replace_method_path is handled
@@ -422,9 +455,10 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                 replace_method_df = load_csv_data(replace_method_path)
                 plot_replace_method_distribution(
                     replace_method_df,
-                    f'Replace Method Distribution ({dataset_name})',
+                    f'Replace Method Distribution {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
-                    f'{scenario}_replace_method_distribution'
+                    f'{scenario}_replace_method_distribution',
+                    config
                 )
 
             # Unreachable points plots
@@ -435,9 +469,10 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                 unreachable_points_df = load_csv_data(unreachable_points_path)
                 plot_unreachable_points_over_time(
                     unreachable_points_df,
-                    f'Unreachable Points ({dataset_name})',
+                    f'Unreachable Points {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
-                    f'{scenario}_unreachable_points'
+                    f'{scenario}_unreachable_points',
+                    config
                 )
 
             # Early termination analysis (raw data)
@@ -452,6 +487,7 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]]):
                     dataset_name,
                     early_termination_df,
                     save_dir,
-                    f'{scenario}_early_termination'
+                    f'{scenario}_early_termination',
+                    config
                 )
 
