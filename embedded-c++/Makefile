@@ -26,6 +26,8 @@ build-hnswlib: prepare-build
 build-repl-cand-hnswlib: prepare-build
 	cd build && cmake .. && make -C repl_cand_hnswlib
 
+build-reset-first-candidate: prepare-build
+	cd build && cmake .. && make -C reset_first_candidate
 
 # usearch experiments
 run-create-usearch-indexes: build-usearch
@@ -110,6 +112,10 @@ run-all-repl-cand-hnswlib-experiments: build-repl-cand-hnswlib
 	./build/repl_cand_hnswlib/unreachable_points_sampl_reachable
 	@echo "All repl_cand_hnswlib experiments completed."
 
+
+# reset first candidate experiments
+run-rfc-new-data: build-reset-first-candidate
+	./build/reset_first_candidate/new_data
 
 # current
 run-repl-cand-and-hnswlib: build-repl-cand-hnswlib build-hnswlib
