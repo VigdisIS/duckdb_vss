@@ -9,6 +9,13 @@ import seaborn as sns
 import numpy as np
 from scripts.plots.plot_utils import (load_csv_data, setup_plot_style, save_plot, set_axis_limits)
 
+CONFIG_INFO = {
+    "00": "No neighbor update, No tombstones",
+    "01": "No neighbor update, With tombstones",
+    "10": "With neighbor update, No tombstones",
+    "11": "With neighbor update, With tombstones"
+}
+
 def plot_memory_usage(df: pd.DataFrame,
                      title: str,
                      save_dir: str,
@@ -98,9 +105,11 @@ def plot_memory_usage_over_time(df: pd.DataFrame,
 
 def plot_node_connectivity(df: pd.DataFrame,
                          dataset_name: str,
+                         algorithm_name: str,
                          save_dir: str,
                          filename: str,
-                         experiment_paths: Dict[str, List[str]]):
+                         experiment_paths: Dict[str, List[str]],
+                         config: str):
     """Plot non-level-specific node connectivity metrics over time."""
     setup_plot_style()
 
@@ -120,7 +129,7 @@ def plot_node_connectivity(df: pd.DataFrame,
             fig, ax = plt.subplots(figsize=(10, 6))
             ax.plot(iterations, df[metric], color=color, linewidth=2)
 
-            ax.set_title(f'{metric.replace("_", " ").title()} Over Iterations - {filename.split("_")[1].title()} ({dataset_name})')
+            ax.set_title(f'{metric.replace("_", " ").title()} Over Iterations {algorithm_name} [{CONFIG_INFO[config]}] - {filename.split("_")[0].title()} ({dataset_name})')
             ax.set_xlabel('Iteration')
             ax.set_ylabel('Count')
             ax.grid(True, alpha=0.3)
@@ -345,7 +354,7 @@ def plot_connectivity_scatter(df: pd.DataFrame,
     save_plot(fig, save_dir, f"{filename}_node_connectivity_vs_distances_computed", experiment_paths)
     plt.close()
 
-def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
+def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], config: str):
     """Generate all memory and connectivity related plots."""
     for scenario, paths in experiment_paths.items():
         # Create scenario-level directory for combined plots
@@ -359,63 +368,88 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
             os.makedirs(save_dir, exist_ok=True)
 
             dataset_name = os.path.basename(dataset_path)
-            dataset_name = "fashion-mnist" if "fashion_mnist" in dataset_name else dataset_name.split('_')[1]
+            algorithm_name = os.path.basename(dataset_path)
+            if "fashion_mnist" in dataset_name:
+                dataset_name = "fashion-mnist"
+            else:
+                if("cand" in dataset_name):
+                    dataset_name = dataset_name.split('_')[3]
+                else:
+                    dataset_name = dataset_name.split('_')[1]
+            
+            if "reset_first_candidate" in algorithm_name:
+                algorithm_name = "RFC"
+            elif "repl_cand" in algorithm_name:
+                algorithm_name = "RBC"
+            elif "hnswlib" in algorithm_name:
+                algorithm_name = "HNSWLib"
+            elif "usearch" in algorithm_name:
+                algorithm_name = "USearch"
 
-            # Memory stats plots
-            memory_stats_path = os.path.join(dataset_path, 'memory_stats.csv')
-            if os.path.exists(memory_stats_path):
-                memory_stats_df = load_csv_data(memory_stats_path)
+            # # Memory stats plots
+            # memory_stats_path = os.path.join(dataset_path, 'memory_stats.csv')
+            # if os.path.exists(memory_stats_path):
+            #     memory_stats_df = load_csv_data(memory_stats_path)
 
-                plot_slot_distribution(
-                    memory_stats_df,
-                    f'Slot Distribution - {scenario.title()} ({dataset_name})',
-                    save_dir,
-                    f'{scenario}_memory_stats',
-                    experiment_paths
-                )
+            #     plot_slot_distribution(
+            #         memory_stats_df,
+            #         f'Slot Distribution - {scenario.title()} ({dataset_name})',
+            #         save_dir,
+            #         f'{scenario}_memory_stats',
+            #         experiment_paths
+            #     )
 
-                plot_memory_usage_over_time(
-                    memory_stats_df,
-                    f'Memory Usage Over Iterations - {scenario.title()} ({dataset_name})',
-                    save_dir,
-                    f'{scenario}_memory_stats',
-                    experiment_paths
-                )
+            #     plot_memory_usage_over_time(
+            #         memory_stats_df,
+            #         f'Memory Usage Over Iterations - {scenario.title()} ({dataset_name})',
+            #         save_dir,
+            #         f'{scenario}_memory_stats',
+            #         experiment_paths
+            #     )
 
-            # Memory usage plots
-            memory_path = os.path.join(dataset_path, 'memory_usage.csv')
-            if os.path.exists(memory_path):
-                memory_df = load_csv_data(memory_path)
-                plot_memory_usage(
-                    memory_df,
-                    f'Memory Usage - {scenario.title()} ({dataset_name})',
-                    save_dir,
-                    f'{scenario}_memory_usage',
-                    experiment_paths
-                )
+            # # Memory usage plots
+            # memory_path = os.path.join(dataset_path, 'memory_usage.csv')
+            # if os.path.exists(memory_path):
+            #     memory_df = load_csv_data(memory_path)
+            #     plot_memory_usage(
+            #         memory_df,
+            #         f'Memory Usage - {scenario.title()} ({dataset_name})',
+            #         save_dir,
+            #         f'{scenario}_memory_usage',
+            #         experiment_paths
+            #     )
 
             # Node connectivity plots
             connectivity_path = os.path.join(dataset_path, 'node_connectivity.csv')
             search_stats_path = os.path.join(dataset_path, 'search_query_stats.csv')
 
             if os.path.exists(connectivity_path):
+                print(connectivity_path)
                 connectivity_df = load_csv_data(connectivity_path)
                 dataset_name = os.path.basename(dataset_path)
-                dataset_name = "fashion-mnist" if "fashion_mnist" in dataset_name else dataset_name.split('_')[1]
+                if "fashion_mnist" in dataset_name:
+                    dataset_name = "fashion-mnist"
+                else:
+                    if("cand" in dataset_name):
+                        dataset_name = dataset_name.split('_')[3]
+                    else:
+                        dataset_name = dataset_name.split('_')[1]
 
                 # Original connectivity plots
                 plot_node_connectivity(
                     connectivity_df,
                     dataset_name,
+                    algorithm_name,
                     save_dir,
                     f'{scenario}_node_connectivity',
-                    experiment_paths
+                    experiment_paths,
+                    config
                 )
 
                 # New level-specific plots
                 plot_level_connectivity(
                     connectivity_df,
-                    f'Node Connectivity by Level - {scenario.title()} ({dataset_name})',
+                    f'Node Connectivity by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -423,7 +457,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
 
                 plot_level_unreachable(
                     connectivity_df,
-                    f'Unreachable Points by Level - {scenario.title()} ({dataset_name})',
+                    f'Unreachable Points by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -431,7 +465,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
 
                 plot_level_nodes(
                     connectivity_df,
-                    f'Number of Nodes by Level - {scenario.title()} ({dataset_name})',
+                    f'Number of Nodes by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -440,24 +474,24 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]]):
                 plot_level_distances(
                     connectivity_df,
                     dataset_name,
-                    f'Distance between Neighbor Nodes by Level - {scenario.title()} ({dataset_name})',
+                    f'Distance between Neighbor Nodes by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
                 )
 
-                # Plot scatter and recall plots if search stats exist
-                if os.path.exists(search_stats_path):
-                    search_df = load_csv_data(search_stats_path)
-                    # dataset_name = search_df['dataset'].iloc[0]
-                    if len(search_df) == len(connectivity_df):
-                        # New scatter plot with mean recall colormap
-                        plot_connectivity_scatter(
-                            connectivity_df,
-                            search_df,
-                            f'Node Connectivity vs Distances Computed at Search - {scenario.title()} ({dataset_name})',
-                            save_dir,
-                            f'{scenario}',
-                            experiment_paths
-                        )
+                # # Plot scatter and recall plots if search stats exist
+                # if os.path.exists(search_stats_path):
+                #     search_df = load_csv_data(search_stats_path)
+                #     # dataset_name = search_df['dataset'].iloc[0]
+                #     if len(search_df) == len(connectivity_df):
+                #         # New scatter plot with mean recall colormap
+                #         plot_connectivity_scatter(
+                #             connectivity_df,
+                #             search_df,
+                #             f'Node Connectivity vs Distances Computed at Search - {scenario.title()} ({dataset_name})',
+                #             save_dir,
+                #             f'{scenario}',
+                #             experiment_paths
+                #         )
 

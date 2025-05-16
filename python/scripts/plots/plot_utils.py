@@ -10,6 +10,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colorbar import Colorbar
 
+implementations_map = {
+    'hnswlib': 'HNSWLib',
+    'repl_cand_hnswlib': 'RBC',
+    'usearch': 'USearch',
+    'reset_first_candidate': 'RFC'
+}
+
+vs_title = "RBC vs HNSWLib"
+
 def load_csv_data(filepath: str) -> pd.DataFrame:
     """Load CSV data and handle missing iteration column."""
     df = pd.read_csv(filepath)
@@ -157,6 +166,23 @@ def create_combined_plot(plot_files: List[str],
     for idx, plot_file in enumerate(sorted(plot_files)):
         # Get dataset name from plot file path
         dataset_name = os.path.basename(os.path.dirname(os.path.dirname(plot_file)))
+        algorithm_name = os.path.basename(os.path.dirname(os.path.dirname(plot_file)))
+        if "fashion_mnist" in dataset_name:
+                dataset_name = "fashion-mnist"
+        else:
+            if("cand" in dataset_name): 
+                dataset_name = dataset_name.split('_')[3]
+            else:
+                dataset_name = dataset_name.split('_')[1]
+
+        if "reset_first_candidate" in algorithm_name:
+            algorithm_name = "RFC"
+        elif "repl_cand" in algorithm_name:
+            algorithm_name = "RBC"
+        elif "hnswlib" in algorithm_name:
+            algorithm_name = "HNSWLib"
+        elif "usearch" in algorithm_name:
+            algorithm_name = "USearch"
 
         # Create subplot using gridspec
         row = idx // n_cols
@@ -167,7 +193,7 @@ def create_combined_plot(plot_files: List[str],
         img = plt.imread(plot_file)
         ax.imshow(img)
         ax.axis('off')  # Hide axes
-        ax.set_title(dataset_name, pad=10)  # Reduce padding between title and plot
+        ax.set_title(f'{algorithm_name} {dataset_name}', pad=10)  # Reduce padding between title and plot
 
     # Save combined plot
     combined_filename = f'{scenario}_combined_{plot_type}.png'
@@ -221,15 +247,14 @@ def combine_scenario_plots(experiment_paths: Dict[str, List[str]]):
             if plot_files:
                 create_combined_plot(plot_files, scenario, plot_type, scenario_images_dir)
 
-def generate_comparison_plots(base_dir: str, output_dir: str):
+def generate_comparison_plots(base_dir: str, output_dir: str, implementations: List[str]):
     """Generate comparison plots between hnswlib and repl_cand_hnswlib for key metrics.
 
     Args:
         base_dir: Base directory containing both implementations
         output_dir: Directory to save comparison plots
+        implementations: List of implementations to compare
     """
-    # Define the two implementations to compare
-    implementations = ['hnswlib', 'repl_cand_hnswlib']
 
     # Define experiment types to compare
     experiments = ['fullcoverage', 'newdata', 'random']
@@ -360,7 +385,7 @@ def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Mean Recall')
-        ax.set_title(f'Recall Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Recall Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -433,7 +458,7 @@ def plot_unreachable_points_comparison(base_dir, implementations, experiment, da
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Unreachable Points')
-        ax.set_title(f'Unreachable Points Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Unreachable Points Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -489,7 +514,7 @@ def plot_avg_connectivity_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Average Node Connectivity')
-        ax.set_title(f'Node Connectivity Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Node Connectivity Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -545,7 +570,7 @@ def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Add Operation Time Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Add Operation Time Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -601,7 +626,7 @@ def plot_search_benchmark_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Search Operation Time Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Search Operation Time Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -657,7 +682,7 @@ def plot_delete_benchmark_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Delete Operation Time Comparison - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Delete Operation Time Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
