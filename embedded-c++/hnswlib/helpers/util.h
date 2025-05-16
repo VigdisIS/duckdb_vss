@@ -37,6 +37,8 @@ public:
 
     static void addReplCandMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, std::vector<std::tuple<std::string, int, int, int, double>>& repl_method_dist, std::mutex& repl_method_dist_mutex, bool use_neigh_update, bool include_tombstones);
 
+    static void addResetFirstCandidateMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, std::vector<std::tuple<std::string, int, int, int, double>>& repl_method_dist, std::mutex& repl_method_dist_mutex);
+
     static void query_hnsw_single(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& queries, int dim, int k, std::vector<std::vector<size_t>>& labels, std::vector<double>& query_times);
 
     static void query_hnsw_unreachable(hnswlib::HierarchicalNSW<float>& alg_hnsw, const std::vector<std::vector<float>>& queries, int k, int num_threads, std::vector<std::vector<size_t>>& results);
