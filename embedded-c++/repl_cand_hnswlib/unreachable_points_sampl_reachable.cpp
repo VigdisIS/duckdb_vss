@@ -5,6 +5,7 @@
 #include "usearch/helpers/query_runner.h"
 #include "usearch/helpers/file_operations.h"
 #include "hnswlib/helpers/util.h"
+#include <random>
 
 using namespace duckdb;
 using namespace hnswlib;
@@ -92,10 +93,10 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             // Dataset vectors
             auto dataset_vectors = con.Query("SELECT * FROM " + dataset.name + "_train;");
 
-            std::unordered_set<size_t> true_set;
-            true_set.reserve(dataset_cardinality);
-            for (size_t idx = 0; idx < dataset_vectors->RowCount(); ++idx) {
-                true_set.insert(dataset_vectors->GetValue<int>(0, idx));
+            std::unordered_set<size_t> available_points;
+            available_points.reserve(dataset_cardinality);
+            for (size_t i = 0; i < dataset_cardinality; i++) {
+                available_points.insert(i);
             }
 
             // TODO: hardcoded value
@@ -103,6 +104,8 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             std::ostringstream perc_str;
             perc_str << std::fixed << std::setprecision(2) << perc;
             auto sample_size = (int) (perc * dataset_cardinality);
+            std::random_device rd;
+            std::mt19937 gen(rd());
 
             // Create appender for results
             Appender appender(con, dataset.name + "_results");
@@ -139,30 +142,40 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             
             unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
-            std::vector<std::vector<size_t>> results_curr_it = results;
-
             std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
+
+            std::unordered_set<size_t> found_points;
+            found_points.reserve(dataset_cardinality);
+            for (const auto& idx : results[0]) {
+                if (idx < 1000000) {
+                    found_points.insert(idx);
+                } else {
+                    found_points.insert(idx - 1000000);
+                }
+            }
+
+            for (auto it = available_points.begin(); it != available_points.end();) {
+                if (found_points.find(*it) == found_points.end()) {
+                    it = available_points.erase(it);
+                } else {
+                    ++it;
+                }
+            }
 
             // Run iterations
             for (int iteration = 1; iteration <= max_iterations; iteration++) {
                 std::cout << "▶️ ITERATION " << iteration << " ▶️" << std::endl;
 
-                // Get sample vectors to delete and re-add
-                auto sample_vecs = QueryRunner::getSampleReachableVectors(con, dataset.name, sample_size, results_curr_it[0]);
+                std::vector<size_t> available_points_vec(available_points.begin(), available_points.end());
+                std::shuffle(available_points_vec.begin(), available_points_vec.end(), gen);
 
-                std::unordered_set<size_t> delete_indices_set;
+                std::cout << "Available points size: " << available_points.size() << std::endl;
 
-                auto num_to_delete = sample_vecs->RowCount();
-                
-                
-                for (size_t idx = 0; idx < sample_vecs->RowCount(); ++idx) {
-                    delete_indices_set.insert(sample_vecs->GetValue<int>(0, idx));
-                }
+                int num_to_delete = std::min(static_cast<int>(dataset_cardinality * 0.05), static_cast<int>(available_points.size()));
+                std::vector<size_t> delete_indices(available_points_vec.begin(), available_points_vec.begin() + num_to_delete);
 
-                std::vector<size_t> delete_indices(delete_indices_set.begin(), delete_indices_set.end());
-
+                // Save the vectors and their labels to be deleted before deleting them
                 std::vector<std::vector<float>> deleted_vectors(delete_indices.size(), std::vector<float>(dataset.dimensions));
-
                 for (size_t i = 0; i < delete_indices.size(); ++i) {
                     size_t idx = delete_indices[i];
                     deleted_vectors[i] = ExtractFloatVector(dataset_vectors->GetValue(1, idx));
@@ -209,9 +222,25 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
 
                 unreachable_points.push_back(std::make_pair(iteration_number, unreachable_points_number));
 
-                results_curr_it = results;
-
                 std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
+
+
+                found_points.clear();
+                for (const auto& idx : results[0]) {
+                    if (idx < 1000000) {
+                        found_points.insert(idx);
+                    } else {
+                        found_points.insert(idx - 1000000);
+                    }
+                }
+
+                for (auto it = available_points.begin(); it != available_points.end();) {
+                    if (found_points.find(*it) == found_points.end()) {
+                        it = available_points.erase(it);
+                    } else {
+                        ++it;
+                    }
+                }
 
                 std::cout << "✅ FINISHED ITERATION " << iteration << " ✅" << std::endl;
             }

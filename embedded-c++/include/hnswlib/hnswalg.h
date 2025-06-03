@@ -531,7 +531,6 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         int level,
         bool isUpdate) {
         size_t Mcurmax = level ? maxM_ : maxM0_;
-        std::cout << "Mcurmax: " << Mcurmax << std::endl;
         getNeighborsByHeuristic2(top_candidates, M_);
         if (top_candidates.size() > M_)
             throw std::runtime_error("Should be not be more than M_ candidates returned by the heuristic");
@@ -2063,8 +2062,6 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
             auto generated_level = curlevel;
 
-            std::cout << "curlevel: " << curlevel << std::endl;
-
             tableint internal_id_replaced;
             std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
             auto result = findCandToReplace(data_point, label, -1, curlevel);
@@ -2074,15 +2071,12 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
             if (result.candidate_id == -1) {
                 lock_deleted_elements.unlock();
-                
-                std::cout << "❌ No candidate found" << std::endl;
                 used_repl_cand = 0;
 
                 addPoint(data_point, label, curlevel);
                 return used_repl_cand;
 
             } else {
-                std::cout << "✅ Candidate found" << std::endl;
                 internal_id_replaced = result.candidate_id;
                 used_repl_cand = 1;
             }
