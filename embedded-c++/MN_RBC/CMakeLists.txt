@@ -1,0 +1,19 @@
+# Build directory for MN_RBC experiments
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/MN_RBC)
+
+# MN_RBC executables
+add_executable(MN_RBC_random random.cpp)
+add_executable(MN_RBC_full_coverage full_coverage.cpp)
+add_executable(MN_RBC_new_data new_data.cpp)
+add_executable(MN_RBC_unreachable_points_sampl_reachable unreachable_points_sampl_reachable.cpp)
+
+set_target_properties(MN_RBC_random PROPERTIES OUTPUT_NAME random)
+set_target_properties(MN_RBC_full_coverage PROPERTIES OUTPUT_NAME full_coverage)
+set_target_properties(MN_RBC_new_data PROPERTIES OUTPUT_NAME new_data)
+set_target_properties(MN_RBC_unreachable_points_sampl_reachable PROPERTIES OUTPUT_NAME unreachable_points_sampl_reachable)
+
+# Link libraries
+target_link_libraries(MN_RBC_random hnswlib_utils usearch_utils duckdb)
+target_link_libraries(MN_RBC_full_coverage hnswlib_utils usearch_utils duckdb)
+target_link_libraries(MN_RBC_new_data hnswlib_utils usearch_utils duckdb)
+target_link_libraries(MN_RBC_unreachable_points_sampl_reachable hnswlib_utils usearch_utils duckdb)

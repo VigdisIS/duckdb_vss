@@ -183,10 +183,10 @@ HNSWLibFullCoverageRunner(int iterations, int threads, bool use_neigh_update, bo
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
             
-            // Save the final index
-            std::string s_path = output_dir + "full_coverage_" + dataset.name + "_index.bin";
-            index.saveIndex(s_path);
-            std::cout << "Index saved to: " << s_path << std::endl;
+            // // Save the final index
+            // std::string s_path = output_dir + "full_coverage_" + dataset.name + "_index.bin";
+            // index.saveIndex(s_path);
+            // std::cout << "Index saved to: " << s_path << std::endl;
 
             // Cleanup intermediate files
             FileOperations::cleanupOutputFiles(std::filesystem::current_path());
