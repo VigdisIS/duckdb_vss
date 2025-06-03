@@ -19,13 +19,15 @@ CONFIG_INFO = {
 # Colors for each implementation
 COLORS = {
     "hnswlib": "#1f77b4",  # Blue
-    "repl_cand": "#ff7f0e"  # Orange
+    "repl_cand": "#ff7f0e",  # Orange
+    "reset_first_candidate": "#ff7f0e"  # Orange
 }
 
 # Markers for each implementation
 MARKERS = {
     "hnswlib": "o",
-    "repl_cand": "s"
+    "repl_cand": "s",
+    "reset_first_candidate": "s"
 }
 
 DIRECTORY_MAP = {
@@ -52,7 +54,7 @@ def generate_hnswlib_vs_configs(base_dir, output_dir, implementations):
         configs = ["01"]
     
     # Define experiment types to compare
-    experiments = ["fullcoverage", "newdata", "random"]
+    experiments = ["fullcoverage", "newdata", "random", "unreachable_points_exclusive"]
     
     # Output directory for hnswlib vs configs comparisons
     hnswlib_vs_configs_dir = os.path.join(output_dir, f"hnswlib_vs_{implementations[1]}")
@@ -172,7 +174,7 @@ def plot_hnswlib_vs_config_metrics(base_dir, implementation, config, experiment,
 
 def plot_hnswlib_vs_config_recall(base_dir, implementation, config, experiment, dataset, impl_folders, output_dir):
     """Create plot comparing recall between hnswlib and a repl_cand_hnswlib configuration."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
@@ -210,14 +212,15 @@ def plot_hnswlib_vs_config_recall(base_dir, implementation, config, experiment, 
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Mean Recall')
-        ax.set_title(f'Recall: HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}] - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Mean Recall', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_title(f'Recall - HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]\n- {experiment.title()} ({dataset})')
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
         # Set y-axis range for recall to 0-1
-        ax.set_ylim(0, 1.05)
+        ax.set_ylim(0, 1)
         
         # Save plot
         save_plot(fig, output_dir, f"recall_comparison")
@@ -228,7 +231,7 @@ def plot_hnswlib_vs_config_recall(base_dir, implementation, config, experiment, 
 
 def plot_hnswlib_vs_config_unreachable(base_dir, implementation, config, experiment, dataset, impl_folders, output_dir):
     """Create plot comparing unreachable points between hnswlib and a repl_cand_hnswlib configuration."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
@@ -277,10 +280,11 @@ def plot_hnswlib_vs_config_unreachable(base_dir, implementation, config, experim
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Unreachable Points')
-        ax.set_title(f'Unreachable Points: HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}] - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Unreachable Points', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_title(f'Unreachable Points - HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]\n- {experiment.title()} ({dataset})')
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
         # Ensure y-axis starts at 0
@@ -295,7 +299,7 @@ def plot_hnswlib_vs_config_unreachable(base_dir, implementation, config, experim
 
 def plot_hnswlib_vs_config_connectivity(base_dir, implementation, config, experiment, dataset, impl_folders, output_dir):
     """Create plot comparing average node connectivity between hnswlib and a repl_cand_hnswlib configuration."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
@@ -332,10 +336,11 @@ def plot_hnswlib_vs_config_connectivity(base_dir, implementation, config, experi
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Average Node Connectivity')
-        ax.set_title(f'Node Connectivity: HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}] - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Average Node Connectivity', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_title(f'Node Connectivity - HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]\n- {experiment.title()} ({dataset})')
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
         # Ensure y-axis starts at 0
@@ -350,11 +355,14 @@ def plot_hnswlib_vs_config_connectivity(base_dir, implementation, config, experi
 
 def plot_hnswlib_vs_config_add_benchmark(base_dir, implementation, config, experiment, dataset, impl_folders, output_dir):
     """Create plot comparing add operation benchmark between hnswlib and a repl_cand_hnswlib configuration."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across implementations
     
+    # First pass to collect data and find minimum iteration
+    impl_data = {}
     for impl, label in [("hnswlib", "HNSWLib"), (implementation, f"{REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]")]:
         if impl not in impl_folders:
             continue
@@ -377,24 +385,45 @@ def plot_hnswlib_vs_config_add_benchmark(base_dir, implementation, config, exper
         
         if 'mean_time' in df.columns:
             has_data = True
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=label,
-                   color=COLORS[impl],
-                   marker=MARKERS[impl],
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            impl_data[impl] = {
+                'df': df,
+                'label': label,
+                'color': COLORS[impl],
+                'marker': MARKERS[impl]
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+    
+    # Second pass to plot the data with proper x-axis limits
+    for impl, data in impl_data.items():
+        df = data['df']
+        label = data['label']
+        color = data['color']
+        marker = data['marker']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=label,
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Add Operation Time: HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}] - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_title(f'Add Operation Time - HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]\n- {experiment.title()} ({dataset})')
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
         
         # Save plot
         save_plot(fig, output_dir, f"add_benchmark_comparison")
@@ -405,11 +434,14 @@ def plot_hnswlib_vs_config_add_benchmark(base_dir, implementation, config, exper
 
 def plot_hnswlib_vs_config_search_benchmark(base_dir, implementation, config, experiment, dataset, impl_folders, output_dir):
     """Create plot comparing search operation benchmark between hnswlib and a repl_cand_hnswlib configuration."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across implementations
     
+    # First pass to collect data and find minimum iteration
+    impl_data = {}
     for impl, label in [("hnswlib", "HNSWLib"), (implementation, f"{REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]")]:
         if impl not in impl_folders:
             continue
@@ -432,24 +464,45 @@ def plot_hnswlib_vs_config_search_benchmark(base_dir, implementation, config, ex
         
         if 'mean_time' in df.columns:
             has_data = True
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=label,
-                   color=COLORS[impl],
-                   marker=MARKERS[impl],
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            impl_data[impl] = {
+                'df': df,
+                'label': label,
+                'color': COLORS[impl],
+                'marker': MARKERS[impl]
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+    
+    # Second pass to plot the data with proper x-axis limits
+    for impl, data in impl_data.items():
+        df = data['df']
+        label = data['label']
+        color = data['color']
+        marker = data['marker']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=label,
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Search Operation Time: HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}] - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_title(f'Search Operation Time - HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]\n- {experiment.title()} ({dataset})')
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
         
         # Save plot
         save_plot(fig, output_dir, f"search_benchmark_comparison")
@@ -460,11 +513,14 @@ def plot_hnswlib_vs_config_search_benchmark(base_dir, implementation, config, ex
 
 def plot_hnswlib_vs_config_delete_benchmark(base_dir, implementation, config, experiment, dataset, impl_folders, output_dir):
     """Create plot comparing delete operation benchmark between hnswlib and a repl_cand_hnswlib configuration."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across implementations
     
+    # First pass to collect data and find minimum iteration
+    impl_data = {}
     for impl, label in [("hnswlib", "HNSWLib"), (implementation, f"{REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]")]:
         if impl not in impl_folders:
             continue
@@ -487,24 +543,45 @@ def plot_hnswlib_vs_config_delete_benchmark(base_dir, implementation, config, ex
         
         if 'mean_time' in df.columns:
             has_data = True
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=label,
-                   color=COLORS[impl],
-                   marker=MARKERS[impl],
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            impl_data[impl] = {
+                'df': df,
+                'label': label,
+                'color': COLORS[impl],
+                'marker': MARKERS[impl]
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+    
+    # Second pass to plot the data with proper x-axis limits
+    for impl, data in impl_data.items():
+        df = data['df']
+        label = data['label']
+        color = data['color']
+        marker = data['marker']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=label,
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Delete Operation Time: HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}] - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_title(f'Delete Operation Time - HNSWLib vs {REVERSE_IMPL_MAP[implementation]} [{CONFIG_INFO[config]}]\n- {experiment.title()} ({dataset})')
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
         
         # Save plot
         save_plot(fig, output_dir, f"delete_benchmark_comparison")

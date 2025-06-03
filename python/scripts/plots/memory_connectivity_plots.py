@@ -13,7 +13,8 @@ CONFIG_INFO = {
     "00": "No neighbor update, No tombstones",
     "01": "No neighbor update, With tombstones",
     "10": "With neighbor update, No tombstones",
-    "11": "With neighbor update, With tombstones"
+    "11": "With neighbor update, With tombstones",
+    "-": ""
 }
 
 def plot_memory_usage(df: pd.DataFrame,
@@ -50,7 +51,7 @@ def plot_slot_distribution(df: pd.DataFrame,
                           experiment_paths: Dict[str, List[str]]):
     """Plot slot distribution showing the distribution of slot types over time."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # Stacked bar chart showing slot distribution
     x = range(len(df))
@@ -87,7 +88,7 @@ def plot_memory_usage_over_time(df: pd.DataFrame,
                             experiment_paths: Dict[str, List[str]]):
     """Plot memory usage over time."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # Line plot showing memory usage in megabytes
     ax.plot(range(len(df)), df['index_mem_usage'] / 1e6, label='Memory Usage', linewidth=2)
@@ -120,19 +121,32 @@ def plot_node_connectivity(df: pd.DataFrame,
         'avg_connections': '#d62728'  # red
     }
 
+    name_map = {
+        'nodes_count': 'Number of Nodes',
+        'unreachable_count': 'Unreachable Points',
+        'avg_connections': 'Mean Connectivity'
+    }
+
     # Create iteration sequence
     iterations = range(len(df))
 
     # 1. Individual plots for each metric
     for metric, color in metrics.items():
         if metric in df.columns:
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(8, 6))
+            if metric == 'unreachable_count':
+                fig.set_size_inches(8, 6)
+
             ax.plot(iterations, df[metric], color=color, linewidth=2)
 
-            ax.set_title(f'{metric.replace("_", " ").title()} Over Iterations {algorithm_name} [{CONFIG_INFO[config]}] - {filename.split("_")[0].title()} ({dataset_name})')
-            ax.set_xlabel('Iteration')
-            ax.set_ylabel('Count')
-            ax.grid(True, alpha=0.3)
+            ax.set_title(f'{name_map[metric]} Over Iterations\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.split("_")[0].title()} ({dataset_name})')
+            ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+            ax.set_ylabel('Count', fontsize=plt.rcParams['axes.labelsize'])
+            # Set tick label sizes explicitly
+            ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+            
+            # Use solid grid lines with higher alpha for better visibility
+            ax.grid(True, alpha=0.5, linestyle='-')
 
             # Set axis limits with extra padding for better visualization
             # Add more padding for unreachable_count and avg_connections
@@ -141,11 +155,13 @@ def plot_node_connectivity(df: pd.DataFrame,
                 # Add 20% padding at the top for better visualization
                 padding = max_val * 0.2
                 ax.set_ylim(bottom=0, top=max_val + padding)
+                # Set axis limits starting at the first data point
+                set_axis_limits(ax, df['iteration'], force_x_zero=True)
             else:
                 y_padding = 0.4 if metric == 'unreachable_count' else 0.2
                 set_axis_limits(ax, pd.Series(iterations), y_padding=y_padding)
                 ax.set_ylim(bottom=0)
-
+            
             save_plot(fig, save_dir, f"{filename}_{metric}", experiment_paths)
             plt.close()
 
@@ -156,7 +172,7 @@ def plot_level_connectivity(df: pd.DataFrame,
                          experiment_paths: Dict[str, List[str]]):
     """Plot average connectivity by level over iterations."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # Create iteration sequence
     iterations = range(len(df))
@@ -171,8 +187,8 @@ def plot_level_connectivity(df: pd.DataFrame,
         ax.plot(iterations, df[col], label=f'Level {level}', color=color, linewidth=2)
 
     ax.set_title(title)
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Mean Node Connectivity')
+    ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Mean Node Connectivity', fontsize=plt.rcParams['axes.labelsize'])
     ax.grid(True, alpha=0.3)
     ax.legend()
 
@@ -189,7 +205,7 @@ def plot_level_unreachable(df: pd.DataFrame,
                          experiment_paths: Dict[str, List[str]]):
     """Plot unreachable points by level over iterations."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # Create iteration sequence
     iterations = range(len(df))
@@ -204,8 +220,8 @@ def plot_level_unreachable(df: pd.DataFrame,
         ax.plot(iterations, df[col], label=f'Level {level}', color=color, linewidth=2)
 
     ax.set_title(title)
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Number of Unreachable Points')
+    ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Number of Unreachable Points', fontsize=plt.rcParams['axes.labelsize'])
     ax.grid(True, alpha=0.3)
     ax.legend()
 
@@ -222,7 +238,7 @@ def plot_level_nodes(df: pd.DataFrame,
                    experiment_paths: Dict[str, List[str]]):
     """Plot number of nodes by level over iterations."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # Create iteration sequence
     iterations = range(len(df))
@@ -237,8 +253,8 @@ def plot_level_nodes(df: pd.DataFrame,
         ax.plot(iterations, df[col], label=f'Level {level}', color=color, linewidth=2)
 
     ax.set_title(title)
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Number of Nodes')
+    ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Number of Nodes', fontsize=plt.rcParams['axes.labelsize'])
     ax.grid(True, alpha=0.3)
     ax.legend()
 
@@ -250,12 +266,14 @@ def plot_level_nodes(df: pd.DataFrame,
 
 def plot_level_distances(df: pd.DataFrame,
                          dataset_name: str,
+                         algorithm_name: str,
                          title: str,
                          save_dir: str,
                          filename: str,
-                         experiment_paths: Dict[str, List[str]]):
+                         experiment_paths: Dict[str, List[str]],
+                         config: str):
     """Plot average, minimum, and maximum distances by level over iterations."""
-    setup_plot_style()
+
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
 
     # Get level numbers
@@ -269,15 +287,23 @@ def plot_level_distances(df: pd.DataFrame,
     iterations = range(len(df))
 
     # 1. Average distances
-    fig, ax = plt.subplots(figsize=(10, 6))
+    setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
     for level, color in zip(level_nums, colors):
         avg_col = f'avg_dist_l{level}'
         ax.plot(iterations, df[avg_col], label=f'Level {level}', color=color, linewidth=2)
 
+    # Set labels and title - ensure consistent style
+    ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
     ax.set_title(title)
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Euclidean Distance')
-    ax.grid(True, alpha=0.3)
+
+    # Set tick label sizes explicitly
+    ax.tick_params(axis='both', which='major', labelsize=14)
+    
+    # Use solid grid lines with higher alpha for better visibility
+    ax.grid(True, alpha=0.5, linestyle='-')
     ax.legend()
 
     # Set axis limits with extra padding for better visualization
@@ -287,15 +313,23 @@ def plot_level_distances(df: pd.DataFrame,
     plt.close()
 
     # 2. Minimum distances
-    fig, ax = plt.subplots(figsize=(10, 6))
+    setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
     for level, color in zip(level_nums, colors):
         min_col = f'min_dist_l{level}'
         ax.plot(iterations, df[min_col], label=f'Level {level}', color=color, linewidth=2)
 
-    ax.set_title(f'Minimum Distances between Neighbor Nodes by Level - {filename.title()} ({dataset_name})')
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Euclidean Distance')
-    ax.grid(True, alpha=0.3)
+    ax.set_title(f'Minimum Distances Between Neighbor Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.title()} ({dataset_name})')
+    # Set labels and title - ensure consistent style
+    ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
+
+    # Set tick label sizes explicitly
+    ax.tick_params(axis='both', which='major', labelsize=14)
+    
+    # Use solid grid lines with higher alpha for better visibility
+    ax.grid(True, alpha=0.5, linestyle='-')
     ax.legend()
 
     # Set axis limits with extra padding for better visualization
@@ -305,15 +339,23 @@ def plot_level_distances(df: pd.DataFrame,
     plt.close()
 
     # 3. Maximum distances
-    fig, ax = plt.subplots(figsize=(10, 6))
+    setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+
     for level, color in zip(level_nums, colors):
         max_col = f'max_dist_l{level}'
         ax.plot(iterations, df[max_col], label=f'Level {level}', color=color, linewidth=2)
 
-    ax.set_title(f'Maximum Distances between Neighbor Nodes by Level - {filename.title()} ({dataset_name})')
-    ax.set_xlabel('Iteration')
-    ax.set_ylabel('Euclidean Distance')
-    ax.grid(True, alpha=0.3)
+    ax.set_title(f'Maximum Distances Between Neighbor Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.title()} ({dataset_name})')
+    # Set labels and title - ensure consistent style
+    ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
+
+    # Set tick label sizes explicitly
+    ax.tick_params(axis='both', which='major', labelsize=14)
+    
+    # Use solid grid lines with higher alpha for better visibility
+    ax.grid(True, alpha=0.5, linestyle='-')
     ax.legend()
 
     # Set axis limits with extra padding for better visualization
@@ -330,7 +372,7 @@ def plot_connectivity_scatter(df: pd.DataFrame,
                           experiment_paths: Dict[str, List[str]]):
     """Plot scatter plot of connectivity vs search performance."""
     setup_plot_style()
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # Scatter plot with color gradient based on recall
     scatter = ax.scatter(df['avg_connections'],
@@ -341,15 +383,21 @@ def plot_connectivity_scatter(df: pd.DataFrame,
 
     # Add colorbar
     cbar = fig.colorbar(scatter, ax=ax)
-    cbar.set_label('Mean Recall', rotation=270, labelpad=15)
+    cbar.set_label('Mean Recall', rotation=270, labelpad=15, fontsize=plt.rcParams['axes.labelsize'])
 
-    ax.set_xlabel('Mean Node Connectivity')
-    ax.set_ylabel('Number of Distances Computed at Search')
+    ax.set_xlabel('Mean Node Connectivity', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Number of Distances Computed at Search', fontsize=plt.rcParams['axes.labelsize'])
     ax.set_title(title)
-    ax.grid(True, alpha=0.3)
+
+    # Set tick label sizes explicitly
+    ax.tick_params(axis='both', which='major', labelsize=14)
+    
+    # Use solid grid lines with higher alpha for better visibility
+    ax.grid(True, alpha=0.5, linestyle='-')
 
     # Set axis limits without forcing x-axis to start at 0
     set_axis_limits(ax, df['avg_connections'], force_x_zero=False, y_padding=0.2)
+    ax.ticklabel_format(style='plain', axis='y')
 
     save_plot(fig, save_dir, f"{filename}_node_connectivity_vs_distances_computed", experiment_paths)
     plt.close()
@@ -357,15 +405,13 @@ def plot_connectivity_scatter(df: pd.DataFrame,
 def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], config: str):
     """Generate all memory and connectivity related plots."""
     for scenario, paths in experiment_paths.items():
-        # Create scenario-level directory for combined plots
-        scenario_dir = os.path.dirname(paths[0])  # Get directory containing dataset paths
-        scenario_images_dir = os.path.join(scenario_dir, 'images')
-        os.makedirs(scenario_images_dir, exist_ok=True)
+        # # Create scenario-level directory for combined plots
+        # scenario_dir = os.path.dirname(paths[0])  # Get directory containing dataset paths
+        # scenario_images_dir = os.path.join(scenario_dir, 'images')
+        # os.makedirs(scenario_images_dir, exist_ok=True)
 
         # Generate individual dataset plots
         for dataset_path in paths:
-            save_dir = os.path.join(dataset_path, 'images')
-            os.makedirs(save_dir, exist_ok=True)
 
             dataset_name = os.path.basename(dataset_path)
             algorithm_name = os.path.basename(dataset_path)
@@ -376,6 +422,9 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
                     dataset_name = dataset_name.split('_')[3]
                 else:
                     dataset_name = dataset_name.split('_')[1]
+
+            save_dir = os.path.join(dataset_path, "..", "thesis_output", scenario, dataset_name)
+            os.makedirs(save_dir, exist_ok=True)
             
             if "reset_first_candidate" in algorithm_name:
                 algorithm_name = "RFC"
@@ -449,7 +498,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
                 # New level-specific plots
                 plot_level_connectivity(
                     connectivity_df,
-                    f'Node Connectivity by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
+                    f'Node Connectivity by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -457,7 +506,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
 
                 plot_level_unreachable(
                     connectivity_df,
-                    f'Unreachable Points by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
+                    f'Unreachable Points by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -465,7 +514,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
 
                 plot_level_nodes(
                     connectivity_df,
-                    f'Number of Nodes by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
+                    f'Number of Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -474,24 +523,26 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
                 plot_level_distances(
                     connectivity_df,
                     dataset_name,
-                    f'Distance between Neighbor Nodes by Level {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
+                    algorithm_name,
+                    f'Distance Between Neighbor Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
                     save_dir,
                     f'{scenario}',
-                    experiment_paths
+                    experiment_paths,
+                    config
                 )
 
-                # # Plot scatter and recall plots if search stats exist
-                # if os.path.exists(search_stats_path):
-                #     search_df = load_csv_data(search_stats_path)
-                #     # dataset_name = search_df['dataset'].iloc[0]
-                #     if len(search_df) == len(connectivity_df):
-                #         # New scatter plot with mean recall colormap
-                #         plot_connectivity_scatter(
-                #             connectivity_df,
-                #             search_df,
-                #             f'Node Connectivity vs Distances Computed at Search - {scenario.title()} ({dataset_name})',
-                #             save_dir,
-                #             f'{scenario}',
-                #             experiment_paths
-                #         )
+                # Plot scatter and recall plots if search stats exist
+                if os.path.exists(search_stats_path):
+                    search_df = load_csv_data(search_stats_path)
+                    # dataset_name = search_df['dataset'].iloc[0]
+                    if len(search_df) == len(connectivity_df):
+                        # New scatter plot with mean recall colormap
+                        plot_connectivity_scatter(
+                            connectivity_df,
+                            search_df,
+                            f'Node Connectivity vs Distances Computed at Search\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                            save_dir,
+                            f'{scenario}',
+                            experiment_paths
+                        )
 

@@ -10,6 +10,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.colorbar import Colorbar
 
+experiments = ['fullcoverage', 'newdata', 'random', 'unreachable_points_exclusive']
+
+# experiments = ['unreachable_points_exclusive']
+
 implementations_map = {
     'hnswlib': 'HNSWLib',
     'repl_cand_hnswlib': 'RBC',
@@ -56,18 +60,17 @@ def setup_plot_style():
     """Set up the plot style for publication-quality figures."""
     plt.style.use('seaborn-paper')
 
-    # Use Times New Roman with fallbacks
-    font_family = ['Times New Roman', 'DejaVu Serif', 'Serif']
+    # Use serif with fallbacks
     plt.rcParams['font.family'] = 'serif'
-    plt.rcParams['font.serif'] = font_family
+    plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Serif']
 
-    # Font sizes
-    plt.rcParams['font.size'] = 10
-    plt.rcParams['axes.titlesize'] = 12
-    plt.rcParams['axes.labelsize'] = 10
-    plt.rcParams['xtick.labelsize'] = 9
-    plt.rcParams['ytick.labelsize'] = 9
-    plt.rcParams['legend.fontsize'] = 9
+    # Font sizes - increased for better readability
+    plt.rcParams['font.size'] = 16
+    plt.rcParams['axes.titlesize'] = 18
+    plt.rcParams['axes.labelsize'] = 16      # Increased from 16 (for "Iteration", "Time (seconds)", etc.)
+    plt.rcParams['xtick.labelsize'] = 14     # Increased from 14 (for x-axis tick numbers)
+    plt.rcParams['ytick.labelsize'] = 14     # Increased from 14 (for y-axis tick numbers)
+    plt.rcParams['legend.fontsize'] = 14
 
     # Figure size and DPI
     plt.rcParams['figure.figsize'] = [8, 6]
@@ -76,14 +79,14 @@ def setup_plot_style():
 
     # Line widths and styles
     plt.rcParams['axes.linewidth'] = 0.8
-    plt.rcParams['grid.linewidth'] = 0.6
-    plt.rcParams['lines.linewidth'] = 1.5
+    plt.rcParams['grid.linewidth'] = 0.8  # Increased grid line width
+    plt.rcParams['lines.linewidth'] = 2.0  # Increased line width
     plt.rcParams['lines.markersize'] = 6
 
-    # Grid settings
+    # Grid settings - made more visible
     plt.rcParams['axes.grid'] = True
-    plt.rcParams['grid.alpha'] = 0.3
-    plt.rcParams['grid.linestyle'] = '--'
+    plt.rcParams['grid.alpha'] = 0.5  # Increased grid visibility
+    plt.rcParams['grid.linestyle'] = '-'  # Solid grid lines
 
     # Remove default margins
     plt.rcParams['axes.xmargin'] = 0
@@ -212,8 +215,8 @@ def combine_scenario_plots(experiment_paths: Dict[str, List[str]]):
     for scenario, dataset_paths in experiment_paths.items():
         # Create scenario-level directory for combined plots if it doesn't exist
         scenario_dir = os.path.dirname(dataset_paths[0])
-        scenario_images_dir = os.path.join(scenario_dir, 'images')
-        os.makedirs(scenario_images_dir, exist_ok=True)
+        # scenario_images_dir = os.path.join(scenario_dir, 'images')
+        # os.makedirs(scenario_images_dir, exist_ok=True)
 
         # Get all unique plot types from the first dataset's images directory
         first_dataset_images = os.path.join(dataset_paths[0], 'images')
@@ -255,9 +258,6 @@ def generate_comparison_plots(base_dir: str, output_dir: str, implementations: L
         output_dir: Directory to save comparison plots
         implementations: List of implementations to compare
     """
-
-    # Define experiment types to compare
-    experiments = ['fullcoverage', 'newdata', 'random']
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -345,7 +345,7 @@ def plot_comparison_metrics(base_dir, implementations, experiment, dataset_suffi
 
 def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing recall between implementations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
 
     has_data = False
@@ -390,7 +390,7 @@ def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix
         ax.legend()
 
         # Set y-axis range for recall to 0-1
-        ax.set_ylim(0, 1.05)
+        ax.set_ylim(0, 1)
 
         # Save plot
         save_plot(fig, output_dir, f"recall_comparison")
@@ -401,7 +401,7 @@ def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix
 
 def plot_unreachable_points_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing unreachable points between implementations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
 
     has_data = False
@@ -458,7 +458,7 @@ def plot_unreachable_points_comparison(base_dir, implementations, experiment, da
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Unreachable Points')
-        ax.set_title(f'Unreachable Points Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Unreachable Points Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -474,7 +474,7 @@ def plot_unreachable_points_comparison(base_dir, implementations, experiment, da
 
 def plot_avg_connectivity_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing average node connectivity between implementations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
 
     has_data = False
@@ -514,7 +514,7 @@ def plot_avg_connectivity_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Average Node Connectivity')
-        ax.set_title(f'Node Connectivity Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Node Connectivity Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -530,11 +530,14 @@ def plot_avg_connectivity_comparison(base_dir, implementations, experiment, data
 
 def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing add operation benchmark between implementations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
 
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across all implementations
 
+    # First pass to collect data and find minimum iteration
+    impl_data = {}
     for i, impl in enumerate(implementations):
         # Skip if implementation doesn't have this dataset
         if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
@@ -555,27 +558,42 @@ def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset
 
         if 'mean_time' in df.columns:
             has_data = True
-            # Plot with different colors and markers for different implementations
-            marker = 'o' if i == 0 else 's'
-            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=f"{impl}",
-                   color=color,
-                   marker=marker,
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            impl_data[impl] = {
+                'df': df,
+                'color': '#1f77b4' if i == 0 else '#ff7f0e',  # Blue for impl 1, orange for impl 2
+                'marker': 'o' if i == 0 else 's'
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+
+    # Second pass to plot the data with proper x-axis limits
+    for impl, data in impl_data.items():
+        df = data['df']
+        marker = data['marker']
+        color = data['color']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=f"{impl}",
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
 
     if has_data:
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Add Operation Time Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Add Operation Time Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
 
         # Save plot
         save_plot(fig, output_dir, f"add_benchmark_comparison")
@@ -586,11 +604,14 @@ def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset
 
 def plot_search_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing search operation benchmark between implementations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
 
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across all implementations
 
+    # First pass to collect data and find minimum iteration
+    impl_data = {}
     for i, impl in enumerate(implementations):
         # Skip if implementation doesn't have this dataset
         if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
@@ -611,27 +632,42 @@ def plot_search_benchmark_comparison(base_dir, implementations, experiment, data
 
         if 'mean_time' in df.columns:
             has_data = True
-            # Plot with different colors and markers for different implementations
-            marker = 'o' if i == 0 else 's'
-            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=f"{impl}",
-                   color=color,
-                   marker=marker,
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            impl_data[impl] = {
+                'df': df,
+                'color': '#1f77b4' if i == 0 else '#ff7f0e',  # Blue for impl 1, orange for impl 2
+                'marker': 'o' if i == 0 else 's'
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+
+    # Second pass to plot the data with proper x-axis limits
+    for impl, data in impl_data.items():
+        df = data['df']
+        marker = data['marker']
+        color = data['color']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=f"{impl}",
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
 
     if has_data:
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Search Operation Time Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Search Operation Time Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
 
         # Save plot
         save_plot(fig, output_dir, f"search_benchmark_comparison")
@@ -642,11 +678,14 @@ def plot_search_benchmark_comparison(base_dir, implementations, experiment, data
 
 def plot_delete_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing delete operation benchmark between implementations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
 
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across all implementations
 
+    # First pass to collect data and find minimum iteration
+    impl_data = {}
     for i, impl in enumerate(implementations):
         # Skip if implementation doesn't have this dataset
         if impl not in impl_dataset_map or dataset_suffix not in impl_dataset_map[impl]:
@@ -667,27 +706,42 @@ def plot_delete_benchmark_comparison(base_dir, implementations, experiment, data
 
         if 'mean_time' in df.columns:
             has_data = True
-            # Plot with different colors and markers for different implementations
-            marker = 'o' if i == 0 else 's'
-            color = '#1f77b4' if i == 0 else '#ff7f0e'  # Blue for impl 1, orange for impl 2
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=f"{impl}",
-                   color=color,
-                   marker=marker,
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            impl_data[impl] = {
+                'df': df,
+                'color': '#1f77b4' if i == 0 else '#ff7f0e',  # Blue for impl 1, orange for impl 2
+                'marker': 'o' if i == 0 else 's'
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+
+    # Second pass to plot the data with proper x-axis limits
+    for impl, data in impl_data.items():
+        df = data['df']
+        marker = data['marker']
+        color = data['color']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=f"{impl}",
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
 
     if has_data:
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Delete Operation Time Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Delete Operation Time Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
 
         # Save plot
         save_plot(fig, output_dir, f"delete_benchmark_comparison")
@@ -721,17 +775,17 @@ def save_plot(fig: plt.Figure,
             return
 
         # Create main directory if it doesn't exist
-        os.makedirs(save_dir, exist_ok=True)
+        # os.makedirs(save_dir, exist_ok=True)
 
-        # Create PDF subdirectory
-        pdf_dir = os.path.join(save_dir, "pdf")
-        os.makedirs(pdf_dir, exist_ok=True)
+        # Create png subdirectory
+        png_dir = os.path.join(save_dir, "png")
+        os.makedirs(png_dir, exist_ok=True)
 
         # Remove any existing extensions from the filename
         base_name = os.path.splitext(filename)[0]
         base_path = os.path.join(save_dir, base_name)
-        pdf_path = os.path.join(pdf_dir, base_name)
-        png_path = f"{base_path}.png"
+        pdf_path = f"{base_path}.pdf"
+        png_path = os.path.join(png_dir, base_name + ".png")
 
         # Check if figure has any content
         if not fig.get_axes():
@@ -752,7 +806,7 @@ def save_plot(fig: plt.Figure,
         fig.savefig(png_path, dpi=dpi, bbox_inches='tight', pad_inches=0.05)
 
         # Save as PDF (vector format) with minimal padding
-        fig.savefig(f"{pdf_path}.pdf", format='pdf', bbox_inches='tight', pad_inches=0.05)
+        fig.savefig(pdf_path, format='pdf', bbox_inches='tight', pad_inches=0.05)
 
         print(f"Plot saved successfully as PNG and PDF: {os.path.basename(png_path)}")
 
@@ -763,8 +817,14 @@ def save_plot(fig: plt.Figure,
 
 def get_experiment_paths(base_dir: str) -> Dict[str, List[str]]:
     """Get paths for all experiment data files."""
-    experiments = ['fullcoverage', 'newdata', 'random', 'unreachable_points_sampl_all', 'unreachable_points_sampl_reachable']
+
     paths = {}
+
+    # If last character is -, remove it
+    if base_dir.endswith('-'):
+        base_dir = base_dir[:-1]
+
+    print(base_dir)
 
     for exp in experiments:
         exp_dir = os.path.join(base_dir, exp)

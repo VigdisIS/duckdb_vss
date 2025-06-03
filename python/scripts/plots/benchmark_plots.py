@@ -15,7 +15,8 @@ CONFIG_INFO = {
     "00": "No neighbor update, No tombstones",
     "01": "No neighbor update, With tombstones",
     "10": "With neighbor update, No tombstones",
-    "11": "With neighbor update, With tombstones"
+    "11": "With neighbor update, With tombstones",
+    "-": ""
 }
 
 def plot_benchmark_metrics(df: pd.DataFrame,
@@ -36,10 +37,13 @@ def plot_benchmark_metrics(df: pd.DataFrame,
         if not all(col in df.columns for col in required_cols):
             print(f"Warning: Missing required columns for {filename}")
             return
-
-        fig, ax = plt.subplots()
+        
+        # Apply the plot style
         setup_plot_style()
 
+        # Create figure with specific size to match the good example
+        fig, ax = plt.subplots(figsize=(8, 6))
+        
         # Calculate error bounds
         try:
             lower_bound, upper_bound = calculate_error_bounds(
@@ -51,33 +55,44 @@ def plot_benchmark_metrics(df: pd.DataFrame,
             print(f"Warning: Could not calculate error bounds for {filename}: {str(e)}")
             return
 
-        # Plot with error bounds for mean
+        # Plot with error bounds for mean - use blue color for consistency
         plot_with_error_bounds(
             ax,
             df['iteration'],
             df[f'mean_{metric}'],
             lower_bound,
             upper_bound,
-            label=f'Mean {metric}'
+            label=f'Mean {metric.title()}',
+            color='blue'
         )
 
-        # Add median line if median column exists
+        # Add median line if median column exists - use red dashed line
         if f'median_{metric}' in df.columns:
             ax.plot(df['iteration'], df[f'median_{metric}'],
-                   label=f'Median {metric}',
+                   label=f'Median {metric.title()}',
                    color='red',
                    linestyle='--',
                    linewidth=2)
 
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel(ylabel)
+        # Set labels and title - ensure consistent style
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel(ylabel, fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(title)
-        ax.grid(True)
+
+        # Set tick label sizes explicitly
+        ax.tick_params(axis='both', which='major', labelsize=14)
+        
+        # Use solid grid lines with higher alpha for better visibility
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
 
-        # Set axis limits without extra space
-        set_axis_limits(ax, df['iteration'])
+        # Set axis limits starting at the first data point
+        set_axis_limits(ax, df['iteration'], force_x_zero=True)
+        
+        # Disable scientific notation on y-axis for consistency
+        ax.ticklabel_format(style='plain', axis='y')
 
+        # Save with consistent settings
         save_plot(fig, save_dir, filename)
     except Exception as e:
         print(f"Error plotting benchmark metrics for {filename}: {str(e)}")
@@ -93,7 +108,7 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
             print(f"Warning: No data provided for {filename}")
             return
 
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(8, 6))
         setup_plot_style()
 
         # Colors for different operations
@@ -128,8 +143,8 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
                        linestyle='--',
                        linewidth=2)
 
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(title)
         ax.grid(True, alpha=0.3)
         ax.legend()
@@ -150,7 +165,6 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]], config: str
 
     for scenario, paths in experiment_paths.items():
         for dataset_path in paths:
-            save_dir = os.path.join(dataset_path, 'images')
 
             # Extract dataset name from the folder path
             dataset_name = os.path.basename(dataset_path)
@@ -164,6 +178,10 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]], config: str
                     dataset_name = dataset_name.split('_')[3]
                 else:
                     dataset_name = dataset_name.split('_')[1]
+            
+            # Step one back to get the scenario directory
+            save_dir = os.path.join(dataset_path, "..", "thesis_output", scenario, dataset_name)
+            os.makedirs(save_dir, exist_ok=True)
             
             if "reset_first_candidate" in algorithm_name:
                 algorithm_name = "RFC"
@@ -191,17 +209,17 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]], config: str
                     plot_benchmark_metrics(
                         df,
                         metric,
-                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
+                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
                         f'{metric.title()} (seconds)',
                         save_dir,
                         f'{scenario}_{bm_file.replace(".csv", "")}_{metric}.png'
                     )
 
-            # Generate comparison plot with all operations
-            if benchmark_dfs:
-                plot_benchmark_correlations(
-                    benchmark_dfs,
-                    f'Operation Times Comparison {algorithm_name} [{CONFIG_INFO[config]}] - {scenario.title()} ({dataset_name})',
-                    save_dir,
-                    f'{scenario}_bm_times_comparison.png'
-                )
+            # # Generate comparison plot with all operations
+            # if benchmark_dfs:
+            #     plot_benchmark_correlations(
+            #         benchmark_dfs,
+            #         f'Operation Times Comparison - {algorithm_name} {[{CONFIG_INFO[config]}] if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+            #         save_dir,
+            #         f'{scenario}_bm_times_comparison.png'
+            #     )
