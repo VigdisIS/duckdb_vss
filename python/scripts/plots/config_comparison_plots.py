@@ -53,7 +53,7 @@ def generate_config_comparison_plots(base_dir, output_dir):
     configurations = ["00", "01", "10", "11"]
     
     # Experiment types
-    experiments = ["fullcoverage", "newdata", "random"]
+    experiments = ["fullcoverage", "newdata", "random", "unreachable_points_exclusive"]
     
     # Create output directory if it doesn't exist
     config_comparison_dir = os.path.join(output_dir, "config_comparison")
@@ -137,8 +137,8 @@ def plot_comparison_metrics(base_dir, configurations, experiment, dataset, confi
 
 def plot_recall_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing recall between configurations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
     
     has_data = False
     
@@ -173,14 +173,15 @@ def plot_recall_comparison(base_dir, configurations, experiment, dataset, config
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Mean Recall')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Mean Recall', fontsize=plt.rcParams['axes.labelsize'])
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
         ax.set_title(f'Recall Comparison - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
         # Set y-axis range for recall to 0-1
-        ax.set_ylim(0, 1.05)
+        ax.set_ylim(0, 1)
         
         # Save plot
         save_plot(fig, output_dir, f"recall_comparison")
@@ -191,7 +192,7 @@ def plot_recall_comparison(base_dir, configurations, experiment, dataset, config
 
 def plot_unreachable_points_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing unreachable points between configurations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
@@ -240,10 +241,11 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Unreachable Points')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Unreachable Points', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(f'Unreachable Points Comparison - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
         # Ensure y-axis starts at 0
@@ -258,7 +260,7 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
 
 def plot_avg_connectivity_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing average node connectivity between configurations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
@@ -293,10 +295,11 @@ def plot_avg_connectivity_comparison(base_dir, configurations, experiment, datas
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Average Node Connectivity')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Average Node Connectivity', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(f'Node Connectivity Comparison - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
         # Ensure y-axis starts at 0
@@ -311,11 +314,14 @@ def plot_avg_connectivity_comparison(base_dir, configurations, experiment, datas
 
 def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing add operation benchmark between configurations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across all configurations
     
+    # First pass to collect data and find minimum iteration
+    config_data = {}
     for config in configurations:
         # Skip if configuration doesn't have this dataset
         if config not in config_folders:
@@ -336,24 +342,43 @@ def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset,
         
         if 'mean_time' in df.columns:
             has_data = True
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=f"{CONFIG_INFO[config]}",
-                   color=CONFIG_COLORS[config],
-                   marker=CONFIG_MARKERS[config],
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            config_data[config] = {
+                'df': df,
+                'color': CONFIG_COLORS[config],
+                'marker': CONFIG_MARKERS[config]
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+    
+    # Second pass to plot the data with proper x-axis limits
+    for config, data in config_data.items():
+        df = data['df']
+        color = data['color']
+        marker = data['marker']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=f"{CONFIG_INFO[config]}",
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(f'Add Operation Time Comparison - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
         
         # Save plot
         save_plot(fig, output_dir, f"add_benchmark_comparison")
@@ -364,11 +389,14 @@ def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset,
 
 def plot_search_benchmark_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing search operation benchmark between configurations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across all configurations
     
+    # First pass to collect data and find minimum iteration
+    config_data = {}
     for config in configurations:
         # Skip if configuration doesn't have this dataset
         if config not in config_folders:
@@ -389,24 +417,43 @@ def plot_search_benchmark_comparison(base_dir, configurations, experiment, datas
         
         if 'mean_time' in df.columns:
             has_data = True
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=f"{CONFIG_INFO[config]}",
-                   color=CONFIG_COLORS[config],
-                   marker=CONFIG_MARKERS[config],
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            config_data[config] = {
+                'df': df,
+                'color': CONFIG_COLORS[config],
+                'marker': CONFIG_MARKERS[config]
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+    
+    # Second pass to plot the data with proper x-axis limits
+    for config, data in config_data.items():
+        df = data['df']
+        color = data['color']
+        marker = data['marker']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=f"{CONFIG_INFO[config]}",
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(f'Search Operation Time Comparison - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
         
         # Save plot
         save_plot(fig, output_dir, f"search_benchmark_comparison")
@@ -417,11 +464,14 @@ def plot_search_benchmark_comparison(base_dir, configurations, experiment, datas
 
 def plot_delete_benchmark_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing delete operation benchmark between configurations."""
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
     
     has_data = False
+    min_iteration = float('inf')  # Track minimum iteration across all configurations
     
+    # First pass to collect data and find minimum iteration
+    config_data = {}
     for config in configurations:
         # Skip if configuration doesn't have this dataset
         if config not in config_folders:
@@ -442,24 +492,43 @@ def plot_delete_benchmark_comparison(base_dir, configurations, experiment, datas
         
         if 'mean_time' in df.columns:
             has_data = True
-            ax.plot(df['iteration'], df['mean_time'],
-                   label=f"{CONFIG_INFO[config]}",
-                   color=CONFIG_COLORS[config],
-                   marker=CONFIG_MARKERS[config],
-                   markersize=6,
-                   markevery=max(1, len(df)//10),
-                   linewidth=2)
+            config_data[config] = {
+                'df': df,
+                'color': CONFIG_COLORS[config],
+                'marker': CONFIG_MARKERS[config]
+            }
+            
+            # Update minimum iteration if needed
+            if not df.empty and df['iteration'].min() < min_iteration:
+                min_iteration = df['iteration'].min()
+    
+    # Second pass to plot the data with proper x-axis limits
+    for config, data in config_data.items():
+        df = data['df']
+        color = data['color']
+        marker = data['marker']
+        
+        ax.plot(df['iteration'], df['mean_time'],
+               label=f"{CONFIG_INFO[config]}",
+               color=color,
+               marker=marker,
+               markersize=6,
+               markevery=max(1, len(df)//10),
+               linewidth=2)
     
     if has_data:
         # Set plot labels and title
-        ax.set_xlabel('Iteration')
-        ax.set_ylabel('Time (seconds)')
+        ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
+        ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_title(f'Delete Operation Time Comparison - {experiment.title()} ({dataset})')
-        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
+        ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
-        # Ensure y-axis starts at 0
+        # Ensure y-axis starts at 0 but x-axis starts at min_iteration
         ax.set_ylim(bottom=0)
+        if min_iteration != float('inf'):
+            ax.set_xlim(left=min_iteration)
         
         # Save plot
         save_plot(fig, output_dir, f"delete_benchmark_comparison")

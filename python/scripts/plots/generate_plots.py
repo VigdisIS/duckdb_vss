@@ -19,54 +19,68 @@ def main():
     repl_cand_base_dir = os.path.join(base_dir, "repl_cand_hnswlib", "results")
     # Path to reset_first_candidate results
     reset_first_candidate_base_dir = os.path.join(base_dir, "reset_first_candidate", "results")
+    # Path to hnswlib results
+    hnswlib_base_dir = os.path.join(base_dir, "hnswlib", "results")
+    # Path to usearch results
+    usearch_base_dir = os.path.join(base_dir, "usearch", "results")
 
-    generate_plots_for = "reset_first_candidate"
+    all_plots = ["repl_cand_hnswlib", "reset_first_candidate"]
 
-    configs = []
-    if generate_plots_for == "repl_cand_hnswlib":
-        configs = ["00", "01", "10", "11"]
-    elif generate_plots_for == "reset_first_candidate":
-        configs = ["01"]
+    for plot in all_plots:
+        generate_plots_for = plot
 
-    # Save directory for comparison plots
-    comparison_dir = os.path.join(base_dir, 'comparison_plots')
-    os.makedirs(comparison_dir, exist_ok=True)
-
-    # Get paths to experiment results
-    experiment_paths = {}
-    for config in configs:
+        configs = []
         if generate_plots_for == "repl_cand_hnswlib":
-            experiment_paths[config] = get_experiment_paths(os.path.join(repl_cand_base_dir, config))
+            configs = ["00", "01", "10", "11"]
         elif generate_plots_for == "reset_first_candidate":
-            experiment_paths[config] = get_experiment_paths(os.path.join(reset_first_candidate_base_dir, config))
+            configs = ["01"]
+        elif generate_plots_for == "hnswlib":
+            configs = ["-"]
+        elif generate_plots_for == "usearch":
+            configs = ["-"]
 
-    for config in configs:
-        print(f"Generating plots for config {config}...")
-        print("Generating benchmark plots...")
-        generate_benchmark_plots(experiment_paths[config], config)
+        # Save directory for comparison plots
+        comparison_dir = os.path.join(base_dir, 'comparison_plots')
+        os.makedirs(comparison_dir, exist_ok=True)
 
-        print("Generating memory and connectivity plots...")
-        generate_memory_connectivity_plots(experiment_paths[config], config)
+        # Get paths to experiment results
+        experiment_paths = {}
+        for config in configs:
+            if generate_plots_for == "repl_cand_hnswlib":
+                experiment_paths[config] = get_experiment_paths(os.path.join(repl_cand_base_dir, config))
+            elif generate_plots_for == "reset_first_candidate":
+                experiment_paths[config] = get_experiment_paths(os.path.join(reset_first_candidate_base_dir, config))
+            elif generate_plots_for == "hnswlib":
+                experiment_paths[config] = get_experiment_paths(os.path.join(hnswlib_base_dir, config))
+            elif generate_plots_for == "usearch":
+                experiment_paths[config] = get_experiment_paths(os.path.join(usearch_base_dir, config))
 
-        print("Generating search analysis plots...")
-        generate_search_analysis_plots(experiment_paths[config], config)
+        for config in configs:
+            print(f"Generating plots for config {config}...")
 
-        print("Generating combined plots for all scenarios...")
-        combine_scenario_plots(experiment_paths[config])
+            # print("Generating benchmark plots...")
+            # generate_benchmark_plots(experiment_paths[config], config)
 
-    # Generate comparison plots between configurations (00 vs 01 vs 10 vs 11)
-    print("Generating comparison plots between configurations...")
-    if generate_plots_for == "repl_cand_hnswlib":
-        generate_config_comparison_plots(base_dir, comparison_dir)
+            # print("Generating memory and connectivity plots...")
+            # generate_memory_connectivity_plots(experiment_paths[config], config)
 
-    # Generate comparison plots between implementations (hnswlib vs repl_cand_hnswlib/reset_first_candidate configs)
-    print("Generating comparison plots between hnswlib and each config...")
-    if generate_plots_for == "repl_cand_hnswlib":
-        generate_hnswlib_vs_configs(base_dir, comparison_dir, ["HNSWLib", "RBC"])
-    elif generate_plots_for == "reset_first_candidate":
-        generate_hnswlib_vs_configs(base_dir, comparison_dir, ["HNSWLib", "RFC"])
+            print("Generating search analysis plots...")
+            generate_search_analysis_plots(experiment_paths[config], config)
 
-    print("All plots generated successfully!")
+
+        # Generate comparison plots between configurations (00 vs 01 vs 10 vs 11)
+        print("Generating comparison plots between configurations...")
+        if generate_plots_for == "repl_cand_hnswlib":
+            generate_config_comparison_plots(base_dir, comparison_dir)
+
+        # Generate comparison plots between implementations (hnswlib vs repl_cand_hnswlib/reset_first_candidate configs)
+        print("Generating comparison plots between hnswlib and each config...")
+        if generate_plots_for == "repl_cand_hnswlib":
+            generate_hnswlib_vs_configs(base_dir, comparison_dir, ["HNSWLib", "RBC"])
+        elif generate_plots_for == "reset_first_candidate":
+            generate_hnswlib_vs_configs(base_dir, comparison_dir, ["HNSWLib", "RFC"])
+
+        print("All plots generated successfully!")
 
 if __name__ == "__main__":
     main()
