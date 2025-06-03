@@ -32,6 +32,9 @@ build-reset-first-candidate: prepare-build
 build-mn-rbc: prepare-build
 	cd build && cmake .. && make -C MN_RBC
 
+build-mn-ru: prepare-build
+	cd build && cmake .. && make -C MN_RU
+
 # usearch experiments
 run-create-usearch-indexes: build-usearch
 	./build/usearch/create_indexes
@@ -141,6 +144,28 @@ run-all-mn-rbc: build-mn-rbc
 	./build/MN_RBC/random
 	./build/MN_RBC/unreachable_points_sampl_reachable
 	@echo "All MN_RBC experiments completed."
+
+
+# MN_RU experiments
+run-mn-ru-full-coverage: build-mn-ru
+	./build/MN_RU/full_coverage
+
+run-mn-ru-new-data: build-mn-ru
+	./build/MN_RU/new_data
+
+run-mn-ru-random: build-mn-ru
+	./build/MN_RU/random
+
+run-mn-ru-unreachable-points-sampl-reachable: build-mn-ru
+	./build/MN_RU/unreachable_points_sampl_reachable
+
+run-all-mn-ru: build-mn-ru
+	@echo "Running all MN_RU experiments..."
+	./build/MN_RU/full_coverage
+	./build/MN_RU/new_data
+	./build/MN_RU/random
+	./build/MN_RU/unreachable_points_sampl_reachable
+	@echo "All MN_RU experiments completed."
 
 
 # only experiments in order (no setup)

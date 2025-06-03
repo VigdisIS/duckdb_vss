@@ -30,6 +30,16 @@ public:
         int num_threads
     );
 
+    static size_t parallelAddMNRU(
+        HierarchicalNSW<float>& index,
+        const std::vector<std::vector<float>>& points, 
+        const std::vector<size_t>& labels,
+        const std::string& dataset_name,
+        int iteration,
+        Appender& add_bm_appender,
+        int num_threads
+    );
+
     static size_t parallelAddReplCand(
         HierarchicalNSW<float>& index,
         const std::vector<std::vector<float>>& points, 

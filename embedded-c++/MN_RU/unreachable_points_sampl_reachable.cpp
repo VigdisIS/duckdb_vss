@@ -11,9 +11,8 @@ using namespace duckdb;
 using namespace hnswlib;
 
 std::string experiment;
-std::string alg_config = "11";
 
-// ==================== Main Exclusive Unreachable Points USearch Runner ====================
+// ==================== Main Exclusive Unreachable Points MNγ-RU Runner ====================
 class HNSWLibExclusiveUPRunner {
 private:
     DuckDB db;
@@ -21,11 +20,9 @@ private:
     std::vector<DatasetConfig> datasets;
     int max_iterations;
     int threads;
-    bool use_neigh_update;
-    bool include_tombstones;
 
 public:
-HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, bool include_tombstones) : db(nullptr), con(db), max_iterations(iterations), threads(threads), use_neigh_update(use_neigh_update), include_tombstones(include_tombstones) {
+HNSWLibExclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), max_iterations(iterations), threads(threads) {
         con.Query("SET THREADS TO " + std::to_string(threads) + ";");
         datasets = DatabaseSetup::getDatasetConfigs();
     }
@@ -47,7 +44,6 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
 
             // Setup database tables
             DatabaseSetup::initializeResultsTable(con, dataset.name);
-            DatabaseSetup::initializeReplMethodDistTable(con, dataset.name);
             DatabaseSetup::initializeBMTable(con, dataset.name + "_del");
             DatabaseSetup::initializeBMTable(con, dataset.name + "_add");
             DatabaseSetup::initializeBMTable(con, dataset.name + "_search");
@@ -113,7 +109,6 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             Appender add_bm_appender(con, dataset.name + "_add_bm");
             Appender search_bm_appender(con, dataset.name + "_search_bm");
             Appender early_termination_appender(con, "early_terminated_queries");
-            Appender repl_method_dist_appender(con, dataset.name + "_repl_method_dist");
 
             std::size_t executor_threads = (std::thread::hardware_concurrency());
             std::cout << "Threads: " << executor_threads << std::endl;
@@ -166,6 +161,7 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             for (int iteration = 1; iteration <= max_iterations; iteration++) {
                 std::cout << "▶️ ITERATION " << iteration << " ▶️" << std::endl;
 
+                // Get sample vectors to delete and re-add
                 std::vector<size_t> available_points_vec(available_points.begin(), available_points.end());
                 std::shuffle(available_points_vec.begin(), available_points_vec.end(), gen);
 
@@ -195,8 +191,8 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
                 }
                 
                 // Re-add vectors from this partition to the index
-                size_t added = HNSWLibIndexOperations::parallelAddMNRBC(index, deleted_vectors, new_indices,  dataset.name, 
-                    iteration, add_bm_appender, repl_method_dist_appender, executor_threads, use_neigh_update, include_tombstones);                       
+                size_t added = HNSWLibIndexOperations::parallelAddMNRU(index, deleted_vectors, new_indices,  dataset.name, 
+                    iteration, add_bm_appender, executor_threads);                       
 
                 // Log index stats
                 index.log_memory_stats();
@@ -224,7 +220,6 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
 
                 std::cout << "Unreachable points: " << unreachable_points_number << " out of " << dataset_cardinality << std::endl;
 
-
                 found_points.clear();
                 for (const auto& idx : results[0]) {
                     if (idx < 1000000) {
@@ -250,7 +245,6 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             del_bm_appender.Close();
             add_bm_appender.Close();
             search_bm_appender.Close();
-            repl_method_dist_appender.Close();
 
             // Calculate recall and aggregate stats
             QueryRunner::calculateRecall(con, dataset.name);
@@ -262,8 +256,8 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             QueryRunner::aggregateBMStats(con, dataset.name + "_search", test_vectors_count, sample_size);
 
             // Output experiment results to CSV
-            // dir name: MN_RBC/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{sample_fraction}s/
-            std::string output_dir = "MN_RBC/results/" + alg_config + "/unreachable_points_exclusive/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
+            // dir name: MN_RU/results/{experiment}/{dataset_name}_{num_queries}q_{num_iterations}i_{sample_fraction}s/
+            std::string output_dir = "MN_RU/results/unreachable_points_exclusive/" +  experiment + dataset.name + "_" + std::to_string(test_vectors_count) + "q_" + std::to_string(max_iterations) + "i_" + std::to_string(sample_size) + "r/";
             // Create the directory if it doesn't exist
             std::filesystem::create_directories(output_dir);
             FileOperations::cleanupOutputFiles(output_dir);
@@ -272,8 +266,6 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             QueryRunner::outputTableAsCSV(con, dataset.name + "_del_bm_stats", output_dir + "bm_delete.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_add_bm_stats", output_dir + "bm_add.csv");
             QueryRunner::outputTableAsCSV(con, dataset.name + "_search_bm_stats", output_dir + "bm_search.csv");
-            QueryRunner::outputTableAsCSV(con, dataset.name + "_repl_method_dist_stats", output_dir + "repl_method_dist.csv");
-            
             // Output unreachable points as csv
             std::ofstream unreachable_points_file(output_dir + "unreachable_points.csv");
             unreachable_points_file << "iteration,unreachable_points" << std::endl;
@@ -286,10 +278,10 @@ HNSWLibExclusiveUPRunner(int iterations, int threads, bool use_neigh_update, boo
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
 
-            // // Save the final index
-            // std::string s_path = output_dir + "random_" + dataset.name + "_index.bin";
-            // index.saveIndex(s_path);
-            // std::cout << "Index saved to: " << s_path << std::endl;
+            // Save the final index
+            std::string s_path = output_dir + "random_" + dataset.name + "_index.bin";
+            index.saveIndex(s_path);
+            std::cout << "Index saved to: " << s_path << std::endl;
 
             // Cleanup intermediate files
             FileOperations::cleanupOutputFiles(std::filesystem::current_path());
@@ -315,12 +307,13 @@ int main() {
     int max_iterations = 3000;
     std::size_t executor_threads = (std::thread::hardware_concurrency());
 
-    experiment = "MN_RBC_";
+    experiment = "MN_RU_";
 
     try {
+
         // sift
-        HNSWLibExclusiveUPRunner s_11_runner(max_iterations, executor_threads, true, true);
-        s_11_runner.runTest(2);
+        HNSWLibExclusiveUPRunner s_runner(max_iterations, executor_threads);
+        s_runner.runTest(2);
 
         return 0;
     } catch (std::exception& e) {

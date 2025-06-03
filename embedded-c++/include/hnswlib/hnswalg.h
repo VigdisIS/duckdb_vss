@@ -2406,8 +2406,118 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         return used_repl_cand;
     }
 
+    /*
+    * Adds point. Updates the point if it is already in the index.
+    * If replacement of deleted elements is enabled: replaces previously deleted point if any, updating it with new point
+    */
+    void addPointMNRU(const void *data_point, labeltype label, bool replace_deleted = true) {
+        if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
+            throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
+        }
 
+        // lock all operations with element by label
+        std::unique_lock <std::mutex> lock_label(getLabelOpMutex(label));
+        if (!replace_deleted) {
+            addPoint(data_point, label, -1);
+            return;
+        }
+        // check if there is vacant place
+        tableint internal_id_replaced;
+        std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+        bool is_vacant_place = !deleted_elements.empty();
+        if (is_vacant_place) {
+            internal_id_replaced = *deleted_elements.begin();
+            deleted_elements.erase(internal_id_replaced);
+        }
+        lock_deleted_elements.unlock();
 
+        // if there is no vacant place then add or update point
+        // else add point to vacant place
+        if (!is_vacant_place) {
+            addPoint(data_point, label, -1);
+        } else {
+            // we assume that there are no concurrent operations on deleted element
+            labeltype label_replaced = getExternalLabel(internal_id_replaced);
+            setExternalLabel(internal_id_replaced, label);
+
+            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
+            label_lookup_.erase(label_replaced);
+            label_lookup_[label] = internal_id_replaced;
+            lock_table.unlock();
+
+            unmarkDeletedInternal(internal_id_replaced);
+
+            // update the feature vector associated with existing point with new vector
+            memcpy(getDataByInternalId(internal_id_replaced), data_point, data_size_);
+
+            int maxLevelCopy = maxlevel_;
+            tableint entryPointCopy = enterpoint_node_;
+            // If point to be updated is entry point and graph just contains single element then just return.
+            if (entryPointCopy == internal_id_replaced && cur_element_count == 1)
+                return;
+
+            int elemLevel = element_levels_[internal_id_replaced];
+
+            // First update previous neighbors at all levels
+            for (int layer = 0; layer <= elemLevel; layer++) {
+                std::unordered_set<tableint> MCOneHops;
+                std::vector<tableint> listOneHop = getConnectionsWithLock(internal_id_replaced, layer);
+                if (listOneHop.size() == 0)
+                    continue;
+
+                for (auto&& elOneHop : listOneHop) {
+                    // If neighbor is mutually connected to tombstone, add it
+                    auto neighborsOneHop = getConnectionsWithLock(elOneHop, layer);
+                    if(std::find(neighborsOneHop.begin(), neighborsOneHop.end(), internal_id_replaced) != neighborsOneHop.end()) {
+                        MCOneHops.insert(elOneHop);
+                    }
+                }
+
+                for (auto&& neigh : MCOneHops) {
+                    // if (neigh == internalId)
+                    //     continue;
+
+                    // Get neighbors of mutually connected neighbor node
+                    std::vector<tableint> candidatesCombined = getConnectionsWithLock(neigh, layer);
+                    // Combine with one-hop neighbors of tombstone and the new data label
+                    candidatesCombined.push_back(internal_id_replaced);
+                    for (auto&& elOneHop : listOneHop) {
+                        candidatesCombined.push_back(elOneHop);
+                    }
+
+                    // Get candidates from combined neighbors
+                    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidates;
+                    for (auto&& cand : candidatesCombined) {
+                        if (cand == neigh)
+                            continue;
+
+                        dist_t distance = fstdistfunc_(getDataByInternalId(neigh), getDataByInternalId(cand), dist_func_param_);
+                        candidates.emplace(distance, cand);
+                    }
+
+                    // Retrieve neighbours using alpha-RNG heuristic (alpha = 1.1) and set connections.
+                    getNeighborsByHeuristicAlphaRNG(candidates, layer == 0 ? maxM0_ : maxM_, 1.1);
+
+                    {
+                        std::unique_lock <std::mutex> lock(link_list_locks_[neigh]);
+                        linklistsizeint *ll_cur;
+                        ll_cur = get_linklist_at_level(neigh, layer);
+                        size_t candSize = candidates.size();
+                        setListCount(ll_cur, candSize);
+                        tableint *data = (tableint *) (ll_cur + 1);
+                        for (size_t idx = 0; idx < candSize; idx++) {
+                            data[idx] = candidates.top().second;
+                            candidates.pop();
+                        }
+                    }
+                }
+            }
+
+            repairConnectionsForUpdate(data_point, entryPointCopy, internal_id_replaced, elemLevel, maxLevelCopy);
+
+            return;
+        }
+    }
     
 };
 }  // namespace hnswlib

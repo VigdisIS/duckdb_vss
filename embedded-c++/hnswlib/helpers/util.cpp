@@ -310,6 +310,27 @@ void util::addPointsMultiThread(hnswlib::HierarchicalNSW<float>& index, const st
     });
 }
 
+void util::addPointsMNRUMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, bool repl_cand) {
+    size_t num_points = points.size();
+
+    ParallelFor(0, num_points, num_threads, [&](size_t i, size_t) {
+        try {
+            auto start_time = std::chrono::high_resolution_clock::now();
+
+            index.addPointMNRU(points[i].data(), labels[i], true);
+
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration<double>(end_time - start_time).count();
+            std::lock_guard<std::mutex> lock(bench_mutex);
+            benchmarks.push_back({dataset_name, iteration, duration});
+        }
+        catch (const std::exception& e) {
+            std::lock_guard<std::mutex> lock(bench_mutex);
+            std::cerr << "Error adding vector " << i << ": " << e.what() << std::endl;
+        }
+    });
+}
+
 void util::addPointsSingleThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, bool repl_cand) {
     size_t num_points = points.size();
 
