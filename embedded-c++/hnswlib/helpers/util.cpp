@@ -217,6 +217,39 @@ void util::addReplCandMultiThread(hnswlib::HierarchicalNSW<float>& index, const 
     });
 }
 
+void util::addMNRBCMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, std::vector<std::tuple<std::string, int, int, int, double>>& repl_method_dist, std::mutex& repl_method_dist_mutex, bool use_neigh_update, bool include_tombstones) {
+    size_t num_points = points.size();
+
+    ParallelFor(0, num_points, num_threads, [&](size_t i, size_t) {
+        try {
+            auto start_time = std::chrono::high_resolution_clock::now();
+            auto used_repl_cand = index.addPointMNGammaRBC(points[i].data(), labels[i], true, use_neigh_update, include_tombstones);
+            auto end_time = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration<double>(end_time - start_time).count();
+            std::lock_guard<std::mutex> lock(bench_mutex);
+            benchmarks.push_back({dataset_name, iteration, duration});
+
+            // Thread-safe collection of replace method distribution
+            {
+                std::lock_guard<std::mutex> lock(repl_method_dist_mutex);
+
+                // Store the search result
+                repl_method_dist.push_back({
+                    dataset_name,
+                    iteration,
+                    i,
+                    used_repl_cand,
+                    duration
+                });
+            }
+        }
+        catch (const std::exception& e) {
+            std::lock_guard<std::mutex> lock(bench_mutex);
+            std::cerr << "Error adding vector " << i << ": " << e.what() << std::endl;
+        }
+    });
+}
+
 void util::addResetFirstCandidateMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<std::vector<float>>& points, const std::vector<size_t>& labels, int num_threads, std::string dataset_name, int iteration, std::vector<std::tuple<std::string, int, double>>& benchmarks, std::mutex& bench_mutex, std::vector<std::tuple<std::string, int, int, int, double>>& repl_method_dist, std::mutex& repl_method_dist_mutex) {
     size_t num_points = points.size();
 
