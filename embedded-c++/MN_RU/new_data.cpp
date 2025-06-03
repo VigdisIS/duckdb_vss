@@ -208,11 +208,6 @@ HNSWLibNewDataRunner(int iterations, int threads) : db(nullptr), con(db), max_it
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
 
-            // Save the final index
-            std::string s_path = output_dir + "new_data_" + dataset.name + "_index.bin";
-            index.saveIndex(s_path);
-            std::cout << "Index saved to: " << s_path << std::endl;
-
             // Cleanup intermediate files
             FileOperations::cleanupOutputFiles(std::filesystem::current_path());
 
@@ -244,17 +239,17 @@ int main() {
         HNSWLibNewDataRunner fm_runner(max_iterations, executor_threads);
         fm_runner.runTest(0);
 
-        // mnist
-        HNSWLibNewDataRunner m_runner(max_iterations, executor_threads);
-        m_runner.runTest(1);
+        // // mnist
+        // HNSWLibNewDataRunner m_runner(max_iterations, executor_threads);
+        // m_runner.runTest(1);
 
-        // sift
-        HNSWLibNewDataRunner s_runner(max_iterations, executor_threads);
-        s_runner.runTest(2);
+        // // sift
+        // HNSWLibNewDataRunner s_runner(max_iterations, executor_threads);
+        // s_runner.runTest(2);
 
-        // gist
-        HNSWLibNewDataRunner g_runner(max_iterations, executor_threads);
-        g_runner.runTest(3);
+        // // gist
+        // HNSWLibNewDataRunner g_runner(max_iterations, executor_threads);
+        // g_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {

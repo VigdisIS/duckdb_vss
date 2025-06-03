@@ -177,11 +177,6 @@ HNSWLibFullCoverageRunner(int iterations, int threads) : db(nullptr), con(db), m
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
 
-            // Save the final index
-            std::string s_path = output_dir + "full_coverage_" + dataset.name + "_index.bin";
-            index.saveIndex(s_path);
-            std::cout << "Index saved to: " << s_path << std::endl;
-
             // Cleanup intermediate files
             FileOperations::cleanupOutputFiles(std::filesystem::current_path());
 
@@ -208,21 +203,21 @@ int main() {
     experiment = "MN_RU_";
 
     try {
-        // fashion_mnist
-        HNSWLibFullCoverageRunner fm_runner(max_iterations, executor_threads);
-        fm_runner.runTest(0);
+        // // fashion_mnist
+        // HNSWLibFullCoverageRunner fm_runner(max_iterations, executor_threads);
+        // fm_runner.runTest(0);
 
         // mnist
         HNSWLibFullCoverageRunner m_runner(max_iterations, executor_threads);
-        m_runner.runTest(1);
+        // m_runner.runTest(1);
 
-        // sift
-        HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
-        s_runner.runTest(2);
+        // // sift
+        // HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
+        // s_runner.runTest(2);
 
-        // gist
-        HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
-        g_runner.runTest(3);
+        // // gist
+        // HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
+        // g_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {

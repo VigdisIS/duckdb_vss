@@ -2,7 +2,7 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/MN_RU)
 
 # MN_RU executables
-add_executable(MN_RBC_random random.cpp)
+add_executable(MN_RU_random random.cpp)
 add_executable(MN_RU_full_coverage full_coverage.cpp)
 add_executable(MN_RU_new_data new_data.cpp)
 add_executable(MN_RU_unreachable_points_sampl_reachable unreachable_points_sampl_reachable.cpp)

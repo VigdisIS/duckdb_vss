@@ -184,11 +184,6 @@ HNSWLibRandomRunner(int iterations, int threads) : db(nullptr), con(db), max_ite
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
 
-            // Save the final index
-            std::string s_path = output_dir + "random_" + dataset.name + "_index.bin";
-            index.saveIndex(s_path);
-            std::cout << "Index saved to: " << s_path << std::endl;
-
             // Cleanup intermediate files
             FileOperations::cleanupOutputFiles(std::filesystem::current_path());
 
@@ -215,17 +210,17 @@ int main() {
     experiment = "MN_RU_";
 
     try {
-        // fashion_mnist
-        HNSWLibRandomRunner fm_runner(max_iterations, executor_threads);
-        fm_runner.runTest(0);
+        // // fashion_mnist
+        // HNSWLibRandomRunner fm_runner(max_iterations, executor_threads);
+        // fm_runner.runTest(0);
 
-        // mnist
-        HNSWLibRandomRunner m_runner(max_iterations, executor_threads);
-        m_runner.runTest(1);
+        // // mnist
+        // HNSWLibRandomRunner m_runner(max_iterations, executor_threads);
+        // m_runner.runTest(1);
 
-        // sift
-        HNSWLibRandomRunner s_runner(max_iterations, executor_threads);
-        s_runner.runTest(2);
+        // // sift
+        // HNSWLibRandomRunner s_runner(max_iterations, executor_threads);
+        // s_runner.runTest(2);
 
         // gist
         HNSWLibRandomRunner g_runner(max_iterations, executor_threads);

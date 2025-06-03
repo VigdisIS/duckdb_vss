@@ -278,11 +278,6 @@ HNSWLibExclusiveUPRunner(int iterations, int threads) : db(nullptr), con(db), ma
             FileOperations::copyFileTo("node_connectivity.csv", output_dir + "node_connectivity.csv");
             FileOperations::copyFileTo("memory_stats.csv", output_dir + "memory_stats.csv");
 
-            // Save the final index
-            std::string s_path = output_dir + "random_" + dataset.name + "_index.bin";
-            index.saveIndex(s_path);
-            std::cout << "Index saved to: " << s_path << std::endl;
-
             // Cleanup intermediate files
             FileOperations::cleanupOutputFiles(std::filesystem::current_path());
 
