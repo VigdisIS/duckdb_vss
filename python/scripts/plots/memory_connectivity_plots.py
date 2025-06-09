@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-from scripts.plots.plot_utils import (load_csv_data, setup_plot_style, save_plot, set_axis_limits)
+from scripts.plots.plot_utils import (load_csv_data, setup_plot_style, save_plot, set_axis_limits, apply_bold_styling)
 
 CONFIG_INFO = {
     "00": "No neighbor update, No tombstones",
@@ -17,14 +17,49 @@ CONFIG_INFO = {
     "-": ""
 }
 
+
+CONFIG_MAP = {
+    "00": "1",
+    "01": "2",
+    "10": "3",
+    "11": "4",
+    "-": ""
+}
+
+EXPERIMENT_NAME_MAP = {
+    "fullcoverage": "Full Coverage",
+    "newdata": "New Data",
+    "random": "Random",
+    "unreachable_points_exclusive": "Unreachable Points",
+    "unreachable": "Unreachable Points"
+}
+
+def get_implementation_label(impl_code, config):
+    """Get the display label for an implementation based on code and config."""
+    if impl_code == "RBC":
+        return f"OBS-RU-B$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "RFC":
+        return f"OBS-RU-L$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "hnswlib":
+        return "HNSW-RU"
+    elif impl_code == "MN-RU":
+        return "MN-RU"
+    elif impl_code == "MN-RBC":
+        return r"O$\alpha$G-RU"
+    elif impl_code == "usearch":
+        return "D-RU"
+    else:
+        raise ValueError(f"Invalid implementation code: {impl_code}")
+
 def plot_memory_usage(df: pd.DataFrame,
                      title: str,
                      save_dir: str,
                      filename: str,
                      experiment_paths: Dict[str, List[str]]):
     """Plot memory usage metrics over iterations."""
-    fig, ax = plt.subplots()
     setup_plot_style()
+    fig, ax = plt.subplots()
+    
 
     # Plot each memory metric
     metrics = ['index_size', 'index_capacity', 'index_mem_usage']
@@ -42,6 +77,7 @@ def plot_memory_usage(df: pd.DataFrame,
     # Set axis limits without extra space
     set_axis_limits(ax, df.index)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, filename, experiment_paths)
 
 def plot_slot_distribution(df: pd.DataFrame,
@@ -78,6 +114,7 @@ def plot_slot_distribution(df: pd.DataFrame,
     # Set axis limits without extra space
     set_axis_limits(ax, pd.Series(x))
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_slot_distribution", experiment_paths)
     plt.close()
 
@@ -101,6 +138,7 @@ def plot_memory_usage_over_time(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(range(len(df))), y_padding=0.4)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_memory_usage_over_time", experiment_paths)
     plt.close()
 
@@ -124,7 +162,13 @@ def plot_node_connectivity(df: pd.DataFrame,
     name_map = {
         'nodes_count': 'Number of Nodes',
         'unreachable_count': 'Unreachable Points',
-        'avg_connections': 'Mean Connectivity'
+        'avg_connections': 'Connectivity'
+    }
+
+    y_axis_label = {
+        'nodes_count': 'Number of Nodes',
+        'unreachable_count': 'Unreachable Points Count',
+        'avg_connections': 'Mean Connectivity Count'
     }
 
     # Create iteration sequence
@@ -139,9 +183,9 @@ def plot_node_connectivity(df: pd.DataFrame,
 
             ax.plot(iterations, df[metric], color=color, linewidth=2)
 
-            ax.set_title(f'{name_map[metric]} Over Iterations\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.split("_")[0].title()} ({dataset_name})')
+            ax.set_title(f'{name_map[metric]} Over Iterations - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[filename.split("_")[0]]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})')
             ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
-            ax.set_ylabel('Count', fontsize=plt.rcParams['axes.labelsize'])
+            ax.set_ylabel(y_axis_label[metric], fontsize=plt.rcParams['axes.labelsize'])
             # Set tick label sizes explicitly
             ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
             
@@ -162,6 +206,7 @@ def plot_node_connectivity(df: pd.DataFrame,
                 set_axis_limits(ax, pd.Series(iterations), y_padding=y_padding)
                 ax.set_ylim(bottom=0)
             
+            apply_bold_styling(ax)
             save_plot(fig, save_dir, f"{filename}_{metric}", experiment_paths)
             plt.close()
 
@@ -195,6 +240,7 @@ def plot_level_connectivity(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_level_connectivity", experiment_paths)
     plt.close()
 
@@ -228,6 +274,7 @@ def plot_level_unreachable(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_level_unreachable", experiment_paths)
     plt.close()
 
@@ -261,6 +308,7 @@ def plot_level_nodes(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_level_nodes", experiment_paths)
     plt.close()
 
@@ -296,7 +344,7 @@ def plot_level_distances(df: pd.DataFrame,
 
     # Set labels and title - ensure consistent style
     ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
-    ax.set_ylabel('Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Mean Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
     ax.set_title(title)
 
     # Set tick label sizes explicitly
@@ -309,6 +357,7 @@ def plot_level_distances(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_level_avg_distances", experiment_paths)
     plt.close()
 
@@ -320,7 +369,7 @@ def plot_level_distances(df: pd.DataFrame,
         min_col = f'min_dist_l{level}'
         ax.plot(iterations, df[min_col], label=f'Level {level}', color=color, linewidth=2)
 
-    ax.set_title(f'Minimum Distances Between Neighbor Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.title()} ({dataset_name})')
+    ax.set_title(f'Minimum Distances Between Neighbor Nodes by Level - {get_implementation_label(algorithm_name, config)}\n{EXPERIMENT_NAME_MAP[filename.split("_")[0]]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})')
     # Set labels and title - ensure consistent style
     ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
     ax.set_ylabel('Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
@@ -335,6 +384,7 @@ def plot_level_distances(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_level_min_distances", experiment_paths)
     plt.close()
 
@@ -346,7 +396,7 @@ def plot_level_distances(df: pd.DataFrame,
         max_col = f'max_dist_l{level}'
         ax.plot(iterations, df[max_col], label=f'Level {level}', color=color, linewidth=2)
 
-    ax.set_title(f'Maximum Distances Between Neighbor Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.title()} ({dataset_name})')
+    ax.set_title(f'Maximum Distances Between Neighbor Nodes by Level - {get_implementation_label(algorithm_name, config)}\n{EXPERIMENT_NAME_MAP[filename.split("_")[0]]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})')
     # Set labels and title - ensure consistent style
     ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
     ax.set_ylabel('Euclidean Distance', fontsize=plt.rcParams['axes.labelsize'])
@@ -361,6 +411,7 @@ def plot_level_distances(df: pd.DataFrame,
     # Set axis limits with extra padding for better visualization
     set_axis_limits(ax, pd.Series(iterations), y_padding=0.2)
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_level_max_distances", experiment_paths)
     plt.close()
 
@@ -399,6 +450,7 @@ def plot_connectivity_scatter(df: pd.DataFrame,
     set_axis_limits(ax, df['avg_connections'], force_x_zero=False, y_padding=0.2)
     ax.ticklabel_format(style='plain', axis='y')
 
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_node_connectivity_vs_distances_computed", experiment_paths)
     plt.close()
 
@@ -415,25 +467,43 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
 
             dataset_name = os.path.basename(dataset_path)
             algorithm_name = os.path.basename(dataset_path)
+            # Extract dataset name from the folder path
+            dataset_name = os.path.basename(dataset_path)
+            algorithm_name = os.path.basename(dataset_path)
+
             if "fashion_mnist" in dataset_name:
                 dataset_name = "fashion-mnist"
+            elif "mnist" in dataset_name:
+                dataset_name = "mnist"
+            elif "sift" in dataset_name:
+                dataset_name = "sift"
+            elif "gist" in dataset_name:
+                dataset_name = "gist"
             else:
-                if("cand" in dataset_name):
-                    dataset_name = dataset_name.split('_')[3]
-                else:
-                    dataset_name = dataset_name.split('_')[1]
+                # throw error
+                raise ValueError(f"Invalid dataset name: {dataset_name}")
 
-            save_dir = os.path.join(dataset_path, "..", "thesis_output", scenario, dataset_name)
+            if "repl_cand" in algorithm_name:
+                algorithm_name = "RBC"
+            elif "reset_first" in algorithm_name:
+                algorithm_name = "RFC"
+            elif "MN_RU" in algorithm_name:
+                algorithm_name = "MN-RU"
+            elif "MN_RBC" in algorithm_name:
+                algorithm_name = "MN-RBC"
+            elif "usearch" in algorithm_name:
+                algorithm_name = "usearch"
+            elif "hnswlib" in algorithm_name:
+                algorithm_name = "hnswlib"
+            else:
+                # throw error
+                raise ValueError(f"Invalid algorithm name: {algorithm_name}")
+
+            save_dir = os.path.join(dataset_path, "..", "..","..","..","figures", algorithm_name, scenario, dataset_name)
+            if(algorithm_name == "RBC" or algorithm_name == "RFC"):
+                save_dir = os.path.join(dataset_path,  "..", "..", "..","..","..","figures", algorithm_name, config, scenario, dataset_name)
             os.makedirs(save_dir, exist_ok=True)
             
-            if "reset_first_candidate" in algorithm_name:
-                algorithm_name = "RFC"
-            elif "repl_cand" in algorithm_name:
-                algorithm_name = "RBC"
-            elif "hnswlib" in algorithm_name:
-                algorithm_name = "HNSWLib"
-            elif "usearch" in algorithm_name:
-                algorithm_name = "USearch"
 
             # # Memory stats plots
             # memory_stats_path = os.path.join(dataset_path, 'memory_stats.csv')
@@ -498,7 +568,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
                 # New level-specific plots
                 plot_level_connectivity(
                     connectivity_df,
-                    f'Node Connectivity by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                    f'Node Connectivity by Level - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -506,7 +576,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
 
                 plot_level_unreachable(
                     connectivity_df,
-                    f'Unreachable Points by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                    f'Unreachable Points by Level - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -514,7 +584,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
 
                 plot_level_nodes(
                     connectivity_df,
-                    f'Number of Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                    f'Number of Nodes by Level - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths
@@ -524,7 +594,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
                     connectivity_df,
                     dataset_name,
                     algorithm_name,
-                    f'Distance Between Neighbor Nodes by Level\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                    f'Distance Between Neighbor Nodes by Level - {get_implementation_label(algorithm_name, config)}\n{EXPERIMENT_NAME_MAP[scenario]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})',
                     save_dir,
                     f'{scenario}',
                     experiment_paths,
@@ -540,7 +610,7 @@ def generate_memory_connectivity_plots(experiment_paths: Dict[str, List[str]], c
                         plot_connectivity_scatter(
                             connectivity_df,
                             search_df,
-                            f'Node Connectivity vs Distances Computed at Search\n- {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                            f'Node Connectivity vs Distances Computed at Search - {get_implementation_label(algorithm_name, config)}\n{EXPERIMENT_NAME_MAP[scenario]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})',
                             save_dir,
                             f'{scenario}',
                             experiment_paths

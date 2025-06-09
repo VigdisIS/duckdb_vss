@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scripts.plots.plot_utils import (load_csv_data, calculate_error_bounds,
-                        plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits)
+                        plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits, apply_bold_styling)
 
 # Configuration descriptions
 CONFIG_INFO = {
@@ -18,6 +18,38 @@ CONFIG_INFO = {
     "11": "With neighbor update, With tombstones",
     "-": ""
 }
+
+CONFIG_MAP = {
+    "00": "1",
+    "01": "2",
+    "10": "3",
+    "11": "4",
+    "-": ""
+}
+
+EXPERIMENT_NAME_MAP = {
+    "fullcoverage": "Full Coverage",
+    "newdata": "New Data",
+    "random": "Random",
+    "unreachable_points_exclusive": "Unreachable Points"
+}
+
+def get_implementation_label(impl_code, config):
+    """Get the display label for an implementation based on code and config."""
+    if impl_code == "RBC":
+        return f"OBS-RU-B$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "RFC":
+        return f"OBS-RU-L$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "hnswlib":
+        return "HNSW-RU"
+    elif impl_code == "MN-RU":
+        return "MN-RU"
+    elif impl_code == "MN-RBC":
+        return r"O$\alpha$G-RU"
+    elif impl_code == "usearch":
+        return "D-RU"
+    else:
+        raise ValueError(f"Invalid implementation code: {impl_code}")
 
 def plot_benchmark_metrics(df: pd.DataFrame,
                          metric: str,
@@ -37,13 +69,13 @@ def plot_benchmark_metrics(df: pd.DataFrame,
         if not all(col in df.columns for col in required_cols):
             print(f"Warning: Missing required columns for {filename}")
             return
-        
+
         # Apply the plot style
         setup_plot_style()
 
         # Create figure with specific size to match the good example
         fig, ax = plt.subplots(figsize=(8, 6))
-        
+
         # Calculate error bounds
         try:
             lower_bound, upper_bound = calculate_error_bounds(
@@ -81,18 +113,19 @@ def plot_benchmark_metrics(df: pd.DataFrame,
 
         # Set tick label sizes explicitly
         ax.tick_params(axis='both', which='major', labelsize=14)
-        
+
         # Use solid grid lines with higher alpha for better visibility
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
 
         # Set axis limits starting at the first data point
         set_axis_limits(ax, df['iteration'], force_x_zero=True)
-        
+
         # Disable scientific notation on y-axis for consistency
         ax.ticklabel_format(style='plain', axis='y')
 
         # Save with consistent settings
+        apply_bold_styling(ax)
         save_plot(fig, save_dir, filename)
     except Exception as e:
         print(f"Error plotting benchmark metrics for {filename}: {str(e)}")
@@ -108,8 +141,9 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
             print(f"Warning: No data provided for {filename}")
             return
 
-        fig, ax = plt.subplots(figsize=(8, 6))
         setup_plot_style()
+        fig, ax = plt.subplots(figsize=(8, 6))
+
 
         # Colors for different operations
         colors = {
@@ -154,6 +188,7 @@ def plot_benchmark_correlations(dfs: Dict[str, pd.DataFrame],
         max_iter = max(df['iteration'].max() for df in dfs.values() if df is not None and not df.empty)
         set_axis_limits(ax, pd.Series(range(max_iter + 1)))
 
+        apply_bold_styling(ax)
         save_plot(fig, save_dir, filename)
     except Exception as e:
         print(f"Error plotting benchmark correlations for {filename}: {str(e)}")
@@ -170,27 +205,39 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]], config: str
             dataset_name = os.path.basename(dataset_path)
             algorithm_name = os.path.basename(dataset_path)
             # Handle special case for fashion-mnist
-            print(dataset_name)
             if "fashion_mnist" in dataset_name:
                 dataset_name = "fashion-mnist"
+            elif "mnist" in dataset_name:
+                dataset_name = "mnist"
+            elif "sift" in dataset_name:
+                dataset_name = "sift"
+            elif "gist" in dataset_name:
+                dataset_name = "gist"
             else:
-                if("cand" in dataset_name):
-                    dataset_name = dataset_name.split('_')[3]
-                else:
-                    dataset_name = dataset_name.split('_')[1]
-            
-            # Step one back to get the scenario directory
-            save_dir = os.path.join(dataset_path, "..", "thesis_output", scenario, dataset_name)
-            os.makedirs(save_dir, exist_ok=True)
-            
-            if "reset_first_candidate" in algorithm_name:
-                algorithm_name = "RFC"
-            elif "repl_cand" in algorithm_name:
+                # throw error
+                raise ValueError(f"Invalid dataset name: {dataset_name}")
+
+            if "repl_cand" in algorithm_name:
                 algorithm_name = "RBC"
-            elif "hnswlib" in algorithm_name:
-                algorithm_name = "HNSWLib"
+            elif "reset_first" in algorithm_name:
+                algorithm_name = "RFC"
+            elif "MN_RU" in algorithm_name:
+                algorithm_name = "MN-RU"
+            elif "MN_RBC" in algorithm_name:
+                algorithm_name = "MN-RBC"
             elif "usearch" in algorithm_name:
-                algorithm_name = "USearch"
+                algorithm_name = "usearch"
+            elif "hnswlib" in algorithm_name:
+                algorithm_name = "hnswlib"
+            else:
+                # throw error
+                raise ValueError(f"Invalid algorithm name: {algorithm_name}")
+
+            # Step one back to get the scenario directory
+            save_dir = os.path.join(dataset_path, "..", "..","..","..","figures", algorithm_name, scenario, dataset_name)
+            if(algorithm_name == "RBC" or algorithm_name == "RFC"):
+                save_dir = os.path.join(dataset_path,  "..", "..", "..","..","..","figures", algorithm_name, config, scenario, dataset_name)
+            os.makedirs(save_dir, exist_ok=True)
 
             # Load benchmark data
             benchmark_dfs = {}
@@ -209,7 +256,7 @@ def generate_benchmark_plots(experiment_paths: Dict[str, List[str]], config: str
                     plot_benchmark_metrics(
                         df,
                         metric,
-                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})',
+                        f'{bm_file.replace(".csv", "").split("_")[1].title()} {metric.title()} - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({"Fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})',
                         f'{metric.title()} (seconds)',
                         save_dir,
                         f'{scenario}_{bm_file.replace(".csv", "")}_{metric}.png'

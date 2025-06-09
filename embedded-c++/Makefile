@@ -168,6 +168,11 @@ run-all-mn-ru: build-mn-ru
 	@echo "All MN_RU experiments completed."
 
 
+run-curr: build-mn-ru build-mn-rbc
+	./build/MN_RU/unreachable_points_sampl_reachable
+	./build/MN_RBC/unreachable_points_sampl_reachable
+
+
 # only experiments in order (no setup)
 run-all-experiments: build
 	@echo "Running all experiments..."

@@ -203,21 +203,21 @@ int main() {
     experiment = "MN_RU_";
 
     try {
-        // // fashion_mnist
-        // HNSWLibFullCoverageRunner fm_runner(max_iterations, executor_threads);
-        // fm_runner.runTest(0);
+        // fashion_mnist
+        HNSWLibFullCoverageRunner fm_runner(max_iterations, executor_threads);
+        fm_runner.runTest(0);
 
         // mnist
         HNSWLibFullCoverageRunner m_runner(max_iterations, executor_threads);
-        // m_runner.runTest(1);
+        m_runner.runTest(1);
 
-        // // sift
-        // HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
-        // s_runner.runTest(2);
+        // sift
+        HNSWLibFullCoverageRunner s_runner(max_iterations, executor_threads);
+        s_runner.runTest(2);
 
-        // // gist
-        // HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
-        // g_runner.runTest(3);
+        // gist
+        HNSWLibFullCoverageRunner g_runner(max_iterations, executor_threads);
+        g_runner.runTest(3);
 
         return 0;
     } catch (std::exception& e) {

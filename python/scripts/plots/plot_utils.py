@@ -18,7 +18,9 @@ implementations_map = {
     'hnswlib': 'HNSWLib',
     'repl_cand_hnswlib': 'RBC',
     'usearch': 'USearch',
-    'reset_first_candidate': 'RFC'
+    'reset_first_candidate': 'RFC',
+    'mn_ru': 'MN-RU',
+    'mn_rbc': 'MN-RBC'
 }
 
 vs_title = "RBC vs HNSWLib"
@@ -58,11 +60,16 @@ def plot_with_error_bounds(ax: plt.Axes,
 
 def setup_plot_style():
     """Set up the plot style for publication-quality figures."""
-    plt.style.use('seaborn-paper')
+    plt.style.use('seaborn-v0_8-paper')
+
+    # Enable LaTeX for math rendering
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}'
 
     # Use serif with fallbacks
     plt.rcParams['font.family'] = 'serif'
     plt.rcParams['font.serif'] = ['Times New Roman', 'DejaVu Serif', 'Serif']
+    plt.rcParams['font.weight'] = 'bold'
 
     # Font sizes - increased for better readability
     plt.rcParams['font.size'] = 16
@@ -71,6 +78,10 @@ def setup_plot_style():
     plt.rcParams['xtick.labelsize'] = 14     # Increased from 14 (for x-axis tick numbers)
     plt.rcParams['ytick.labelsize'] = 14     # Increased from 14 (for y-axis tick numbers)
     plt.rcParams['legend.fontsize'] = 14
+
+    # Make titles and labels bold
+    plt.rcParams['axes.titleweight'] = 'bold'
+    plt.rcParams['axes.labelweight'] = 'bold'
 
     # Figure size and DPI
     plt.rcParams['figure.figsize'] = [8, 6]
@@ -93,16 +104,66 @@ def setup_plot_style():
     plt.rcParams['axes.ymargin'] = 0.1
     plt.rcParams['figure.constrained_layout.use'] = True
 
-    # Color cycle - colorblind friendly
+    # Color cycle - high contrast, colorblind friendly
     plt.rcParams['axes.prop_cycle'] = plt.cycler(color=[
-        '#0077BB',  # Blue
-        '#EE7733',  # Orange
-        '#009988',  # Teal
-        '#CC3311',  # Red
-        '#33BBEE',  # Cyan
-        '#EE3377',  # Magenta
-        '#BBBBBB',  # Gray
+        '#0066CC',  # Strong Blue
+        '#FF6600',  # Strong Orange  
+        '#00AA66',  # Strong Teal
+        '#CC0000',  # Strong Red
+        '#6600CC',  # Strong Purple
+        '#FF0066',  # Strong Magenta
+        '#666666',  # Dark Gray
     ])
+
+    # Legend styling - make legend more prominent
+    plt.rcParams['legend.frameon'] = True
+    plt.rcParams['legend.framealpha'] = 0.9
+    plt.rcParams['legend.edgecolor'] = 'black'
+    plt.rcParams['legend.fancybox'] = False  # Square corners for cleaner look
+
+def apply_bold_styling(ax, title=None, xlabel=None, ylabel=None):
+    """Apply bold styling to specific plot elements.
+    
+    Args:
+        ax: matplotlib axes object
+        title: Optional title text (if None, keeps existing title)
+        xlabel: Optional x-label text (if None, keeps existing label)
+        ylabel: Optional y-label text (if None, keeps existing label)
+    """
+    # Make title bold
+    if title:
+        ax.set_title(title, fontweight='bold', fontsize=20)
+    else:
+        current_title = ax.get_title()
+        if current_title:
+            ax.set_title(current_title, fontweight='bold', fontsize=20)
+    
+    # Make axis labels bold
+    if xlabel:
+        ax.set_xlabel(xlabel, fontweight='bold', fontsize=18)
+    else:
+        current_xlabel = ax.get_xlabel()
+        if current_xlabel:
+            ax.set_xlabel(current_xlabel, fontweight='bold', fontsize=18)
+            
+    if ylabel:
+        ax.set_ylabel(ylabel, fontweight='bold', fontsize=18)
+    else:
+        current_ylabel = ax.get_ylabel()
+        if current_ylabel:
+            ax.set_ylabel(current_ylabel, fontweight='bold', fontsize=18)
+    
+    # Make tick labels bold
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    for label in ax.get_xticklabels() + ax.get_yticklabels():
+        label.set_fontweight('bold')
+    
+    # Make legend bold if it exists
+    legend = ax.get_legend()
+    if legend:
+        for text in legend.get_texts():
+            text.set_fontweight('bold')
+            text.set_fontsize(14)
 
 def set_axis_limits(ax: plt.Axes, x_data: pd.Series, y_padding: float = 0.0, force_x_zero: bool = True):
     """Set axis limits without extra space.
@@ -170,22 +231,34 @@ def create_combined_plot(plot_files: List[str],
         # Get dataset name from plot file path
         dataset_name = os.path.basename(os.path.dirname(os.path.dirname(plot_file)))
         algorithm_name = os.path.basename(os.path.dirname(os.path.dirname(plot_file)))
-        if "fashion_mnist" in dataset_name:
-                dataset_name = "fashion-mnist"
-        else:
-            if("cand" in dataset_name): 
-                dataset_name = dataset_name.split('_')[3]
-            else:
-                dataset_name = dataset_name.split('_')[1]
 
-        if "reset_first_candidate" in algorithm_name:
-            algorithm_name = "RFC"
-        elif "repl_cand" in algorithm_name:
+        if "fashion_mnist" in dataset_name:
+            dataset_name = "fashion-mnist"
+        elif "mnist" in dataset_name:
+            dataset_name = "mnist"
+        elif "sift" in dataset_name:
+            dataset_name = "sift"
+        elif "gist" in dataset_name:
+            dataset_name = "gist"
+        else:
+            # throw error
+            raise ValueError(f"Invalid dataset name: {dataset_name}")
+
+        if "repl_cand" in algorithm_name:
             algorithm_name = "RBC"
-        elif "hnswlib" in algorithm_name:
-            algorithm_name = "HNSWLib"
+        elif "reset_first" in algorithm_name:
+            algorithm_name = "RFC"
+        elif "MN_RU" in algorithm_name:
+            algorithm_name = "MN-RU"
+        elif "MN_RBC" in algorithm_name:
+            algorithm_name = "MN-RBC"
         elif "usearch" in algorithm_name:
-            algorithm_name = "USearch"
+            algorithm_name = "usearch"
+        elif "hnswlib" in algorithm_name:
+            algorithm_name = "hnswlib"
+        else:
+            # throw error
+            raise ValueError(f"Invalid algorithm name: {algorithm_name}")
 
         # Create subplot using gridspec
         row = idx // n_cols
@@ -196,7 +269,7 @@ def create_combined_plot(plot_files: List[str],
         img = plt.imread(plot_file)
         ax.imshow(img)
         ax.axis('off')  # Hide axes
-        ax.set_title(f'{algorithm_name} {dataset_name}', pad=10)  # Reduce padding between title and plot
+        ax.set_title(f'{algorithm_name} {"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()}', pad=10)  # Reduce padding between title and plot
 
     # Save combined plot
     combined_filename = f'{scenario}_combined_{plot_type}.png'
@@ -345,8 +418,9 @@ def plot_comparison_metrics(base_dir, implementations, experiment, dataset_suffi
 
 def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing recall between implementations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
 
     has_data = False
 
@@ -385,7 +459,7 @@ def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Mean Recall')
-        ax.set_title(f'Recall Comparison {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Recall Comparison {vs_title} - {experiment.title()} ({"fashion-MNIST" if "fashion-mnist" in dataset_suffix else dataset_suffix.upper()})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -401,8 +475,9 @@ def plot_recall_comparison(base_dir, implementations, experiment, dataset_suffix
 
 def plot_unreachable_points_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing unreachable points between implementations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
 
     has_data = False
 
@@ -458,7 +533,7 @@ def plot_unreachable_points_comparison(base_dir, implementations, experiment, da
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Unreachable Points')
-        ax.set_title(f'Unreachable Points Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Unreachable Points Comparison - {vs_title} - {experiment.title()} ({"fashion-MNIST" if "fashion-mnist" in dataset_suffix else dataset_suffix.upper()})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -474,8 +549,9 @@ def plot_unreachable_points_comparison(base_dir, implementations, experiment, da
 
 def plot_avg_connectivity_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing average node connectivity between implementations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
 
     has_data = False
 
@@ -514,7 +590,7 @@ def plot_avg_connectivity_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Average Node Connectivity')
-        ax.set_title(f'Node Connectivity Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Node Connectivity Comparison - {vs_title} - {experiment.title()} ({"fashion-MNIST" if "fashion-mnist" in dataset_suffix else dataset_suffix.upper()})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -530,8 +606,9 @@ def plot_avg_connectivity_comparison(base_dir, implementations, experiment, data
 
 def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing add operation benchmark between implementations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
 
     has_data = False
     min_iteration = float('inf')  # Track minimum iteration across all implementations
@@ -586,7 +663,7 @@ def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Add Operation Time Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Add Operation Time Comparison - {vs_title} - {experiment.title()} ({"fashion-MNIST" if "fashion-mnist" in dataset_suffix else dataset_suffix.upper()})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -604,8 +681,9 @@ def plot_add_benchmark_comparison(base_dir, implementations, experiment, dataset
 
 def plot_search_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing search operation benchmark between implementations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
 
     has_data = False
     min_iteration = float('inf')  # Track minimum iteration across all implementations
@@ -660,7 +738,7 @@ def plot_search_benchmark_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Search Operation Time Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Search Operation Time Comparison - {vs_title} - {experiment.title()} ({"fashion-MNIST" if "fashion-mnist" in dataset_suffix else dataset_suffix.upper()})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -678,8 +756,9 @@ def plot_search_benchmark_comparison(base_dir, implementations, experiment, data
 
 def plot_delete_benchmark_comparison(base_dir, implementations, experiment, dataset_suffix, impl_dataset_map, output_dir):
     """Create plot comparing delete operation benchmark between implementations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
 
     has_data = False
     min_iteration = float('inf')  # Track minimum iteration across all implementations
@@ -734,7 +813,7 @@ def plot_delete_benchmark_comparison(base_dir, implementations, experiment, data
         # Set plot labels and title
         ax.set_xlabel('Iteration')
         ax.set_ylabel('Time (seconds)')
-        ax.set_title(f'Delete Operation Time Comparison - {vs_title} - {experiment.title()} ({dataset_suffix})')
+        ax.set_title(f'Delete Operation Time Comparison - {vs_title} - {experiment.title()} ({"fashion-MNIST" if "fashion-mnist" in dataset_suffix else dataset_suffix.upper()})')
         ax.grid(True, alpha=0.3)
         ax.legend()
 
@@ -778,7 +857,23 @@ def save_plot(fig: plt.Figure,
         # os.makedirs(save_dir, exist_ok=True)
 
         # Create png subdirectory
-        png_dir = os.path.join(save_dir, "png")
+        save_path_strings = os.path.split(save_dir)[0].split("/")
+        d_name = ""
+        if("fashion_mnist" in save_dir):
+            d_name = "fashion-mnist"
+        elif("mnist" in save_dir):
+            d_name = "mnist"
+        elif("sift" in save_dir):
+            d_name = "sift"
+        elif("gist" in save_dir):
+            d_name = "gist"
+        else:
+            raise ValueError(f"Invalid dataset name: {save_dir}")
+            
+        if("repl_cand" in save_dir or "reset_first" in save_dir):
+            png_dir = os.path.join(save_dir, "..", "..", "..", "..", "..","figures_png",save_path_strings[-3],save_path_strings[-2],save_path_strings[-1],d_name)
+        else:
+            png_dir = os.path.join(save_dir, "..", "..", "..", "..","figures_png",save_path_strings[-2],save_path_strings[-1],d_name)
         os.makedirs(png_dir, exist_ok=True)
 
         # Remove any existing extensions from the filename

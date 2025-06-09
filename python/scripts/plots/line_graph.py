@@ -57,7 +57,7 @@ def main():
     # Example usage
     # File path to the CSV data
     csv_filepath = "../embedded-c++/usearch/results/"
-    experiments = ["fullcoverage", "newdata", "random"]
+    experiments = ["fullcoverage", "newdata", "random", "unreachable_points_exclusive"]
 
 
     for experiment in experiments:
