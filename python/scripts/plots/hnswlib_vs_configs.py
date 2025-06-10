@@ -113,7 +113,7 @@ def generate_multi_implementation_comparison(base_dir, output_dir, implementatio
             # Remove prefixes
             cleaned_name = folder_name
             prefixes = ['hnswlib_', 'repl_cand_', 'hnswlib_repl_cand_', 'repl_cand_hnswlib_',
-                        'reset_first_candidate_', 'MN_RU_', 'MN_RBC_']
+                        'reset_first_candidate_', 'MN_RU_', 'MN_RBC_', 'usearch_']
             for prefix in prefixes:
                 if cleaned_name.startswith(prefix):
                     cleaned_name = cleaned_name[len(prefix):]
@@ -143,7 +143,7 @@ def generate_multi_implementation_comparison(base_dir, output_dir, implementatio
             if len(impl_folders) >= 2:
                 dataset_dir = os.path.join(experiment_dir, dataset)
                 os.makedirs(dataset_dir, exist_ok=True)
-                print(f"Creating multi-implementation plots for experiment {experiment}, dataset {dataset}")
+                print(f"Creating multi-implementation plots for experiment {experiment}, dataset {dataset} with implementations {impl_folders}")
 
                 # Generate all comparison plots for this dataset
                 plot_multi_implementation_metrics(
