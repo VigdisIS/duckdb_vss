@@ -20,9 +20,22 @@ include_directories(src/include)
 
 set(EXTENSION_SOURCES src/vss_extension.cpp)
 add_subdirectory(src/hnsw)
+add_subdirectory(src/embedding)
+add_subdirectory(src/rag)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
+
+# Link ONNX Runtime if available
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/duckdb-rag/onnxruntime")
+    if(APPLE)
+        target_link_libraries(${EXTENSION_NAME} onnxruntime)
+        target_link_libraries(${LOADABLE_EXTENSION_NAME} onnxruntime)
+    elseif(UNIX)
+        target_link_libraries(${EXTENSION_NAME} onnxruntime)
+        target_link_libraries(${LOADABLE_EXTENSION_NAME} onnxruntime)
+    endif()
+endif()
 
 install(
   TARGETS ${EXTENSION_NAME}
