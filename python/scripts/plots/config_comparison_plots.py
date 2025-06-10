@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from scripts.plots.plot_utils import load_csv_data, setup_plot_style, save_plot
+from scripts.plots.plot_utils import load_csv_data, setup_plot_style, save_plot, apply_bold_styling
 
 # Configuration names and descriptions
 CONFIG_INFO = {
@@ -32,12 +32,37 @@ CONFIG_MARKERS = {
     "11": "D"
 }
 
-IMPLEMENTATIONS_NAME = {
-    "hnswlib": "HNSWLib",
-    "repl_cand_hnswlib": "RBC",
-    "reset_first_candidate": "RFC",
-    "usearch": "USearch"
+CONFIG_MAP = {
+    "00": "1",
+    "01": "2",
+    "10": "3",
+    "11": "4",
+    "-": ""
 }
+
+EXPERIMENT_NAME_MAP = {
+    "fullcoverage": "Full Coverage",
+    "newdata": "New Data",
+    "random": "Random",
+    "unreachable_points_exclusive": "Unreachable Points"
+}
+
+def get_implementation_label(impl_code, config):
+    """Get the display label for an implementation based on code and config."""
+    if impl_code == "RBC":
+        return f"OBS-RU-B$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "RFC":
+        return f"OBS-RU-L$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "hnswlib":
+        return "HNSW-RU"
+    elif impl_code == "MN-RU":
+        return "MN-RU"
+    elif impl_code == "MN-RBC":
+        return r"O$\alpha$G-RU"
+    elif impl_code == "usearch":
+        return "D-RU"
+    else:
+        raise ValueError(f"Invalid implementation code: {impl_code}")
 
 def generate_config_comparison_plots(base_dir, output_dir):
     """Generate comparison plots between different configurations of repl_cand_hnswlib.
@@ -164,7 +189,7 @@ def plot_recall_comparison(base_dir, configurations, experiment, dataset, config
             has_data = True
             # Plot with different colors and markers for different configurations
             ax.plot(df['iteration'], df['mean_recall'],
-                   label=f"{CONFIG_INFO[config]}",
+                   label=f"{get_implementation_label('RBC', config)}",
                    color=CONFIG_COLORS[config],
                    marker=CONFIG_MARKERS[config],
                    markersize=6,
@@ -176,7 +201,7 @@ def plot_recall_comparison(base_dir, configurations, experiment, dataset, config
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Mean Recall', fontsize=plt.rcParams['axes.labelsize'])
         ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
-        ax.set_title(f'Recall Comparison - {experiment.title()} ({dataset})')
+        ax.set_title(f'Recall Comparison - {EXPERIMENT_NAME_MAP[experiment]} ({"fashion-MNIST" if "fashion-mnist" in dataset else dataset.upper()})')
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
         
@@ -184,6 +209,7 @@ def plot_recall_comparison(base_dir, configurations, experiment, dataset, config
         ax.set_ylim(0, 1)
         
         # Save plot
+        apply_bold_styling(ax)
         save_plot(fig, output_dir, f"recall_comparison")
     else:
         print(f"No recall data to plot for {dataset} in {experiment}")
@@ -192,8 +218,9 @@ def plot_recall_comparison(base_dir, configurations, experiment, dataset, config
 
 def plot_unreachable_points_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing unreachable points between configurations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
     
     has_data = False
     
@@ -215,7 +242,7 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
             if 'unreachable_count' in df.columns:
                 has_data = True
                 ax.plot(df['iteration'], df['unreachable_count'],
-                       label=f"{CONFIG_INFO[config]}",
+                       label=f"{get_implementation_label('RBC', config)}",
                        color=CONFIG_COLORS[config],
                        marker=CONFIG_MARKERS[config],
                        markersize=6,
@@ -229,7 +256,7 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
             if 'unreachable_points' in df.columns:
                 has_data = True
                 ax.plot(df['iteration'], df['unreachable_points'],
-                       label=f"{CONFIG_INFO[config]}",
+                       label=f"{get_implementation_label('RBC', config)}",
                        color=CONFIG_COLORS[config],
                        marker=CONFIG_MARKERS[config],
                        markersize=6,
@@ -243,7 +270,7 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
         # Set plot labels and title
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Unreachable Points', fontsize=plt.rcParams['axes.labelsize'])
-        ax.set_title(f'Unreachable Points Comparison - {experiment.title()} ({dataset})')
+        ax.set_title(f'Unreachable Points Comparison - {EXPERIMENT_NAME_MAP[experiment]} ({"fashion-MNIST" if "fashion-mnist" in dataset else dataset.upper()})')
         ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
@@ -252,6 +279,7 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
         ax.set_ylim(bottom=0)
         
         # Save plot
+        apply_bold_styling(ax)
         save_plot(fig, output_dir, f"unreachable_points_comparison")
     else:
         print(f"No unreachable points data to plot for {dataset} in {experiment}")
@@ -260,8 +288,9 @@ def plot_unreachable_points_comparison(base_dir, configurations, experiment, dat
 
 def plot_avg_connectivity_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing average node connectivity between configurations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
     
     has_data = False
     
@@ -286,7 +315,7 @@ def plot_avg_connectivity_comparison(base_dir, configurations, experiment, datas
         if 'avg_connections' in df.columns:
             has_data = True
             ax.plot(df['iteration'], df['avg_connections'],
-                   label=f"{CONFIG_INFO[config]}",
+                   label=f"{get_implementation_label('RBC', config)}",
                    color=CONFIG_COLORS[config],
                    marker=CONFIG_MARKERS[config],
                    markersize=6,
@@ -297,7 +326,7 @@ def plot_avg_connectivity_comparison(base_dir, configurations, experiment, datas
         # Set plot labels and title
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Average Node Connectivity', fontsize=plt.rcParams['axes.labelsize'])
-        ax.set_title(f'Node Connectivity Comparison - {experiment.title()} ({dataset})')
+        ax.set_title(f'Node Connectivity Comparison - {EXPERIMENT_NAME_MAP[experiment]} ({"fashion-MNIST" if "fashion-mnist" in dataset else dataset.upper()})')
         ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
@@ -306,6 +335,7 @@ def plot_avg_connectivity_comparison(base_dir, configurations, experiment, datas
         ax.set_ylim(bottom=0)
         
         # Save plot
+        apply_bold_styling(ax)
         save_plot(fig, output_dir, f"avg_connectivity_comparison")
     else:
         print(f"No connectivity data to plot for {dataset} in {experiment}")
@@ -314,8 +344,9 @@ def plot_avg_connectivity_comparison(base_dir, configurations, experiment, datas
 
 def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing add operation benchmark between configurations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
     
     has_data = False
     min_iteration = float('inf')  # Track minimum iteration across all configurations
@@ -359,7 +390,7 @@ def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset,
         marker = data['marker']
         
         ax.plot(df['iteration'], df['mean_time'],
-               label=f"{CONFIG_INFO[config]}",
+               label=f"{get_implementation_label('RBC', config)}",
                color=color,
                marker=marker,
                markersize=6,
@@ -370,7 +401,7 @@ def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset,
         # Set plot labels and title
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
-        ax.set_title(f'Add Operation Time Comparison - {experiment.title()} ({dataset})')
+        ax.set_title(f'Add Operation Time Comparison - {EXPERIMENT_NAME_MAP[experiment]} ({"fashion-MNIST" if "fashion-mnist" in dataset else dataset.upper()})')
         ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
@@ -381,6 +412,7 @@ def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset,
             ax.set_xlim(left=min_iteration)
         
         # Save plot
+        apply_bold_styling(ax)
         save_plot(fig, output_dir, f"add_benchmark_comparison")
     else:
         print(f"No add benchmark data to plot for {dataset} in {experiment}")
@@ -389,8 +421,9 @@ def plot_add_benchmark_comparison(base_dir, configurations, experiment, dataset,
 
 def plot_search_benchmark_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing search operation benchmark between configurations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
     
     has_data = False
     min_iteration = float('inf')  # Track minimum iteration across all configurations
@@ -434,7 +467,7 @@ def plot_search_benchmark_comparison(base_dir, configurations, experiment, datas
         marker = data['marker']
         
         ax.plot(df['iteration'], df['mean_time'],
-               label=f"{CONFIG_INFO[config]}",
+               label=f"{get_implementation_label('RBC', config)}",
                color=color,
                marker=marker,
                markersize=6,
@@ -445,7 +478,7 @@ def plot_search_benchmark_comparison(base_dir, configurations, experiment, datas
         # Set plot labels and title
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
-        ax.set_title(f'Search Operation Time Comparison - {experiment.title()} ({dataset})')
+        ax.set_title(f'Search Operation Time Comparison - {EXPERIMENT_NAME_MAP[experiment]} ({"fashion-MNIST" if "fashion-mnist" in dataset else dataset.upper()})')
         ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
@@ -456,6 +489,7 @@ def plot_search_benchmark_comparison(base_dir, configurations, experiment, datas
             ax.set_xlim(left=min_iteration)
         
         # Save plot
+        apply_bold_styling(ax)
         save_plot(fig, output_dir, f"search_benchmark_comparison")
     else:
         print(f"No search benchmark data to plot for {dataset} in {experiment}")
@@ -464,8 +498,9 @@ def plot_search_benchmark_comparison(base_dir, configurations, experiment, datas
 
 def plot_delete_benchmark_comparison(base_dir, configurations, experiment, dataset, config_folders, output_dir):
     """Create plot comparing delete operation benchmark between configurations."""
-    fig, ax = plt.subplots(figsize=(8, 6))
     setup_plot_style()
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
     
     has_data = False
     min_iteration = float('inf')  # Track minimum iteration across all configurations
@@ -509,7 +544,7 @@ def plot_delete_benchmark_comparison(base_dir, configurations, experiment, datas
         marker = data['marker']
         
         ax.plot(df['iteration'], df['mean_time'],
-               label=f"{CONFIG_INFO[config]}",
+               label=f"{get_implementation_label('RBC', config)}",
                color=color,
                marker=marker,
                markersize=6,
@@ -520,7 +555,7 @@ def plot_delete_benchmark_comparison(base_dir, configurations, experiment, datas
         # Set plot labels and title
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Time (seconds)', fontsize=plt.rcParams['axes.labelsize'])
-        ax.set_title(f'Delete Operation Time Comparison - {experiment.title()} ({dataset})')
+        ax.set_title(f'Delete Operation Time Comparison - {EXPERIMENT_NAME_MAP[experiment]} ({"fashion-MNIST" if "fashion-mnist" in dataset else dataset.upper()})')
         ax.tick_params(axis='both', which='major', labelsize=14, rotation=0)
         ax.grid(True, alpha=0.5, linestyle='-')
         ax.legend()
@@ -531,6 +566,7 @@ def plot_delete_benchmark_comparison(base_dir, configurations, experiment, datas
             ax.set_xlim(left=min_iteration)
         
         # Save plot
+        apply_bold_styling(ax)
         save_plot(fig, output_dir, f"delete_benchmark_comparison")
     else:
         print(f"No delete benchmark data to plot for {dataset} in {experiment}")

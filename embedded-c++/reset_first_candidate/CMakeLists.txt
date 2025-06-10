@@ -1,0 +1,10 @@
+# Build directory for reset_first_candidate experiments
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/reset_first_candidate)
+
+# reset_first_candidate executables
+add_executable(reset_first_candidate_new_data new_data.cpp)
+
+set_target_properties(reset_first_candidate_new_data PROPERTIES OUTPUT_NAME new_data)
+
+# Link libraries
+target_link_libraries(reset_first_candidate_new_data hnswlib_utils usearch_utils duckdb)

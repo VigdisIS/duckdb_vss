@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scripts.plots.plot_utils import (load_csv_data, calculate_error_bounds,
-                        plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits)
+                        plot_with_error_bounds, setup_plot_style, save_plot, set_axis_limits, apply_bold_styling)
 
 CONFIG_INFO = {
     "00": "No neighbor update, No tombstones",
@@ -16,6 +16,39 @@ CONFIG_INFO = {
     "11": "With neighbor update, With tombstones",
     "-": ""
 }
+
+CONFIG_MAP = {
+    "00": "1",
+    "01": "2",
+    "10": "3",
+    "11": "4",
+    "-": ""
+}
+
+EXPERIMENT_NAME_MAP = {
+    "fullcoverage": "Full Coverage",
+    "newdata": "New Data",
+    "random": "Random",
+    "unreachable_points_exclusive": "Unreachable Points",
+    "unreachable": "Unreachable Points"
+}
+
+def get_implementation_label(impl_code, config):
+    """Get the display label for an implementation based on code and config."""
+    if impl_code == "RBC":
+        return f"OBS-RU-B$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "RFC":
+        return f"OBS-RU-L$_{{{CONFIG_MAP[config]}}}$"
+    elif impl_code == "hnswlib":
+        return "HNSW-RU"
+    elif impl_code == "MN-RU":
+        return "MN-RU"
+    elif impl_code == "MN-RBC":
+        return r"O$\alpha$G-RU"
+    elif impl_code == "usearch":
+        return "D-RU"
+    else:
+        raise ValueError(f"Invalid implementation code: {impl_code}")
 
 def plot_early_termination_analysis(
     dataset_name: str,
@@ -64,7 +97,7 @@ def plot_early_termination_analysis(
                edgecolor='#4169E1',  # Royal blue for edge
                linewidth=0.5,  # Subtle border
                width=1.0)
-        ax.set_title(f'Distribution of Early Terminated Queries - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.split("_")[0].title()} ({dataset_name})')
+        ax.set_title(f'Distribution of Early Terminated Queries - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[filename.split("_")[0]]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})')
         ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
         ax.set_ylabel('Number of Early Terminated Queries', fontsize=plt.rcParams['axes.labelsize'])
 
@@ -86,7 +119,8 @@ def plot_early_termination_analysis(
         if yticks[0] != 0:
             yticks = [0] + list(yticks)
             ax.set_yticks(yticks)
-            
+        
+        apply_bold_styling(ax)
         save_plot(fig, save_dir, f"{filename}_distribution")
     plt.close()
 
@@ -210,7 +244,7 @@ def plot_visited_vs_computed(dataset_name: str,
 
     ax.set_xlabel('Mean Number of Visited Members', fontsize=plt.rcParams['axes.labelsize'])
     ax.set_ylabel('Mean Number of Computed Distances', fontsize=plt.rcParams['axes.labelsize'])
-    ax.set_title(f'Visited Members vs Computed Distances - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {filename.split("_")[1].title()} ({dataset_name})')
+    ax.set_title(f'Visited Members vs Computed Distances - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[filename.split("_")[1]]} ({"fashion-MNIST" if "fashion-mnist" in dataset_name else dataset_name.upper()})')
     ax.grid(True, alpha=0.5, linestyle='-')
 
     # Set axis limits without forcing x-axis to start at 0
@@ -218,6 +252,7 @@ def plot_visited_vs_computed(dataset_name: str,
 
     # Adjust layout
     fig.set_constrained_layout(True)
+    apply_bold_styling(ax)
     save_plot(fig, save_dir, f"{filename}_visited_vs_computed")
     plt.close()
 
@@ -285,6 +320,7 @@ def plot_search_metric_over_time(df: pd.DataFrame,
             set_axis_limits(ax, df['iteration'], y_padding=0.2)
             ax.set_ylim(bottom=0)
 
+        apply_bold_styling(ax)
         save_plot(fig, save_dir, filename)
     except Exception as e:
         print(f"Error plotting search metric {metric} for {filename}: {str(e)}")
@@ -326,6 +362,7 @@ def plot_unreachable_points_over_time(df: pd.DataFrame,
         ax.set_ylim(bottom=0)
         set_axis_limits(ax, df['iteration'], y_padding=0.2)
 
+        apply_bold_styling(ax)
         save_plot(fig, save_dir, filename)
     except Exception as e:
         print(f"Error plotting unreachable points for {filename}: {str(e)}")
@@ -379,7 +416,7 @@ def plot_replace_method_distribution(
     # Set title and labels
     ax.set_title(title)
     ax.set_xlabel('Iteration', fontsize=plt.rcParams['axes.labelsize'])
-    ax.set_ylabel('Count', fontsize=plt.rcParams['axes.labelsize'])
+    ax.set_ylabel('Total Nodes Replaced', fontsize=plt.rcParams['axes.labelsize'])
     
     # Set x-axis limits
     ax.set_xlim(min_iter, max_iter)
@@ -397,6 +434,7 @@ def plot_replace_method_distribution(
     # Rotate x-axis labels for better readability
     plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
     
+    apply_bold_styling(ax)
     # Save the plot
     save_plot(fig, save_dir, filename)
     plt.close()
@@ -411,25 +449,40 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]], confi
         for dataset_path in paths:
             dataset_name = os.path.basename(dataset_path)
             algorithm_name = os.path.basename(dataset_path)
-            if "fashion_mnist" in dataset_name: 
-                dataset_name = "fashion-mnist"
-            else:
-                if("cand" in dataset_name):
-                    dataset_name = dataset_name.split('_')[3]
-                else:
-                    dataset_name = dataset_name.split('_')[1]
-            
-            save_dir = os.path.join(dataset_path, "..", "thesis_output", scenario, dataset_name)
-            os.makedirs(save_dir, exist_ok=True)
 
-            if "reset_first_candidate" in algorithm_name:
-                algorithm_name = "RFC"
-            elif "repl_cand" in algorithm_name:
+            if "fashion_mnist" in dataset_name:
+                dataset_name = "fashion-mnist"
+            elif "mnist" in dataset_name:
+                dataset_name = "mnist"
+            elif "sift" in dataset_name:
+                dataset_name = "sift"
+            elif "gist" in dataset_name:
+                dataset_name = "gist"
+            else:
+                # throw error
+                raise ValueError(f"Invalid dataset name: {dataset_name}")
+
+            if "repl_cand" in algorithm_name:
                 algorithm_name = "RBC"
-            elif "hnswlib" in algorithm_name:
-                algorithm_name = "HNSWLib"
+            elif "reset_first" in algorithm_name:
+                algorithm_name = "RFC"
+            elif "MN_RU" in algorithm_name:
+                algorithm_name = "MN-RU"
+            elif "MN_RBC" in algorithm_name:
+                algorithm_name = "MN-RBC"
             elif "usearch" in algorithm_name:
-                algorithm_name = "USearch"
+                algorithm_name = "usearch"
+            elif "hnswlib" in algorithm_name:
+                algorithm_name = "hnswlib"
+            else:
+                # throw error
+                raise ValueError(f"Invalid algorithm name: {algorithm_name}")
+            
+            # embedded-c++/figures/algorithm_name/scenario/dataset_name
+            save_dir = os.path.join(dataset_path, "..", "..","..","..","figures", algorithm_name, scenario, dataset_name)
+            if(algorithm_name == "RBC" or algorithm_name == "RFC"):
+                save_dir = os.path.join(dataset_path,  "..", "..", "..","..","..","figures", algorithm_name, config, scenario, dataset_name)
+            os.makedirs(save_dir, exist_ok=True)
 
             # Search query stats plots (aggregated data)
             search_stats_path = os.path.join(dataset_path, 'search_query_stats.csv')
@@ -445,9 +498,9 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]], confi
                 for metric in search_metrics:
                     m_title = ""
                     if metric == 'recall':
-                        m_title = f'Search {metric.replace("_", " ").title()} - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})'
+                        m_title = f'Search {metric.replace("_", " ").title()} - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({dataset_name})'
                     else:
-                        m_title = f'{metric.replace("_", " ").title()} During Search - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {scenario.title()} ({dataset_name})'
+                        m_title = f'{metric.replace("_", " ").title()} During Search - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({dataset_name})'
                     plot_search_metric_over_time(
                         search_df,
                         metric,
@@ -473,7 +526,7 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]], confi
                 replace_method_df = load_csv_data(replace_method_path)
                 plot_replace_method_distribution(
                     replace_method_df,
-                    f'Replace Method Distribution - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""}\n- {scenario.title()} ({dataset_name})',
+                    f'Replace Method Distribution - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({dataset_name})',
                     save_dir,
                     f'{scenario}_replace_method_distribution',
                     config
@@ -483,17 +536,12 @@ def generate_search_analysis_plots(experiment_paths: Dict[str, List[str]], confi
             unreachable_points_path = os.path.join(dataset_path, 'unreachable_points.csv')
             print(f"Unreachable points path: {unreachable_points_path}")
             print(f"Exists: {os.path.exists(unreachable_points_path)}")
-            unreachable_scenario = ""
-            if("exclusive" in scenario):
-                unreachable_scenario = "unreachable points [reachable points sampled]"
-            elif("inclusive" in scenario):
-                unreachable_scenario = "unreachable points [all points sampled]"
 
             if os.path.exists(unreachable_points_path):
                 unreachable_points_df = load_csv_data(unreachable_points_path)
                 plot_unreachable_points_over_time(
                     unreachable_points_df,
-                    f'Unreachable Points - {algorithm_name} {f"[{CONFIG_INFO[config]}]" if config != "-" else ""} - {unreachable_scenario.title()} ({dataset_name})',
+                    f'Unreachable Points - {get_implementation_label(algorithm_name, config)} - {EXPERIMENT_NAME_MAP[scenario]} ({dataset_name})',
                     save_dir,
                     f'{scenario}_unreachable_points',
                     config

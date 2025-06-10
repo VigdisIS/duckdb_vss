@@ -29,6 +29,12 @@ build-repl-cand-hnswlib: prepare-build
 build-reset-first-candidate: prepare-build
 	cd build && cmake .. && make -C reset_first_candidate
 
+build-mn-rbc: prepare-build
+	cd build && cmake .. && make -C MN_RBC
+
+build-mn-ru: prepare-build
+	cd build && cmake .. && make -C MN_RU
+
 # usearch experiments
 run-create-usearch-indexes: build-usearch
 	./build/usearch/create_indexes
@@ -117,19 +123,55 @@ run-all-repl-cand-hnswlib-experiments: build-repl-cand-hnswlib
 run-rfc-new-data: build-reset-first-candidate
 	./build/reset_first_candidate/new_data
 
-# current
-run-repl-cand-and-hnswlib: build-repl-cand-hnswlib build-hnswlib
-	./build/repl_cand_hnswlib/full_coverage
-	./build/repl_cand_hnswlib/new_data
-	./build/repl_cand_hnswlib/random
-	./build/repl_cand_hnswlib/unreachable_points_sampl_reachable
-	./build/repl_cand_hnswlib/unreachable_points_sampl_all
-	./build/hnswlib/unreachable_points_sampl_reachable
-	./build/hnswlib/unreachable_points_sampl_all
-	./build/hnswlib/random
-	./build/hnswlib/full_coverage
-	./build/hnswlib/new_data
-	
+
+# MN_RBC experiments
+run-mn-rbc-full-coverage: build-mn-rbc
+	./build/MN_RBC/full_coverage
+
+run-mn-rbc-new-data: build-mn-rbc
+	./build/MN_RBC/new_data
+
+run-mn-rbc-random: build-mn-rbc
+	./build/MN_RBC/random
+
+run-mn-rbc-unreachable-points-sampl-reachable: build-mn-rbc
+	./build/MN_RBC/unreachable_points_sampl_reachable
+
+run-all-mn-rbc: build-mn-rbc
+	@echo "Running all MN_RBC experiments..."
+	./build/MN_RBC/full_coverage
+	./build/MN_RBC/new_data
+	./build/MN_RBC/random
+	./build/MN_RBC/unreachable_points_sampl_reachable
+	@echo "All MN_RBC experiments completed."
+
+
+# MN_RU experiments
+run-mn-ru-full-coverage: build-mn-ru
+	./build/MN_RU/full_coverage
+
+run-mn-ru-new-data: build-mn-ru
+	./build/MN_RU/new_data
+
+run-mn-ru-random: build-mn-ru
+	./build/MN_RU/random
+
+run-mn-ru-unreachable-points-sampl-reachable: build-mn-ru
+	./build/MN_RU/unreachable_points_sampl_reachable
+
+run-all-mn-ru: build-mn-ru
+	@echo "Running all MN_RU experiments..."
+	./build/MN_RU/full_coverage
+	./build/MN_RU/new_data
+	./build/MN_RU/random
+	./build/MN_RU/unreachable_points_sampl_reachable
+	@echo "All MN_RU experiments completed."
+
+
+run-curr: build-mn-ru build-mn-rbc
+	./build/MN_RU/unreachable_points_sampl_reachable
+	./build/MN_RBC/unreachable_points_sampl_reachable
+
 
 # only experiments in order (no setup)
 run-all-experiments: build

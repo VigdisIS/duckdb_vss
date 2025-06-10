@@ -503,6 +503,49 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
     }
 
+    void getNeighborsByHeuristicAlphaRNG(
+        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
+        const size_t M,
+        double alpha = 1.0) {
+        if (top_candidates.size() < M) {
+            return;
+        }
+
+        std::priority_queue<std::pair<dist_t, tableint>> queue_closest;
+        std::vector<std::pair<dist_t, tableint>> return_list;
+        while (top_candidates.size() > 0) {
+            queue_closest.emplace(-top_candidates.top().first, top_candidates.top().second);
+            top_candidates.pop();
+        }
+
+        while (queue_closest.size()) {
+            if (return_list.size() >= M)
+                break;
+            std::pair<dist_t, tableint> curent_pair = queue_closest.top();
+            dist_t dist_to_query = -curent_pair.first;
+            queue_closest.pop();
+            bool good = true;
+
+            for (std::pair<dist_t, tableint> second_pair : return_list) {
+                dist_t curdist = fstdistfunc_(getDataByInternalId(second_pair.second),
+                                            getDataByInternalId(curent_pair.second),
+                                            dist_func_param_);
+                // α-RNG condition: only prune if significantly closer
+                if (alpha * curdist < dist_to_query) {  // Modified condition
+                    good = false;
+                    break;
+                }
+            }
+            if (good) {
+                return_list.push_back(curent_pair);
+            }
+        }
+
+        for (std::pair<dist_t, tableint> curent_pair : return_list) {
+            top_candidates.emplace(-curent_pair.first, curent_pair.second);
+        }
+    }
+
 
     linklistsizeint *get_linklist0(tableint internal_id) const {
         return (linklistsizeint *) (data_level0_memory_ + internal_id * size_data_per_element_ + offsetLevel0_);
@@ -1097,7 +1140,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         tableint entryPointInternalId,
         tableint dataPointInternalId,
         int dataPointLevel,
-        int maxLevel) {
+        int maxLevel,
+        bool includeTombstone = false) {
         tableint currObj = entryPointInternalId;
         if (dataPointLevel < maxLevel) {
             dist_t curdist = fstdistfunc_(dataPoint, getDataByInternalId(currObj), dist_func_param_);
@@ -1133,8 +1177,12 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             throw std::runtime_error("Level of item to be updated cannot be bigger than max level");
 
         for (int level = dataPointLevel; level >= 0; level--) {
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates = searchBaseLayer(
-                    currObj, dataPoint, level);
+            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> topCandidates;
+            if (includeTombstone) {
+                topCandidates = searchBaseLayerIncludeTombstones(currObj, dataPoint, level);
+            } else {
+                topCandidates = searchBaseLayer(currObj, dataPoint, level);
+            }
 
             std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> filteredTopCandidates;
             while (topCandidates.size() > 0) {
@@ -1793,6 +1841,132 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
     }
 
+    // Helper function to check if a tombstoned candidate passes alpha-RNG property
+    bool passesAlphaRNGProperty(const void *data_point, tableint candidate_id, double alpha) {
+        if (!isMarkedDeleted(candidate_id)) return false;
+        
+        dist_t candidate_dist = fstdistfunc_(data_point, getDataByInternalId(candidate_id), dist_func_param_);
+        
+        // Get neighbors of the candidate at base layer
+        std::unique_lock<std::mutex> lock(link_list_locks_[candidate_id]);
+        unsigned int *data = (unsigned int*)get_linklist0(candidate_id);
+        int size = getListCount(data);
+        tableint *datal = (tableint *) (data + 1);
+        
+        // Check alpha-RNG property: candidate passes if no neighbor violates the condition
+        for (int i = 0; i < size; i++) {
+            tableint neighbor = datal[i];
+            if (neighbor < 0 || neighbor > max_elements_ || isMarkedDeleted(neighbor))
+                continue;
+                
+            dist_t neighbor_to_candidate = fstdistfunc_(
+                getDataByInternalId(neighbor), 
+                getDataByInternalId(candidate_id), 
+                dist_func_param_);
+                
+            // Alpha-RNG condition: alpha * d(neighbor, candidate) < d(data_point, candidate)
+            // If this condition is true, the candidate would be pruned, so it fails alpha-RNG
+            if (alpha * neighbor_to_candidate < candidate_dist) {
+                return false;  // Candidate would be pruned by this neighbor
+            }
+        }
+        
+        return true;  // Candidate passes alpha-RNG property
+    }
+
+    tableint findClosestTombstonedNodeAlphaRNG(const void *data_point, double alpha = 1.1) {
+        if (cur_element_count == 0) return -1;
+        
+        tableint currObj = enterpoint_node_;
+        dist_t best_dist = std::numeric_limits<dist_t>::max();
+        tableint best_tombstoned = -1;
+        
+        // First, navigate to base layer using existing hill-climbing
+        dist_t curdist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
+        for (int level = maxlevel_; level > 0; level--) {
+            bool changed = true;
+            while (changed) {
+                changed = false;
+                unsigned int *data;
+                std::unique_lock<std::mutex> lock(link_list_locks_[currObj]);
+                data = get_linklist(currObj, level);
+                int size = getListCount(data);
+                
+                tableint *datal = (tableint *) (data + 1);
+                for (int i = 0; i < size; i++) {
+                    tableint cand = datal[i];
+                    if (cand < 0 || cand > max_elements_)
+                        throw std::runtime_error("cand error");
+                    dist_t d = fstdistfunc_(data_point, getDataByInternalId(cand), dist_func_param_);
+                    if (d < curdist) {
+                        curdist = d;
+                        currObj = cand;
+                        changed = true;
+                    }
+                }
+            }
+        }
+        
+        // Now perform hill-climbing search at base layer (level 0) 
+        // looking for tombstoned nodes that pass alpha-RNG property
+        std::unordered_set<tableint> visited;
+        bool found_better = true;
+        
+        while (found_better) {
+            found_better = false;
+            visited.insert(currObj);
+            
+            // Check current node if it's tombstoned and passes alpha-RNG
+            if (isMarkedDeleted(currObj)) {
+                dist_t curr_dist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
+                if (passesAlphaRNGProperty(data_point, currObj, alpha) && curr_dist < best_dist) {
+                    best_dist = curr_dist;
+                    best_tombstoned = currObj;
+                }
+            }
+            
+            // Explore neighbors at base layer
+            std::unique_lock<std::mutex> lock(link_list_locks_[currObj]);
+            unsigned int *data = (unsigned int*)get_linklist0(currObj);
+            int size = getListCount(data);
+            tableint *datal = (tableint *) (data + 1);
+            
+            dist_t closest_neighbor_dist = std::numeric_limits<dist_t>::max();
+            tableint closest_neighbor = -1;
+            
+            for (int i = 0; i < size; i++) {
+                tableint neighbor = datal[i];
+                if (neighbor < 0 || neighbor > max_elements_ || visited.count(neighbor))
+                    continue;
+                    
+                dist_t neighbor_dist = fstdistfunc_(data_point, getDataByInternalId(neighbor), dist_func_param_);
+                
+                // Check if this neighbor is tombstoned and passes alpha-RNG
+                if (isMarkedDeleted(neighbor) && passesAlphaRNGProperty(data_point, neighbor, alpha)) {
+                    if (neighbor_dist < best_dist) {
+                        best_dist = neighbor_dist;
+                        best_tombstoned = neighbor;
+                    }
+                }
+                
+                // Track closest neighbor for hill-climbing continuation
+                if (neighbor_dist < closest_neighbor_dist) {
+                    closest_neighbor_dist = neighbor_dist;
+                    closest_neighbor = neighbor;
+                }
+            }
+            
+            // Continue hill-climbing if we found a closer neighbor
+            if (closest_neighbor != -1 && closest_neighbor_dist < curdist) {
+                currObj = closest_neighbor;
+                curdist = closest_neighbor_dist;
+                found_better = true;
+            }
+        }
+        
+        return best_tombstoned;
+    }
+
     /*
     * Adds point. Updates the point if it is already in the index.
     * If replacement of deleted elements is enabled and the delete list is not empty, 
@@ -2102,8 +2276,248 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         return used_repl_cand;
     }
 
+    /*
+    * Adds point. Updates the point if it is already in the index.
+    * If replacement of deleted elements is enabled and the delete list is not empty, 
+    * run addPointReplCand which attempts to replace the point with a candidate neighbor
+    */
+    int addPointMNGammaRBC(const void *data_point, labeltype label, bool replace_deleted = true, bool use_neigh_update = false, bool include_tombstones_search_layer = true) {
+        int used_repl_cand = 0;
 
+        if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
+            throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
+        }
 
+        // lock all operations with element by label
+        std::unique_lock <std::mutex> lock_label(getLabelOpMutex(label));
+        if (!replace_deleted) {
+            addPoint(data_point, label, -1);
+            return used_repl_cand;
+        }
+        // check if there is vacant place
+        // TODO: lock is only here and no element popped, thus when actually running replace due to 
+        // this part returning there is a vacant place, there may not be one when the lock is released
+        // thus rerun this check later IF actually popping element where findTombstonedCand returns -1
+        std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+        bool is_vacant_place = !deleted_elements.empty();
+        lock_deleted_elements.unlock();
+
+        // if there is no vacant place then add or update point
+        // else add point to vacant place
+        if (!is_vacant_place) {
+            addPoint(data_point, label, -1);
+        } else {
+            tableint internal_id_replaced;
+            std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+            auto closestTombstone = findClosestTombstonedNodeAlphaRNG(data_point, 1.1);
+            // auto topCandidates = result.top_candidates;
+            if (closestTombstone == -1) {
+                internal_id_replaced = *deleted_elements.begin();
+            } else {
+                internal_id_replaced = closestTombstone;
+                used_repl_cand = 1;
+            }
+            deleted_elements.erase(internal_id_replaced);
+            lock_deleted_elements.unlock();
+
+            // we assume that there are concurrent operations on deleted element (tombstones could be included in layer search)
+            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
+            labeltype label_replaced = getExternalLabel(internal_id_replaced);
+            setExternalLabel(internal_id_replaced, label);
+
+            label_lookup_.erase(label_replaced);
+            label_lookup_[label] = internal_id_replaced;
+            lock_table.unlock();
+
+            unmarkDeletedInternal(internal_id_replaced);
+
+            // update the feature vector associated with existing point with new vector
+            memcpy(getDataByInternalId(internal_id_replaced), data_point, data_size_);
+
+            int maxLevelCopy = maxlevel_;
+            tableint entryPointCopy = enterpoint_node_;
+            // If point to be updated is entry point and graph just contains single element then just return.
+            if (entryPointCopy == internal_id_replaced && cur_element_count == 1)
+                return used_repl_cand;
+
+            int elemLevel = element_levels_[internal_id_replaced];
+
+            // Use MN Gamma for non-candidate neighbor replacements
+            if(use_neigh_update && used_repl_cand == 0) {
+                // First update previous neighbors at all levels
+                for (int layer = 0; layer <= elemLevel; layer++) {
+                    std::unordered_set<tableint> MCOneHops;
+                    std::vector<tableint> listOneHop = getConnectionsWithLock(internal_id_replaced, layer);
+                    if (listOneHop.size() == 0)
+                        continue;
+
+                    for (auto&& elOneHop : listOneHop) {
+                        // If neighbor is mutually connected to tombstone, add it
+                        auto neighborsOneHop = getConnectionsWithLock(elOneHop, layer);
+                        if(std::find(neighborsOneHop.begin(), neighborsOneHop.end(), internal_id_replaced) != neighborsOneHop.end()) {
+                            MCOneHops.insert(elOneHop);
+                        }
+                    }
+
+                    for (auto&& neigh : MCOneHops) {
+                        // if (neigh == internalId)
+                        //     continue;
+
+                        // Get neighbors of mutually connected neighbor node
+                        std::vector<tableint> candidatesCombined = getConnectionsWithLock(neigh, layer);
+                        // Combine with one-hop neighbors of tombstone and the new data label
+                        candidatesCombined.push_back(internal_id_replaced);
+                        for (auto&& elOneHop : listOneHop) {
+                            candidatesCombined.push_back(elOneHop);
+                        }
+
+                        // Get candidates from combined neighbors
+                        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidates;
+                        for (auto&& cand : candidatesCombined) {
+                            if (cand == neigh)
+                                continue;
+
+                            dist_t distance = fstdistfunc_(getDataByInternalId(neigh), getDataByInternalId(cand), dist_func_param_);
+                            candidates.emplace(distance, cand);
+                        }
+
+                        // Retrieve neighbours using alpha-RNG heuristic (alpha = 1.1) and set connections.
+                        getNeighborsByHeuristicAlphaRNG(candidates, layer == 0 ? maxM0_ : maxM_, 1.1);
+
+                        {
+                            std::unique_lock <std::mutex> lock(link_list_locks_[neigh]);
+                            linklistsizeint *ll_cur;
+                            ll_cur = get_linklist_at_level(neigh, layer);
+                            size_t candSize = candidates.size();
+                            setListCount(ll_cur, candSize);
+                            tableint *data = (tableint *) (ll_cur + 1);
+                            for (size_t idx = 0; idx < candSize; idx++) {
+                                data[idx] = candidates.top().second;
+                                candidates.pop();
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update tombstone using replaced update with tombstones included
+            repairConnectionsForUpdate(data_point, entryPointCopy, internal_id_replaced, elemLevel, maxLevelCopy, true);
+        }
+        return used_repl_cand;
+    }
+
+    /*
+    * Adds point. Updates the point if it is already in the index.
+    * If replacement of deleted elements is enabled: replaces previously deleted point if any, updating it with new point
+    */
+    void addPointMNRU(const void *data_point, labeltype label, bool replace_deleted = true) {
+        if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
+            throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
+        }
+
+        // lock all operations with element by label
+        std::unique_lock <std::mutex> lock_label(getLabelOpMutex(label));
+        if (!replace_deleted) {
+            addPoint(data_point, label, -1);
+            return;
+        }
+        // check if there is vacant place
+        tableint internal_id_replaced;
+        std::unique_lock <std::mutex> lock_deleted_elements(deleted_elements_lock);
+        bool is_vacant_place = !deleted_elements.empty();
+        if (is_vacant_place) {
+            internal_id_replaced = *deleted_elements.begin();
+            deleted_elements.erase(internal_id_replaced);
+        }
+        lock_deleted_elements.unlock();
+
+        // if there is no vacant place then add or update point
+        // else add point to vacant place
+        if (!is_vacant_place) {
+            addPoint(data_point, label, -1);
+        } else {
+            // we assume that there are no concurrent operations on deleted element
+            labeltype label_replaced = getExternalLabel(internal_id_replaced);
+            setExternalLabel(internal_id_replaced, label);
+
+            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
+            label_lookup_.erase(label_replaced);
+            label_lookup_[label] = internal_id_replaced;
+            lock_table.unlock();
+
+            unmarkDeletedInternal(internal_id_replaced);
+
+            // update the feature vector associated with existing point with new vector
+            memcpy(getDataByInternalId(internal_id_replaced), data_point, data_size_);
+
+            int maxLevelCopy = maxlevel_;
+            tableint entryPointCopy = enterpoint_node_;
+            // If point to be updated is entry point and graph just contains single element then just return.
+            if (entryPointCopy == internal_id_replaced && cur_element_count == 1)
+                return;
+
+            int elemLevel = element_levels_[internal_id_replaced];
+
+            // First update previous neighbors at all levels
+            for (int layer = 0; layer <= elemLevel; layer++) {
+                std::unordered_set<tableint> MCOneHops;
+                std::vector<tableint> listOneHop = getConnectionsWithLock(internal_id_replaced, layer);
+                if (listOneHop.size() == 0)
+                    continue;
+
+                for (auto&& elOneHop : listOneHop) {
+                    // If neighbor is mutually connected to tombstone, add it
+                    auto neighborsOneHop = getConnectionsWithLock(elOneHop, layer);
+                    if(std::find(neighborsOneHop.begin(), neighborsOneHop.end(), internal_id_replaced) != neighborsOneHop.end()) {
+                        MCOneHops.insert(elOneHop);
+                    }
+                }
+
+                for (auto&& neigh : MCOneHops) {
+                    // if (neigh == internalId)
+                    //     continue;
+
+                    // Get neighbors of mutually connected neighbor node
+                    std::vector<tableint> candidatesCombined = getConnectionsWithLock(neigh, layer);
+                    // Combine with one-hop neighbors of tombstone and the new data label
+                    candidatesCombined.push_back(internal_id_replaced);
+                    for (auto&& elOneHop : listOneHop) {
+                        candidatesCombined.push_back(elOneHop);
+                    }
+
+                    // Get candidates from combined neighbors
+                    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidates;
+                    for (auto&& cand : candidatesCombined) {
+                        if (cand == neigh)
+                            continue;
+
+                        dist_t distance = fstdistfunc_(getDataByInternalId(neigh), getDataByInternalId(cand), dist_func_param_);
+                        candidates.emplace(distance, cand);
+                    }
+
+                    // Retrieve neighbours using alpha-RNG heuristic (alpha = 1.1) and set connections.
+                    getNeighborsByHeuristicAlphaRNG(candidates, layer == 0 ? maxM0_ : maxM_, 1.1);
+
+                    {
+                        std::unique_lock <std::mutex> lock(link_list_locks_[neigh]);
+                        linklistsizeint *ll_cur;
+                        ll_cur = get_linklist_at_level(neigh, layer);
+                        size_t candSize = candidates.size();
+                        setListCount(ll_cur, candSize);
+                        tableint *data = (tableint *) (ll_cur + 1);
+                        for (size_t idx = 0; idx < candSize; idx++) {
+                            data[idx] = candidates.top().second;
+                            candidates.pop();
+                        }
+                    }
+                }
+            }
+
+            repairConnectionsForUpdate(data_point, entryPointCopy, internal_id_replaced, elemLevel, maxLevelCopy);
+
+            return;
+        }
+    }
     
 };
 }  // namespace hnswlib

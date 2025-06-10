@@ -73,6 +73,66 @@ size_t HNSWLibIndexOperations::parallelAdd(
  * @return Number of vectors successfully added
  */
 
+size_t HNSWLibIndexOperations::parallelAddMNRU(
+    HierarchicalNSW<float>& index,
+    const std::vector<std::vector<float>>& points, 
+    const std::vector<size_t>& labels,
+    const std::string& dataset_name,
+    int iteration,
+    Appender& add_bm_appender,
+    int num_threads
+) {
+    std::cout << "🔵 ADDING SAMPLE VECTORS 🔵" << std::endl;
+    
+    size_t added_count = 0;
+    
+    try {
+        
+        
+        // Create mutex and result collection
+        std::mutex bench_mutex;
+        std::vector<std::tuple<std::string, int, double>> benchmarks;
+        std::atomic<size_t> success_count(0);     
+      
+        std::cout << "Starting parallel add with " << num_threads << " threads" << std::endl;
+
+        auto batch_start = std::chrono::high_resolution_clock::now();
+        
+        util::addPointsMNRUMultiThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex);
+
+        auto batch_end = std::chrono::high_resolution_clock::now();
+        auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
+        std::cout << "Parallel add completed in " << batch_duration << "s" << std::endl;
+        
+        // Store benchmark data
+        for (const auto& bm : benchmarks) {
+            add_bm_appender.AppendRow(
+                Value(std::get<0>(bm)),
+                Value::INTEGER(std::get<1>(bm)),
+                Value::FLOAT(std::get<2>(bm))
+            );
+        }
+        
+        added_count = success_count;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error in parallel vector addition: " << e.what() << std::endl;
+    }
+    
+    return added_count;
+}
+
+/**
+ * Performs parallel vector addition to the index
+ * 
+ * @param index The USearch index to add vectors to
+ * @param sample_vecs The result set containing vectors to add
+ * @param dataset_name The name of the dataset for benchmarking
+ * @param iteration The current iteration number
+ * @param add_bm_appender Appender for benchmarking results
+ * @return Number of vectors successfully added
+ */
+
 size_t HNSWLibIndexOperations::parallelAddReplCand(
     HierarchicalNSW<float>& index,
     const std::vector<std::vector<float>>& points, 
@@ -105,6 +165,82 @@ size_t HNSWLibIndexOperations::parallelAddReplCand(
         auto batch_start = std::chrono::high_resolution_clock::now();
         
         util::addReplCandMultiThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex, repl_method_dist, repl_method_dist_mutex, use_neigh_update, include_tombstones);
+
+        auto batch_end = std::chrono::high_resolution_clock::now();
+        auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
+        std::cout << "Parallel add completed in " << batch_duration << "s" << std::endl;
+        
+        // Store benchmark data
+        for (const auto& bm : benchmarks) {
+            add_bm_appender.AppendRow(
+                Value(std::get<0>(bm)),
+                Value::INTEGER(std::get<1>(bm)),
+                Value::FLOAT(std::get<2>(bm))
+            );
+        }
+
+        for (const auto& repl_used : repl_method_dist) {
+            repl_method_dist_appender.AppendRow(
+                Value(std::get<0>(repl_used)),
+                Value::INTEGER(std::get<1>(repl_used)),
+                Value::INTEGER(std::get<2>(repl_used)),
+                Value::INTEGER(std::get<3>(repl_used)),
+                Value::FLOAT(std::get<4>(repl_used))
+            );
+        }
+        
+        added_count = success_count;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error in parallel vector addition: " << e.what() << std::endl;
+    }
+    
+    return added_count;
+}
+
+/**
+ * Performs parallel vector addition to the index
+ * 
+ * @param index The USearch index to add vectors to
+ * @param sample_vecs The result set containing vectors to add
+ * @param dataset_name The name of the dataset for benchmarking
+ * @param iteration The current iteration number
+ * @param add_bm_appender Appender for benchmarking results
+ * @return Number of vectors successfully added
+ */
+
+size_t HNSWLibIndexOperations::parallelAddMNRBC(
+    HierarchicalNSW<float>& index,
+    const std::vector<std::vector<float>>& points, 
+    const std::vector<size_t>& labels,
+    const std::string& dataset_name,
+    int iteration,
+    Appender& add_bm_appender,
+    Appender& repl_method_dist_appender,
+    int num_threads,
+    bool use_neigh_update,
+    bool include_tombstones
+) {
+    std::cout << "🔵 ADDING SAMPLE VECTORS 🔵" << std::endl;
+    
+    size_t added_count = 0;
+    
+    try {
+        
+        
+        // Create mutex and result collection
+        std::mutex bench_mutex;
+        std::vector<std::tuple<std::string, int, double>> benchmarks;
+        std::atomic<size_t> success_count(0);     
+        std::mutex repl_method_dist_mutex;
+        std::vector<std::tuple<std::string, int, int, int, double>> repl_method_dist;  
+      
+        
+        std::cout << "Starting parallel add with " << num_threads << " threads" << std::endl;
+
+        auto batch_start = std::chrono::high_resolution_clock::now();
+        
+        util::addMNRBCMultiThread(index, points, labels, num_threads, dataset_name, iteration, benchmarks, bench_mutex, repl_method_dist, repl_method_dist_mutex, use_neigh_update, include_tombstones);
 
         auto batch_end = std::chrono::high_resolution_clock::now();
         auto batch_duration = std::chrono::duration<double>(batch_end - batch_start).count();
